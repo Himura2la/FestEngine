@@ -130,7 +130,7 @@ class MainFrame(wx.Frame):
         file_path = os.path.join(zad_path, file_name)
         self.proj_win.load_zad(file_path, True)
 
-
-app = wx.App(False)
-frame = MainFrame(None, 'Fest Engine')
-app.MainLoop()
+if __name__ == "__main__":
+    app = wx.App(False)
+    frame = MainFrame(None, 'Fest Engine')
+    app.MainLoop()
