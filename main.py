@@ -3,7 +3,8 @@ import wx
 import wx.grid
 import webbrowser
 import os
-from projector_window import ProjectorWindow
+from projector import ProjectorWindow
+from settings import SettingsDialog
 
 # TODO: Move this to settings or calculate
 zad_path = "H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
@@ -12,11 +13,11 @@ proj_window_shape = (700, 500)
 
 
 class MainFrame(wx.Frame):
-
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title, size=(700, 500))
         accelerator_table = []
         self.proj_win = None
+        self.settings = {'Projector Screen': wx.Display.GetCount() - 1}
 
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
@@ -25,6 +26,10 @@ class MainFrame(wx.Frame):
         menu_file = wx.Menu()
         self.Bind(wx.EVT_MENU, self.load_data,
                   menu_file.Append(wx.ID_ANY, "&Load Data"))
+
+        self.Bind(wx.EVT_MENU, self.on_settings,
+                  menu_file.Append(wx.ID_ANY, "&Setings"))
+
         self.Bind(wx.EVT_MENU, lambda _: webbrowser.open('https://github.com/Himura2la'),
                   menu_file.Append(wx.ID_ABOUT, "&About"))
         self.Bind(wx.EVT_MENU, self.on_exit,
@@ -74,6 +79,13 @@ class MainFrame(wx.Frame):
         if isinstance(self.proj_win, ProjectorWindow):
             self.proj_win.Close(True)
         self.Close(True)
+
+    def on_settings(self, e):
+        settings_dialog = SettingsDialog(self.settings, self)
+        res = settings_dialog.ShowModal()
+        if res == wx.ID_OK:
+            self.settings = settings_dialog.get_settings()
+        settings_dialog.Destroy()
 
     def grid_set_shape(self, new_rows, new_cols):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()

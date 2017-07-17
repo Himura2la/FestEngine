@@ -7,7 +7,6 @@ class ProjectorWindow(wx.Frame):
                           title='Projector Window')
         self.SetBackgroundColour((0, 0, 0, 255))
         self.control_window = parent
-        self.window_shape = shape
 
         self.main_sizer = wx.BoxSizer()
         self.image_ctrl = wx.StaticBitmap(self, wx.ID_ANY,
