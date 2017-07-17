@@ -5,8 +5,10 @@ import webbrowser
 import os
 from projector_window import ProjectorWindow
 
+# TODO: Move this to settings or calculate
 zad_path = "H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
 mp3_path = "H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered"
+proj_window_shape = (700, 500)
 
 
 class MainFrame(wx.Frame):
@@ -18,20 +20,21 @@ class MainFrame(wx.Frame):
 
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
-        self.Bind(wx.EVT_MENU_OPEN, self.on_menu_open)
 
         # --- File ---
         menu_file = wx.Menu()
-        menu_file_about = menu_file.Append(wx.ID_ABOUT, "&About")
-        self.Bind(wx.EVT_MENU, self.on_about, menu_file_about)
-        menu_file_exit = menu_file.Append(wx.ID_EXIT, "E&xit")
-        self.Bind(wx.EVT_MENU, self.on_exit, menu_file_exit)
+        self.Bind(wx.EVT_MENU, self.load_data,
+                  menu_file.Append(wx.ID_ANY, "&Load Data"))
+        self.Bind(wx.EVT_MENU, lambda _: webbrowser.open('https://github.com/Himura2la'),
+                  menu_file.Append(wx.ID_ABOUT, "&About"))
+        self.Bind(wx.EVT_MENU, self.on_exit,
+                  menu_file.Append(wx.ID_EXIT, "E&xit"))
         menu_bar.Append(menu_file, "&File")
 
         # --- Projector Window ---
         proj_win_menu = wx.Menu()
-        proj_win_menu_create = proj_win_menu.Append(wx.ID_ANY, "&Create")
-        self.Bind(wx.EVT_MENU, self.create_proj_win, proj_win_menu_create)
+        self.Bind(wx.EVT_MENU, self.create_proj_win,
+                  proj_win_menu.Append(wx.ID_ANY, "&Create"))
         menu_bar.Append(proj_win_menu, "&Projector Window")
 
         # --- Play ---
@@ -41,13 +44,8 @@ class MainFrame(wx.Frame):
         accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F1, menu_play_zad.GetId()))
         menu_bar.Append(menu_play, "&Play")
 
-        # --- Load Data ---
-        self.menu_load = wx.Menu()
-        menu_bar.Append(self.menu_load, "&Load Data")
-
         self.SetMenuBar(menu_bar)
 
-        # ------------------ Main Sizer ------------------
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
         # --- Table ---
@@ -72,17 +70,10 @@ class MainFrame(wx.Frame):
     def status(self, text):
         self.status_bar.SetStatusText(text, 0)
 
-    def on_about(self, e):
-        webbrowser.open('https://github.com/Himura2la')
-
     def on_exit(self, e):
         if isinstance(self.proj_win, ProjectorWindow):
             self.proj_win.Close(True)
         self.Close(True)
-
-    def on_menu_open(self, event):
-        if event.GetMenu() == self.menu_load:
-            self.read_zad()
 
     def grid_set_shape(self, new_rows, new_cols):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
@@ -97,10 +88,13 @@ class MainFrame(wx.Frame):
 
     # ----------------------------------------------------
 
-    def create_proj_win(self, event):
+    def create_proj_win(self, e=None):
         if not isinstance(self.proj_win, ProjectorWindow):
-            self.proj_win = ProjectorWindow(self, (700, 500))
+            self.proj_win = ProjectorWindow(self, proj_window_shape)
         self.proj_win.Show()
+
+    def load_data(self, e):
+        self.read_zad()
 
     def read_zad(self):
         file_names = os.listdir(zad_path)
@@ -110,8 +104,8 @@ class MainFrame(wx.Frame):
             self.grid.SetReadOnly(i, 0)
         self.grid.AutoSizeColumns()
 
-    def show_zad(self, event):
-        self.create_proj_win(None)
+    def show_zad(self, e):
+        self.create_proj_win()
 
         row = self.grid.GetGridCursorRow()
         file_name = self.grid.GetCellValue(row, 0)
