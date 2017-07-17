@@ -14,7 +14,7 @@ class MainFrame(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title, size=(700, 500))
         accelerator_table = []
-        self.proj_win = ProjectorWindow(self)
+        self.proj_win = None
 
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
@@ -30,13 +30,13 @@ class MainFrame(wx.Frame):
 
         # --- Projector Window ---
         proj_win_menu = wx.Menu()
-        proj_win_menu_create = proj_win_menu.Append(wx.NewId(), "&Create")
+        proj_win_menu_create = proj_win_menu.Append(wx.ID_ANY, "&Create")
         self.Bind(wx.EVT_MENU, self.create_proj_win, proj_win_menu_create)
         menu_bar.Append(proj_win_menu, "&Projector Window")
 
         # --- Play ---
         menu_play = wx.Menu()
-        menu_play_zad = menu_play.Append(wx.NewId(), "&Show ZAD\tF1")
+        menu_play_zad = menu_play.Append(wx.ID_ANY, "&Show ZAD\tF1")
         self.Bind(wx.EVT_MENU, self.show_zad, menu_play_zad)
         accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F1, menu_play_zad.GetId()))
         menu_bar.Append(menu_play, "&Play")
@@ -76,8 +76,9 @@ class MainFrame(wx.Frame):
         webbrowser.open('https://github.com/Himura2la')
 
     def on_exit(self, e):
+        if isinstance(self.proj_win, ProjectorWindow):
+            self.proj_win.Close(True)
         self.Close(True)
-        self.proj_win.Close(True)
 
     def on_menu_open(self, event):
         if event.GetMenu() == self.menu_load:
@@ -97,6 +98,8 @@ class MainFrame(wx.Frame):
     # ----------------------------------------------------
 
     def create_proj_win(self, event):
+        if not isinstance(self.proj_win, ProjectorWindow):
+            self.proj_win = ProjectorWindow(self, (700, 500))
         self.proj_win.Show()
 
     def read_zad(self):
@@ -108,7 +111,12 @@ class MainFrame(wx.Frame):
         self.grid.AutoSizeColumns()
 
     def show_zad(self, event):
-        self.status("show_zad")
+        self.create_proj_win(None)
+
+        row = self.grid.GetGridCursorRow()
+        file_name = self.grid.GetCellValue(row, 0)
+        file_path = os.path.join(zad_path, file_name)
+        self.proj_win.load_zad(file_path, True)
 
 
 app = wx.App(False)
