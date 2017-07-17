@@ -5,6 +5,7 @@ import webbrowser
 import os
 from projector import ProjectorWindow
 from settings import SettingsDialog
+from strings import Config
 
 # TODO: Move this to settings or calculate
 zad_path = "H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
@@ -17,7 +18,7 @@ class MainFrame(wx.Frame):
         wx.Frame.__init__(self, parent, title=title, size=(700, 500))
         accelerator_table = []
         self.proj_win = None
-        self.settings = {'Projector Screen': wx.Display.GetCount() - 1}
+        self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1}  # The last one
 
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
@@ -26,7 +27,6 @@ class MainFrame(wx.Frame):
         menu_file = wx.Menu()
         self.Bind(wx.EVT_MENU, self.load_data,
                   menu_file.Append(wx.ID_ANY, "&Load Data"))
-
         self.Bind(wx.EVT_MENU, self.on_settings,
                   menu_file.Append(wx.ID_ANY, "&Setings"))
 
@@ -40,6 +40,9 @@ class MainFrame(wx.Frame):
         proj_win_menu = wx.Menu()
         self.Bind(wx.EVT_MENU, self.create_proj_win,
                   proj_win_menu.Append(wx.ID_ANY, "&Create"))
+        self.Bind(wx.EVT_MENU, self.destroy_proj_win,
+                  proj_win_menu.Append(wx.ID_ANY, "&Destroy"))
+
         menu_bar.Append(proj_win_menu, "&Projector Window")
 
         # --- Play ---
@@ -76,8 +79,7 @@ class MainFrame(wx.Frame):
         self.status_bar.SetStatusText(text, 0)
 
     def on_exit(self, e):
-        if isinstance(self.proj_win, ProjectorWindow):
-            self.proj_win.Close(True)
+        self.destroy_proj_win()
         self.Close(True)
 
     def on_settings(self, e):
@@ -102,8 +104,12 @@ class MainFrame(wx.Frame):
 
     def create_proj_win(self, e=None):
         if not isinstance(self.proj_win, ProjectorWindow):
-            self.proj_win = ProjectorWindow(self, proj_window_shape)
+            self.proj_win = ProjectorWindow(self, self.settings[Config.PROJECTOR_SCREEN])
         self.proj_win.Show()
+
+    def destroy_proj_win(self, e=None):
+        if isinstance(self.proj_win, ProjectorWindow):
+            self.proj_win.Close(True)
 
     def load_data(self, e):
         self.read_zad()

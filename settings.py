@@ -1,9 +1,8 @@
 import wx
+from strings import Config
 
 
 class SettingsDialog(wx.Dialog):
-    label_projector_screen = "Projector Screen"
-
     def __init__(self, settings, parent):
         wx.Dialog.__init__(self, parent, title="Settings")
         self.settings = settings
@@ -19,14 +18,14 @@ class SettingsDialog(wx.Dialog):
         screen_names = ["%d: %s (%d,%d) %dx%d" % ((i, wx.Display(i).GetName()) + wx.Display(i).GetGeometry().Get())
                         for i in range(wx.Display.GetCount())]
         self.screens_combobox.SetItems(screen_names)
-        self.screens_combobox.SetSelection(self.settings[self.label_projector_screen])
+        self.screens_combobox.SetSelection(self.settings[Config.PROJECTOR_SCREEN])
 
         # --- Layout ---
 
         # Grid
         configs_grid = wx.GridSizer(rows=1, cols=2, hgap=5, vgap=5)
 
-        configs_grid.Add(wx.StaticText(panel, label=self.label_projector_screen), 0, wx.ALIGN_CENTER_VERTICAL)
+        configs_grid.Add(wx.StaticText(panel, label=Config.PROJECTOR_SCREEN), 0, wx.ALIGN_CENTER_VERTICAL)
         configs_grid.Add(self.screens_combobox)
 
         # OK / Cancel
@@ -43,7 +42,7 @@ class SettingsDialog(wx.Dialog):
         self.Fit()
 
     def on_ok(self, e):
-        self.settings[self.label_projector_screen] = self.screens_combobox.GetSelection()
+        self.settings[Config.PROJECTOR_SCREEN] = self.screens_combobox.GetSelection()
 
         self.EndModal(wx.ID_OK)
 

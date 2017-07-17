@@ -2,15 +2,20 @@ import wx
 
 
 class ProjectorWindow(wx.Frame):
-    def __init__(self, parent, shape):
-        wx.Frame.__init__(self, None, size=shape,
-                          title='Projector Window')
+    def __init__(self, parent, screen=None):
+        wx.Frame.__init__(self, parent, title='Projector Window',
+                          style=wx.DEFAULT_MINIFRAME_STYLE | wx.CLOSE_BOX)
+        if screen is None:
+            screen = wx.Display.GetCount() - 1
+        origin_x, origin_y, w, h = wx.Display(screen).GetGeometry().Get()
+
+        self.SetPosition((origin_x + 55, origin_y + 55))
+
         self.SetBackgroundColour((0, 0, 0, 255))
-        self.control_window = parent
 
         self.main_sizer = wx.BoxSizer()
         self.image_ctrl = wx.StaticBitmap(self, wx.ID_ANY,
-                                          wx.BitmapFromImage(wx.EmptyImage(*shape)))
+                                          wx.BitmapFromImage(wx.EmptyImage(w, h)))
         self.main_sizer.Add(self.image_ctrl, 1, wx.EXPAND)
         self.SetSizer(self.main_sizer)
 
