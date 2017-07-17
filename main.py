@@ -37,6 +37,9 @@ class MainFrame(wx.Frame):
         # --- Table ---
         self.grid = wx.grid.Grid(self)
         self.grid.CreateGrid(1, 1)
+        self.grid.HideRowLabels()
+        self.grid.HideColLabels()
+        self.grid.SetCellValue(0, 0, "Hello")
 
         main_sizer.Add(self.grid, 1, wx.EXPAND)
 
@@ -62,15 +65,26 @@ class MainFrame(wx.Frame):
         if event.GetMenu() == self.menu_load:
             self.read_zad()
 
+    def grid_set_shape(self, new_rows, new_cols):
+        current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
+        if new_rows < current_rows:
+            self.grid.DeleteRows(0, current_rows - new_rows, True)
+        elif new_rows > current_rows:
+            self.grid.AppendRows(new_rows - current_rows)
+        if new_cols < current_cols:
+            self.grid.DeleteCols(0, current_cols - new_cols, True)
+        elif new_cols > current_cols:
+            self.grid.AppendCols(new_cols - current_cols)
+
     # ----------------------------------------------------
 
     def read_zad(self):
-        """Assuming grid shape is 1x1"""
         file_names = os.listdir(zad_path)
-        self.grid.AppendRows(len(file_names) - 1)
+        self.grid_set_shape(len(file_names), 1)
         for i in range(len(file_names)):
             self.grid.SetCellValue(i, 0, file_names[i])
-        pass
+            self.grid.SetReadOnly(i, 0)
+        self.grid.AutoSizeColumns()
 
 
 
