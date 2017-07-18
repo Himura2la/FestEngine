@@ -14,8 +14,7 @@ from strings import Config
 zad_path = "H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
 mp3_path = "H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered"
 proj_window_shape = (700, 500)
-
-filename_re = r"(?P<id>\d{3}) (?P<nom>\w{1,2})(?P<start> \w{0,1})\. (?P<name>.*?)\(?P<num>№(\d{1,3})\)\.(?P<ext>\w{3})"
+filename_re = "^(?P<nom>\w{1,2})( \[(?P<start>[GW]{1})\])?\. (?P<name>.*?)(\(.(?P<num>\d{1,3})\))?$"
 
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
@@ -135,23 +134,21 @@ class MainFrame(wx.Frame):
         #     d.ShowModal()
         #     d.Destroy()
 
-        ids, files = zip(*sorted(self.items.items()))
-        noms = []
-        names = []
-        exts = []
-        for f in files:
-            name = max([a.rsplit('\\', 1)[1].split(' ', 1)[1].rsplit('.', 1)[0] for a in f], key=len)
-            noms.append(name.split('.', 1)[0])
-            names.append(name)
-            exts.append(", ".join(sorted([a.rsplit('.', 1)[1] for a in f])))
+        self.grid_set_shape(len(self.items), 5)
+        i = 0
+        for id, files in sorted(self.items.items()):
+            name = max([a.rsplit('\\', 1)[1].split(' ', 1)[1].rsplit('.', 1)[0] for a in files], key=len)
+            exts = ", ".join(sorted([a.rsplit('.', 1)[1] for a in files]))
+            match = re.search(filename_re, name)
 
-        self.grid_set_shape(len(self.items), 4)
-        for i in range(len(self.items)):
-            self.grid.SetCellValue(i, 0, ids[i])
-            self.grid.SetCellValue(i, 0, noms[i])
-            self.grid.SetCellValue(i, 1, names[i])
-            self.grid.SetCellValue(i, 2, exts[i])
-            [self.grid.SetReadOnly(i, a) for a in range(3)]
+            self.grid.SetCellValue(i, 0, id)
+            self.grid.SetCellValue(i, 1, match.group('nom'))
+            self.grid.SetCellValue(i, 2, match.group('name'))
+            self.grid.SetCellValue(i, 3, exts)
+            if match.group('num'):
+                self.grid.SetCellValue(i, 4, match.group('num'))
+            [self.grid.SetReadOnly(i, a) for a in range(5)]
+            i += 1
         self.grid.AutoSizeColumns()
 
 
