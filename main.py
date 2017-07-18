@@ -13,6 +13,7 @@ from strings import Config
 # TODO: Move this to settings or calculate
 zad_path = "H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
 mp3_path = "H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered"
+background_zad = None
 proj_window_shape = (700, 500)
 filename_re = "^(?P<nom>\w{1,2})( \[(?P<start>[GW]{1})\])?\. (?P<name>.*?)(\(.(?P<num>\d{1,3})\))?$"
 
@@ -42,7 +43,7 @@ class MainFrame(wx.Frame):
 
         # --- Projector Window ---
         proj_win_menu = wx.Menu()
-        self.Bind(wx.EVT_MENU, self.create_proj_win,
+        self.Bind(wx.EVT_MENU, self.ensure_proj_win,
                   proj_win_menu.Append(wx.ID_ANY, "&Create"))
         self.Bind(wx.EVT_MENU, self.destroy_proj_win,
                   proj_win_menu.Append(wx.ID_ANY, "&Destroy"))
@@ -70,6 +71,8 @@ class MainFrame(wx.Frame):
 
         main_sizer.Add(self.grid, 1, wx.EXPAND)
 
+        # TODO: Progress bar
+
         self.SetSizer(main_sizer)
 
         # ------------------ Status Bar ------------------
@@ -82,6 +85,12 @@ class MainFrame(wx.Frame):
 
     def status(self, text):
         self.status_bar.SetStatusText(text, 0)
+
+    def image_status(self, text):
+        self.status_bar.SetStatusText(text, 1)
+
+    def sound_status(self, text):
+        self.status_bar.SetStatusText(text, 2)
 
     def on_exit(self, e):
         self.destroy_proj_win()
@@ -107,7 +116,7 @@ class MainFrame(wx.Frame):
 
     # ----------------------------------------------------
 
-    def create_proj_win(self, e=None):
+    def ensure_proj_win(self, e=None):
         if not isinstance(self.proj_win, ProjectorWindow):
             self.proj_win = ProjectorWindow(self, self.settings[Config.PROJECTOR_SCREEN])
         self.proj_win.Show()
@@ -148,15 +157,17 @@ class MainFrame(wx.Frame):
             name = max([a.rsplit('\\', 1)[1].split(' ', 1)[1].rsplit('.', 1)[0] for a in files], key=len)
             exts = ", ".join(sorted([a.rsplit('.', 1)[1] for a in files]))
             match = re.search(filename_re, name)
-            start = 'point' if match.group('start') == 'G' else 'instant' if match.group('start') else 'unknown'
+            start = {'W': 'point', 'G': 'instant'}[match.group('start')] if match.group('start') else 'unknown'
             self.items[id] = {'name': name,
                               'files': files,
                               'start': start}
+
             self.grid.SetCellValue(i, 0, id)
             self.grid.SetCellValue(i, 1, match.group('nom'))
             self.grid.SetCellValue(i, 2, start)
             self.grid.SetCellValue(i, 3, match.group('name'))
             self.grid.SetCellValue(i, 4, exts)
+
             if match.group('num'):
                 self.grid.SetCellValue(i, 5, match.group('num'))
             [self.grid.SetReadOnly(i, a) for a in range(6)]
@@ -166,12 +177,25 @@ class MainFrame(wx.Frame):
         self.status("Loaded %d items" % i)
 
     def show_zad(self, e):
-        self.create_proj_win()
+        self.ensure_proj_win()
+        id = self.grid.GetCellValue(self.grid.GetGridCursorRow(), 0)
+        try:
+            file_path = filter(lambda a: a.rsplit('.', 1)[1] in {'jpg', 'png'}, self.items[id]['files'])[0]
+            self.proj_win.load_zad(file_path, True)
+            self.image_status("Showing: %s" % self.items[id]['name'])
+            self.status("ZAD Fired!")
+        except IndexError:
+            self.status("No zad for '%s'" % self.items[id]['name'])
+            self.clear_zad()
 
-        row = self.grid.GetGridCursorRow()
-        file_name = self.grid.GetCellValue(row, 0)
-        file_path = os.path.join(zad_path, file_name)
-        self.proj_win.load_zad(file_path, True)
+    def clear_zad(self):
+        if background_zad:
+            self.proj_win.load_zad(background_zad, True)
+            self.image_status("Background")
+        else:
+            self.proj_win.no_show()
+            self.image_status("No show")
+        self.status("ZAD Cleared!")
 
 if __name__ == "__main__":
     app = wx.App(False)
