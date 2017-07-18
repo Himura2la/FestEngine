@@ -50,7 +50,10 @@ class MainFrame(wx.Frame):
                   proj_win_menu.Append(wx.ID_ANY, "&Create"))
         self.Bind(wx.EVT_MENU, self.destroy_proj_win,
                   proj_win_menu.Append(wx.ID_ANY, "&Destroy"))
-
+        self.menu_switch_to_img = proj_win_menu.Append(wx.ID_ANY, "&Switch to Image")
+        self.menu_switch_to_img.Enable(False)
+        self.menu_switch_to_video = proj_win_menu.Append(wx.ID_ANY, "&Switch to Video")
+        self.menu_switch_to_video.Enable(False)
         menu_bar.Append(proj_win_menu, "&Projector Window")
 
         # --- Play ---
@@ -101,6 +104,11 @@ class MainFrame(wx.Frame):
         self.SetAcceleratorTable(wx.AcceleratorTable(accelerator_table))
         self.Show(True)
 
+        # ----------------------- VLC ---------------------
+
+        self.vlc_instance = vlc.Instance()
+        self.player = self.vlc_instance.media_player_new()
+
     def status(self, text):
         self.status_bar.SetStatusText(text, 0)
 
@@ -137,6 +145,10 @@ class MainFrame(wx.Frame):
     def ensure_proj_win(self, e=None):
         if not isinstance(self.proj_win, ProjectorWindow):
             self.proj_win = ProjectorWindow(self, self.settings[Config.PROJECTOR_SCREEN])
+            self.Bind(wx.EVT_MENU, self.proj_win.switch_to_images, self.menu_switch_to_img)
+            self.Bind(wx.EVT_MENU, self.proj_win.switch_to_video, self.menu_switch_to_video)
+            self.menu_switch_to_img.Enable(True)
+            self.menu_switch_to_video.Enable(True)
         self.proj_win.Show()
         self.Raise()
 
@@ -198,6 +210,7 @@ class MainFrame(wx.Frame):
 
     def show_zad(self, e):
         self.ensure_proj_win()
+        self.proj_win.switch_to_images()
         id = self.grid.GetCellValue(self.grid.GetGridCursorRow(), 0)
         try:
             file_path = filter(lambda a: a.rsplit('.', 1)[1] in {'jpg', 'png'}, self.items[id]['files'])[0]
@@ -210,6 +223,10 @@ class MainFrame(wx.Frame):
     def no_show(self, e=None):
         if isinstance(self.proj_win, ProjectorWindow):
             self.clear_zad("No show")
+
+        # TODO: Fade out
+        self.player.stop()
+        self.sound_status("Stopped")
 
     def clear_zad(self, main_status="ZAD Cleared!"):
         if background_zad:
@@ -225,16 +242,21 @@ class MainFrame(wx.Frame):
         try:
             file_path = filter(lambda a: a.rsplit('.', 1)[1] in {'mp3', 'wav', 'mp4', 'avi'},
                                self.items[id]['files'])[0]
+            # TODO: What if video and audio?
 
-            # TODO: Extend!
-            p = vlc.MediaPlayer(file_path)
-            p.play()
+            media = self.vlc_instance.media_new(file_path)
+            self.player.set_media(media)
 
-            self.sound_status("Playing: '%s'" % self.items[id]['name'])
+            if self.player.play() != -1:
+                if file_path.rsplit('.', 1)[1] not in {'mp3', 'wav'}:
+                    self.ensure_proj_win()
+                    self.proj_win.switch_to_video()
+                self.sound_status("Playing: '%s'" % self.items[id]['name'])
+            else:
+                self.sound_status("ERROR PLAYING FILE!!!")
+
         except IndexError:
             self.sound_status("Nothing to play for '%s'" % self.items[id]['name'])
-
-
 
 if __name__ == "__main__":
     app = wx.App(False)

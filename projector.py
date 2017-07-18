@@ -1,9 +1,23 @@
 import wx
+import sys
 
 
-class ProjectorPanel(wx.Panel):
+class ImagesPanel(wx.Panel):
     def __init__(self, parent):
-        wx.Panel.__init__(self, parent, name='Projector Panel')
+        wx.Panel.__init__(self, parent)
+
+        self.SetBackgroundColour(wx.BLACK)
+        self.main_sizer = wx.BoxSizer()
+        self.image_ctrl = wx.StaticBitmap(self, wx.ID_ANY,
+                                          wx.BitmapFromImage(wx.EmptyImage(parent.w, parent.h)))
+        self.main_sizer.Add(self.image_ctrl, 1, wx.EXPAND)
+        self.SetSizerAndFit(self.main_sizer)
+        self.main_sizer.Layout()
+
+
+class VLCPanel(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
 
         self.SetBackgroundColour(wx.BLACK)
         self.main_sizer = wx.BoxSizer()
@@ -22,21 +36,45 @@ class ProjectorWindow(wx.Frame):
         wx.Frame.__init__(self, parent, pos=(origin_x + 60, origin_y + 60), size=(self.w - 120, self.h - 120),
                           title='Projector Window', style=wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP)
 
-        self.panel = ProjectorPanel(self)  # Obligatory
+        self.images_panel = ImagesPanel(self)
+        self.video_panel = VLCPanel(self)
+        self.video_panel.Hide()
+
+        self.sizer = wx.BoxSizer()
+        self.sizer.Add(self.images_panel, 1, wx.EXPAND)
+        self.sizer.Add(self.video_panel, 1, wx.EXPAND)
+        self.SetSizer(self.sizer)
 
         self.ShowFullScreen(True, wx.FULLSCREEN_ALL)
+
+        handle = self.video_panel.GetHandle()
+        if sys.platform.startswith('linux'):  # for Linux using the X Server
+            parent.player.set_xwindow(handle)
+        elif sys.platform == "win32":  # for Windows
+            parent.player.set_hwnd(handle)
+        elif sys.platform == "darwin":  # for MacOS
+            parent.player.set_nsobject(handle)
 
     def load_zad(self, file_path, fit=True):
         img = wx.Image(file_path, wx.BITMAP_TYPE_ANY)
         if fit:
             w, h = img.GetWidth(), img.GetHeight()
-            max_w, max_h = self.panel.image_ctrl.GetSize()
+            max_w, max_h = self.images_panel.image_ctrl.GetSize()
             target_ratio = min(max_w / float(w), max_h / float(h))
             new_w, new_h = [int(x * target_ratio) for x in (w, h)]
             img = img.Scale(new_w, new_h)
-        self.panel.image_ctrl.SetBitmap(wx.BitmapFromImage(img))
-        self.panel.main_sizer.Layout()
+        self.images_panel.image_ctrl.SetBitmap(wx.BitmapFromImage(img))
+        self.images_panel.main_sizer.Layout()
+
+    def switch_to_video(self, e=None):
+        self.video_panel.Show()
+        self.images_panel.Hide()
+
+    def switch_to_images(self, e=None):
+        self.video_panel.Hide()
+        self.images_panel.Show()
 
     def no_show(self):
-        self.panel.image_ctrl.SetBitmap(wx.BitmapFromImage(wx.EmptyImage(*self.panel.image_ctrl.GetSize())))
-        self.panel.main_sizer.Layout()
+        self.images_panel.image_ctrl.SetBitmap(
+            wx.BitmapFromImage(wx.EmptyImage(*self.images_panel.image_ctrl.GetSize())))
+        self.images_panel.main_sizer.Layout()
