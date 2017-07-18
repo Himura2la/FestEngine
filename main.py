@@ -17,6 +17,7 @@ background_zad = None
 proj_window_shape = (700, 500)
 filename_re = "^(?P<nom>\w{1,2})( \[(?P<start>[GW]{1})\])?\. (?P<name>.*?)(\(.(?P<num>\d{1,3})\))?$"
 
+
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title, size=(700, 500))
@@ -52,9 +53,13 @@ class MainFrame(wx.Frame):
 
         # --- Play ---
         menu_play = wx.Menu()
+        menu_no_show = menu_play.Append(wx.ID_ANY, "&No show\tEsc")
         menu_play_zad = menu_play.Append(wx.ID_ANY, "&Show ZAD\tF1")
+        self.Bind(wx.EVT_MENU, self.no_show, menu_no_show)
         self.Bind(wx.EVT_MENU, self.show_zad, menu_play_zad)
+        accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, menu_no_show.GetId()))
         accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F1, menu_play_zad.GetId()))
+
         menu_bar.Append(menu_play, "&Play")
 
         self.SetMenuBar(menu_bar)
@@ -65,7 +70,7 @@ class MainFrame(wx.Frame):
         self.grid = wx.grid.Grid(self)
         self.grid.CreateGrid(1, 1)
         self.grid.HideRowLabels()
-        # self.grid.HideColLabels()
+        self.grid.DisableDragRowSize()
         self.grid.SetColLabelSize(20)
         self.grid.SetCellValue(0, 0, "Hello World")
         self.grid.SetSelectionMode(wx.grid.Grid.wxGridSelectRows)
@@ -128,6 +133,7 @@ class MainFrame(wx.Frame):
         if not isinstance(self.proj_win, ProjectorWindow):
             self.proj_win = ProjectorWindow(self, self.settings[Config.PROJECTOR_SCREEN])
         self.proj_win.Show()
+        self.Raise()
 
     def destroy_proj_win(self, e=None):
         if isinstance(self.proj_win, ProjectorWindow):
@@ -194,17 +200,19 @@ class MainFrame(wx.Frame):
             self.image_status("Showing: %s" % self.items[id]['name'])
             self.status("ZAD Fired!")
         except IndexError:
-            self.status("No zad for '%s'" % self.items[id]['name'])
-            self.clear_zad()
+            self.clear_zad("No zad for '%s'" % self.items[id]['name'])
 
-    def clear_zad(self):
+    def no_show(self, e=None):
+        self.clear_zad("No show")
+
+    def clear_zad(self, main_status="ZAD Cleared!"):
         if background_zad:
             self.proj_win.load_zad(background_zad, True)
             self.image_status("Background")
         else:
             self.proj_win.no_show()
             self.image_status("No show")
-        self.status("ZAD Cleared!")
+        self.status(main_status)
 
 if __name__ == "__main__":
     app = wx.App(False)
