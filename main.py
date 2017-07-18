@@ -67,7 +67,15 @@ class MainFrame(wx.Frame):
         self.grid.HideRowLabels()
         # self.grid.HideColLabels()
         self.grid.SetColLabelSize(20)
-        self.grid.SetCellValue(0, 0, "Hello")
+        self.grid.SetCellValue(0, 0, "Hello World")
+        self.grid.SetSelectionMode(wx.grid.Grid.wxGridSelectRows)
+
+        def select_row(e):
+            self.Unbind(wx.grid.EVT_GRID_RANGE_SELECT)
+            self.grid.SelectRow(e.Row if hasattr(e, 'Row') else e.TopRow)
+            self.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
+        self.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
+        self.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
 
         main_sizer.Add(self.grid, 1, wx.EXPAND)
 
@@ -144,13 +152,14 @@ class MainFrame(wx.Frame):
         #     d.ShowModal()
         #     d.Destroy()
 
-        self.grid_set_shape(len(self.items), 6)
+        self.grid_set_shape(len(self.items), 7)
         self.grid.SetColLabelValue(0, 'ID')
         self.grid.SetColLabelValue(1, 'nom')
         self.grid.SetColLabelValue(2, 'start')
         self.grid.SetColLabelValue(3, 'name')
         self.grid.SetColLabelValue(4, 'files')
         self.grid.SetColLabelValue(5, 'num')
+        self.grid.SetColLabelValue(6, 'notes')
 
         i = 0
         for id, files in sorted(self.items.items()):
