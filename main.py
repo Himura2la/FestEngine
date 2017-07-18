@@ -1,18 +1,21 @@
 #!python
 # -*- coding: utf-8 -*-
 
-import wx
-import wx.grid
-import webbrowser
 import os
 import re
+import webbrowser
+
+import wx
+import wx.grid
+import vlc
+
 from projector import ProjectorWindow
 from settings import SettingsDialog
 from strings import Config
 
 # TODO: Move this to settings or calculate
-zad_path = "H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
-mp3_path = "H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered"
+zad_path = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
+mp3_path = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered"
 background_zad = None
 filename_re = "^(?P<nom>\w{1,2})( \[(?P<start>[GW]{1})\])?\. (?P<name>.*?)(\(.(?P<num>\d{1,3})\))?$"
 
@@ -52,14 +55,17 @@ class MainFrame(wx.Frame):
 
         # --- Play ---
         menu_play = wx.Menu()
-        menu_no_show = menu_play.Append(wx.ID_ANY, "&No show\tEsc")
-        menu_play_zad = menu_play.Append(wx.ID_ANY, "&Show ZAD\tF1")
+        menu_no_show = menu_play.Append(wx.ID_ANY, "&No Show\tEsc")
+        menu_show_zad = menu_play.Append(wx.ID_ANY, "&Show zad\tF1")
+        menu_play_mp3 = menu_play.Append(wx.ID_ANY, "&Play\tF2")
         self.Bind(wx.EVT_MENU, self.no_show, menu_no_show)
-        self.Bind(wx.EVT_MENU, self.show_zad, menu_play_zad)
+        self.Bind(wx.EVT_MENU, self.show_zad, menu_show_zad)
+        self.Bind(wx.EVT_MENU, self.play, menu_play_mp3)
         accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, menu_no_show.GetId()))
-        accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F1, menu_play_zad.GetId()))
+        accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F1, menu_show_zad.GetId()))
+        accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F2, menu_play_mp3.GetId()))
 
-        menu_bar.Append(menu_play, "&Play")
+        menu_bar.Append(menu_play, "&Fire")
 
         self.SetMenuBar(menu_bar)
 
@@ -202,7 +208,8 @@ class MainFrame(wx.Frame):
             self.clear_zad("No zad for '%s'" % self.items[id]['name'])
 
     def no_show(self, e=None):
-        self.clear_zad("No show")
+        if isinstance(self.proj_win, ProjectorWindow):
+            self.clear_zad("No show")
 
     def clear_zad(self, main_status="ZAD Cleared!"):
         if background_zad:
@@ -212,6 +219,22 @@ class MainFrame(wx.Frame):
             self.proj_win.no_show()
             self.image_status("No show")
         self.status(main_status)
+
+    def play(self, e=None):
+        id = self.grid.GetCellValue(self.grid.GetGridCursorRow(), 0)
+        try:
+            file_path = filter(lambda a: a.rsplit('.', 1)[1] in {'mp3', 'wav', 'mp4', 'avi'},
+                               self.items[id]['files'])[0]
+
+            # TODO: Extend!
+            p = vlc.MediaPlayer(file_path)
+            p.play()
+
+            self.sound_status("Playing: '%s'" % self.items[id]['name'])
+        except IndexError:
+            self.sound_status("Nothing to play for '%s'" % self.items[id]['name'])
+
+
 
 if __name__ == "__main__":
     app = wx.App(False)
