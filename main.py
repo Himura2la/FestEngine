@@ -3,6 +3,7 @@
 
 import os
 import re
+import time
 import webbrowser
 
 import wx
@@ -59,11 +60,13 @@ class MainFrame(wx.Frame):
         # --- Play ---
         menu_play = wx.Menu()
         menu_no_show = menu_play.Append(wx.ID_ANY, "&No Show\tEsc")
-        menu_show_zad = menu_play.Append(wx.ID_ANY, "&Show zad\tF1")
+        menu_show_zad = menu_play.Append(wx.ID_ANY, "Sho&w zad\tF1")
         menu_play_mp3 = menu_play.Append(wx.ID_ANY, "&Play\tF2")
+        menu_stop_mp3 = menu_play.Append(wx.ID_ANY, "&Stop")
         self.Bind(wx.EVT_MENU, self.no_show, menu_no_show)
         self.Bind(wx.EVT_MENU, self.show_zad, menu_show_zad)
         self.Bind(wx.EVT_MENU, self.play, menu_play_mp3)
+        self.Bind(wx.EVT_MENU, self.stop, menu_stop_mp3)
         accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, menu_no_show.GetId()))
         accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F1, menu_show_zad.GetId()))
         accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F2, menu_play_mp3.GetId()))
@@ -93,6 +96,7 @@ class MainFrame(wx.Frame):
         main_sizer.Add(self.grid, 1, wx.EXPAND)
 
         # TODO: Progress bar
+        # TODO: Search
 
         self.SetSizer(main_sizer)
 
@@ -108,6 +112,11 @@ class MainFrame(wx.Frame):
 
         self.vlc_instance = vlc.Instance()
         self.player = self.vlc_instance.media_player_new()
+        self.player.audio_set_volume(100)
+
+        self.load_data()
+
+# ---------------------------------------------------------------------------------------------------------------------
 
     def status(self, text):
         self.status_bar.SetStatusText(text, 0)
@@ -156,7 +165,7 @@ class MainFrame(wx.Frame):
         if isinstance(self.proj_win, ProjectorWindow):
             self.proj_win.Close(True)
 
-    def load_data(self, e):
+    def load_data(self, e=None):
         zad_file_names = os.listdir(zad_path)
         mp3_file_names = os.listdir(mp3_path)
 
@@ -193,12 +202,13 @@ class MainFrame(wx.Frame):
             self.items[id] = {'name': name,
                               'files': files,
                               'start': start}
-
             self.grid.SetCellValue(i, 0, id)
             self.grid.SetCellValue(i, 1, match.group('nom'))
             self.grid.SetCellValue(i, 2, start)
             self.grid.SetCellValue(i, 3, match.group('name'))
             self.grid.SetCellValue(i, 4, exts)
+
+            # TODO: Paint
 
             if match.group('num'):
                 self.grid.SetCellValue(i, 5, match.group('num'))
@@ -223,10 +233,7 @@ class MainFrame(wx.Frame):
     def no_show(self, e=None):
         if isinstance(self.proj_win, ProjectorWindow):
             self.clear_zad("No show")
-
-        # TODO: Fade out
-        self.player.stop()
-        self.sound_status("Stopped")
+        self.stop()
 
     def clear_zad(self, main_status="ZAD Cleared!"):
         if background_zad:
@@ -251,12 +258,25 @@ class MainFrame(wx.Frame):
                 if file_path.rsplit('.', 1)[1] not in {'mp3', 'wav'}:
                     self.ensure_proj_win()
                     self.proj_win.switch_to_video()
-                self.sound_status("Playing: '%s'" % self.items[id]['name'])
+                time.sleep(0.05)
+                self.player.audio_set_volume(100)
+                self.sound_status("Playing... Vol: %d" % self.player.audio_get_volume())
             else:
                 self.sound_status("ERROR PLAYING FILE!!!")
 
         except IndexError:
             self.sound_status("Nothing to play for '%s'" % self.items[id]['name'])
+
+    def stop(self, e=None, fade_out=False):
+        if fade_out:
+            for i in range(99, 0, -1):
+                self.player.audio_set_volume(i)
+                self.sound_status("Fading out... Vol: %d" % self.player.audio_get_volume())
+                time.sleep(0.01)
+            self.player.audio_set_volume(100)
+
+        self.sound_status("Stopped. Vol: %d" % self.player.audio_get_volume())
+        self.player.stop()
 
 if __name__ == "__main__":
     app = wx.App(False)
