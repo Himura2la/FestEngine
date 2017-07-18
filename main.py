@@ -14,7 +14,6 @@ from strings import Config
 zad_path = "H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
 mp3_path = "H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered"
 background_zad = None
-proj_window_shape = (700, 500)
 filename_re = "^(?P<nom>\w{1,2})( \[(?P<start>[GW]{1})\])?\. (?P<name>.*?)(\(.(?P<num>\d{1,3})\))?$"
 
 
