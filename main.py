@@ -1,8 +1,11 @@
 #!python
+# -*- coding: utf-8 -*-
+
 import wx
 import wx.grid
 import webbrowser
 import os
+import re
 from projector import ProjectorWindow
 from settings import SettingsDialog
 from strings import Config
@@ -12,6 +15,7 @@ zad_path = "H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
 mp3_path = "H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered"
 proj_window_shape = (700, 500)
 
+filename_re = r"(?P<id>\d{3}) (?P<nom>\w{1,2})(?P<start> \w{0,1})\. (?P<name>.*?)\(?P<num>№(\d{1,3})\)\.(?P<ext>\w{3})"
 
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
@@ -19,6 +23,7 @@ class MainFrame(wx.Frame):
         accelerator_table = []
         self.proj_win = None
         self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1}  # The last one
+        self.items = None
 
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
@@ -112,15 +117,44 @@ class MainFrame(wx.Frame):
             self.proj_win.Close(True)
 
     def load_data(self, e):
-        self.read_zad()
+        zad_file_names = os.listdir(zad_path)
+        mp3_file_names = os.listdir(mp3_path)
 
-    def read_zad(self):
-        file_names = os.listdir(zad_path)
-        self.grid_set_shape(len(file_names), 1)
-        for i in range(len(file_names)):
-            self.grid.SetCellValue(i, 0, file_names[i])
-            self.grid.SetReadOnly(i, 0)
+        self.items = {a.split(' ', 1)[0]: {os.path.join(zad_path, a)} for a in zad_file_names}
+        for file_name in mp3_file_names:
+            id = file_name.split(' ', 1)[0]
+            path = os.path.join(mp3_path, file_name)
+            if id in self.items:
+                self.items[id].add(path)
+            else:
+                self.items[id] = {path}
+
+        # if len(items_all) != len(mp3_file_names):
+        #     msg = "ZAD files: %d\nmp3 files: %d" % (len(zad_file_names), len(mp3_file_names))
+        #     d = wx.MessageDialog(self, msg, "Files integrity error", wx.OK | wx.ICON_WARNING)
+        #     d.ShowModal()
+        #     d.Destroy()
+
+        ids, files = zip(*sorted(self.items.items()))
+        noms = []
+        names = []
+        exts = []
+        for f in files:
+            name = max([a.rsplit('\\', 1)[1].split(' ', 1)[1].rsplit('.', 1)[0] for a in f], key=len)
+            noms.append(name.split('.', 1)[0])
+            names.append(name)
+            exts.append(", ".join(sorted([a.rsplit('.', 1)[1] for a in f])))
+
+        self.grid_set_shape(len(self.items), 4)
+        for i in range(len(self.items)):
+            self.grid.SetCellValue(i, 0, ids[i])
+            self.grid.SetCellValue(i, 0, noms[i])
+            self.grid.SetCellValue(i, 1, names[i])
+            self.grid.SetCellValue(i, 2, exts[i])
+            [self.grid.SetReadOnly(i, a) for a in range(3)]
         self.grid.AutoSizeColumns()
+
+
 
     def show_zad(self, e):
         self.create_proj_win()
