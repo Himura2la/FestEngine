@@ -62,7 +62,7 @@ class MainFrame(wx.Frame):
         menu_no_show = menu_play.Append(wx.ID_ANY, "&No Show\tEsc")
         menu_show_zad = menu_play.Append(wx.ID_ANY, "Sho&w zad\tF1")
         menu_play_mp3 = menu_play.Append(wx.ID_ANY, "&Play\tF2")
-        menu_stop_mp3 = menu_play.Append(wx.ID_ANY, "&Stop")
+        menu_stop_mp3 = menu_play.Append(wx.ID_ANY, "&Fade out")
         self.Bind(wx.EVT_MENU, self.no_show, menu_no_show)
         self.Bind(wx.EVT_MENU, self.show_zad, menu_show_zad)
         self.Bind(wx.EVT_MENU, self.play, menu_play_mp3)
@@ -233,7 +233,7 @@ class MainFrame(wx.Frame):
     def no_show(self, e=None):
         if isinstance(self.proj_win, ProjectorWindow):
             self.clear_zad("No show")
-        self.stop()
+        self.stop(False)
 
     def clear_zad(self, main_status="ZAD Cleared!"):
         if background_zad:
@@ -267,7 +267,7 @@ class MainFrame(wx.Frame):
         except IndexError:
             self.sound_status("Nothing to play for '%s'" % self.items[id]['name'])
 
-    def stop(self, e=None, fade_out=False):
+    def stop(self, e=None, fade_out=True):
         if fade_out:
             for i in range(99, 0, -1):
                 self.player.audio_set_volume(i)
