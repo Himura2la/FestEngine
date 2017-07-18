@@ -64,7 +64,8 @@ class MainFrame(wx.Frame):
         self.grid = wx.grid.Grid(self)
         self.grid.CreateGrid(1, 1)
         self.grid.HideRowLabels()
-        self.grid.HideColLabels()
+        # self.grid.HideColLabels()
+        self.grid.SetColLabelSize(20)
         self.grid.SetCellValue(0, 0, "Hello")
 
         main_sizer.Add(self.grid, 1, wx.EXPAND)
@@ -134,24 +135,35 @@ class MainFrame(wx.Frame):
         #     d.ShowModal()
         #     d.Destroy()
 
-        self.grid_set_shape(len(self.items), 5)
+        self.grid_set_shape(len(self.items), 6)
+        self.grid.SetColLabelValue(0, 'ID')
+        self.grid.SetColLabelValue(1, 'nom')
+        self.grid.SetColLabelValue(2, 'start')
+        self.grid.SetColLabelValue(3, 'name')
+        self.grid.SetColLabelValue(4, 'files')
+        self.grid.SetColLabelValue(5, 'num')
+
         i = 0
         for id, files in sorted(self.items.items()):
             name = max([a.rsplit('\\', 1)[1].split(' ', 1)[1].rsplit('.', 1)[0] for a in files], key=len)
             exts = ", ".join(sorted([a.rsplit('.', 1)[1] for a in files]))
             match = re.search(filename_re, name)
-
+            start = 'point' if match.group('start') == 'G' else 'instant' if match.group('start') else 'unknown'
+            self.items[id] = {'name': name,
+                              'files': files,
+                              'start': start}
             self.grid.SetCellValue(i, 0, id)
             self.grid.SetCellValue(i, 1, match.group('nom'))
-            self.grid.SetCellValue(i, 2, match.group('name'))
-            self.grid.SetCellValue(i, 3, exts)
+            self.grid.SetCellValue(i, 2, start)
+            self.grid.SetCellValue(i, 3, match.group('name'))
+            self.grid.SetCellValue(i, 4, exts)
             if match.group('num'):
-                self.grid.SetCellValue(i, 4, match.group('num'))
-            [self.grid.SetReadOnly(i, a) for a in range(5)]
+                self.grid.SetCellValue(i, 5, match.group('num'))
+            [self.grid.SetReadOnly(i, a) for a in range(6)]
             i += 1
+
         self.grid.AutoSizeColumns()
-
-
+        self.status("Loaded %d items" % i)
 
     def show_zad(self, e):
         self.create_proj_win()
