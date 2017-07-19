@@ -95,8 +95,10 @@ class MainFrame(wx.Frame):
         self.toolbar.Add(self.fade_out_btn, 0)
         self.fade_out_btn.Bind(wx.EVT_BUTTON, self.stop)
 
-        self.play_time = wx.Gauge(self, range=1, size=(-1, 20))
-        self.toolbar.Add(self.play_time, 1)
+        self.play_bar = wx.Gauge(self, range=1, size=(-1, 20))
+        self.toolbar.Add(self.play_bar, 1)
+        self.play_time = wx.StaticText(self, label='Stopped', size=(50, -1), style=wx.ALIGN_CENTER)
+        self.toolbar.Add(self.play_time, 0, wx.ALIGN_CENTER_VERTICAL)
 
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.on_timer, self.timer)
@@ -342,8 +344,9 @@ class MainFrame(wx.Frame):
                 time.sleep(0.01)
             self.fade_out_btn.SetLabel(label)
         self.player.stop()
-        self.play_time.SetValue(0)
+        self.play_bar.SetValue(0)
         self.get_player_state(True)
+        self.play_time.SetLabel('Stopped')
 
     def set_vol(self, e=None, vol=100):
         value = e.Int if e else vol
@@ -368,13 +371,16 @@ class MainFrame(wx.Frame):
         return state_int
 
     def on_timer(self, e):
-        self.play_time.SetRange(self.player.get_length())
-        self.play_time.SetValue(self.player.get_time())
+        length, time = self.player.get_length(), self.player.get_time()
+        self.play_bar.SetRange(length-1000)  # FIXME: Don't know why, but it does not reach the end
+        self.play_bar.SetValue(time)
+
+        self.play_time.SetLabel('-%02d:%02d' % divmod(length/1000 - time/1000, 60))
 
         state = self.get_player_state(True)
         if state not in range(5):
             self.timer.Stop()
-            self.play_time.SetValue(0)
+            self.play_bar.SetValue(0)
 
 if __name__ == "__main__":
     app = wx.App(False)
