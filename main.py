@@ -14,10 +14,11 @@ from projector import ProjectorWindow
 from settings import SettingsDialog
 from strings import Config
 
+# TODO: Store configuration
 # TODO: Move this to settings or calculate
 zad_path = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
 mp3_path = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered"
-background_zad = None
+background_zad_path = None
 filename_re = "^(?P<nom>\w{1,2})( \[(?P<start>[GW]{1})\])?\. (?P<name>.*?)(\(.(?P<num>\d{1,3})\))?$"
 
 
@@ -36,8 +37,17 @@ class MainFrame(wx.Frame):
         menu_file = wx.Menu()
         self.Bind(wx.EVT_MENU, self.load_data,
                   menu_file.Append(wx.ID_ANY, "&Load Data"))
+        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(mp3_path)),
+                  menu_file.Append(wx.ID_ANY, "&Open mp3 folder"))
+        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(zad_path)),
+                  menu_file.Append(wx.ID_ANY, "&Open zad folder"))
+
+        menu_file.AppendSeparator()
+
         self.Bind(wx.EVT_MENU, self.on_settings,
                   menu_file.Append(wx.ID_ANY, "&Setings"))
+
+        menu_file.AppendSeparator()
 
         self.Bind(wx.EVT_MENU, lambda _: webbrowser.open('https://github.com/Himura2la'),
                   menu_file.Append(wx.ID_ABOUT, "&About"))
@@ -265,10 +275,10 @@ class MainFrame(wx.Frame):
         try:
             file_path = filter(lambda a: a.rsplit('.', 1)[1] in {'jpg', 'png'}, self.items[id]['files'])[0]
             self.proj_win.load_zad(file_path, True)
-            self.image_status("Showing: %s" % self.items[id]['name'])
+            self.image_status("Showing ID %s" % id)
             self.status("ZAD Fired!")
         except IndexError:
-            self.status("No zad for '%s'" % self.items[id]['name'])
+            self.status("No zad for ID %s" % id)
             self.clear_zad()
 
     def no_show(self, e=None):
@@ -278,8 +288,8 @@ class MainFrame(wx.Frame):
         self.status("FULL STOP!")
 
     def clear_zad(self):
-        if background_zad:
-            self.proj_win.load_zad(background_zad, True)
+        if background_zad_path:
+            self.proj_win.load_zad(background_zad_path, True)
             self.image_status("Background")
         else:
             self.proj_win.no_show()
@@ -297,7 +307,6 @@ class MainFrame(wx.Frame):
 
             if self.player.play() != -1:
                 self.get_player_state(True)
-                self.play_time.SetRange(self.player.get_length())
                 self.timer.Start(500)
                 self.fade_out_btn.Enable(True)
 
@@ -323,25 +332,26 @@ class MainFrame(wx.Frame):
     def stop(self, e=None, fade_out=True):
         self.fade_out_btn.Enable(False)
         self.timer.Stop()
-        self.player_status("Fading out...")
         if fade_out:
             label = self.fade_out_btn.GetLabel()
             for i in range(self.player.audio_get_volume(), 0, -1):
-                self.set_vol(vol=i, status='Fading out... ')
+                self.set_vol(vol=i)
+                vol_msg = 'Vol: %d' % self.player.audio_get_volume()
+                self.fade_out_btn.SetLabel(vol_msg)
+                self.player_status('Fading out... ' + vol_msg)
                 time.sleep(0.01)
             self.fade_out_btn.SetLabel(label)
         self.player.stop()
         self.play_time.SetValue(0)
         self.get_player_state(True)
 
-    def set_vol(self, e=None, vol=100, status=''):
+    def set_vol(self, e=None, vol=100):
         value = e.Int if e else vol
         if self.player.audio_set_volume(value) == -1:
             self.player_status("Failed to set volume")
         real_vol = self.player.audio_get_volume()
         if real_vol < 0:
             self.player.audio_set_mute(False)
-        self.player_status(status + "Vol: %d" % real_vol)
 
     def get_player_state(self, set_status_bar=False):
         state_int = self.player.get_state()
@@ -358,7 +368,9 @@ class MainFrame(wx.Frame):
         return state_int
 
     def on_timer(self, e):
+        self.play_time.SetRange(self.player.get_length())
         self.play_time.SetValue(self.player.get_time())
+
         state = self.get_player_state(True)
         if state not in range(5):
             self.timer.Stop()
