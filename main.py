@@ -14,7 +14,7 @@ from projector import ProjectorWindow
 from settings import SettingsDialog
 from strings import Config
 
-# TODO: Store configuration
+# TODO: Store configuration in a file
 # TODO: Move this to settings or calculate
 zad_path = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
 mp3_path = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered"
@@ -25,6 +25,7 @@ filename_re = "^(?P<nom>\w{1,2})( \[(?P<start>[GW]{1})\])?\. (?P<name>.*?)(\(.(?
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title, size=(700, 500))
+        self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNFACE))
         accelerator_table = []
         self.proj_win = None
         self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1}  # The last one
@@ -83,28 +84,29 @@ class MainFrame(wx.Frame):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.toolbar = wx.BoxSizer(wx.HORIZONTAL)
+        toolbar_base_height = 20
 
         self.toolbar.Add(wx.StaticText(self, label=' VOL '), 0, wx.ALIGN_CENTER_VERTICAL)
-        self.vol_control = wx.SpinCtrl(self, value='-1', size=(50, 20))
-        self.toolbar.Add(self.vol_control, 0)
+        self.vol_control = wx.SpinCtrl(self, value='-1', size=(50, toolbar_base_height))
+        self.toolbar.Add(self.vol_control, 0, wx.ALIGN_CENTER_VERTICAL)
         self.vol_control.SetRange(-1, 200)
         self.Bind(wx.EVT_SPINCTRL, self.set_vol, self.vol_control)
 
-        self.fade_out_btn = wx.Button(self, label="Fade out", size=(70, 20))
+        self.fade_out_btn = wx.Button(self, label="Fade out", size=(70, toolbar_base_height + 2))
         self.fade_out_btn.Enable(False)
         self.toolbar.Add(self.fade_out_btn, 0)
         self.fade_out_btn.Bind(wx.EVT_BUTTON, self.stop)
 
-        self.play_bar = wx.Gauge(self, range=1, size=(-1, 20))
-        self.toolbar.Add(self.play_bar, 1)
+        self.play_bar = wx.Gauge(self, range=1, size=(-1, toolbar_base_height))
+        self.toolbar.Add(self.play_bar, 1, wx.ALIGN_CENTER_VERTICAL)
         self.play_time = wx.StaticText(self, label='Stopped', size=(50, -1), style=wx.ALIGN_CENTER)
         self.toolbar.Add(self.play_time, 0, wx.ALIGN_CENTER_VERTICAL)
 
-        self.timer = wx.Timer(self)
+        self.timer = wx.Timer(self)  # Events make the app unstable. Plus we can update not too often
         self.Bind(wx.EVT_TIMER, self.on_timer, self.timer)
 
-        self.vid_btn = wx.ToggleButton(self, label='VID', size=(35, 20))
-        self.img_btn = wx.ToggleButton(self, label='IMG', size=(35, 20))
+        self.vid_btn = wx.ToggleButton(self, label='VID', size=(35, toolbar_base_height + 2))
+        self.img_btn = wx.ToggleButton(self, label='IMG', size=(35, toolbar_base_height + 2))
         self.vid_btn.Enable(False)
         self.img_btn.Enable(False)
         self.toolbar.Add(self.vid_btn, 0)
@@ -128,7 +130,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
 
         main_sizer.Add(self.toolbar, 0, wx.EXPAND)
-        main_sizer.Add(self.grid, 1, wx.EXPAND)
+        main_sizer.Add(self.grid, 1, wx.EXPAND | wx.TOP, border=1)
 
         # TODO: Search
 
