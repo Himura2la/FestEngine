@@ -14,8 +14,7 @@ from projector import ProjectorWindow
 from settings import SettingsDialog
 from strings import Config
 
-# TODO: Store configuration in a file
-# TODO: Move this to settings or calculate
+# TODO: Move this to settings
 zad_path = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
 mp3_path = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered"
 background_zad_path = None
@@ -131,8 +130,6 @@ class MainFrame(wx.Frame):
 
         main_sizer.Add(self.toolbar, 0, wx.EXPAND)
         main_sizer.Add(self.grid, 1, wx.EXPAND | wx.TOP, border=1)
-
-        # TODO: Search
 
         self.SetSizer(main_sizer)
 
@@ -262,8 +259,6 @@ class MainFrame(wx.Frame):
             self.grid.SetCellValue(i, 3, match.group('name'))
             self.grid.SetCellValue(i, 4, exts)
 
-            # TODO: Paint
-
             if match.group('num'):
                 self.grid.SetCellValue(i, 5, match.group('num'))
             [self.grid.SetReadOnly(i, a) for a in range(6)]
@@ -304,7 +299,6 @@ class MainFrame(wx.Frame):
         try:
             file_path = filter(lambda a: a.rsplit('.', 1)[1] in {'mp3', 'wav', 'mp4', 'avi'},
                                self.items[id]['files'])[0]
-            # TODO: What if video and audio?
 
             media = self.vlc_instance.media_new(file_path)
             self.player.set_media(media)
@@ -319,7 +313,6 @@ class MainFrame(wx.Frame):
                 if file_path.rsplit('.', 1)[1] not in {'mp3', 'wav'}:
                     self.ensure_proj_win()
                     self.switch_to_vid()
-                    # TODO: Switch back after video ends
 
                 while self.player.audio_get_volume() != self.vol_control.GetValue():
                     self.player.audio_set_mute(False)
@@ -374,7 +367,7 @@ class MainFrame(wx.Frame):
 
     def on_timer(self, e):
         length, time = self.player.get_length(), self.player.get_time()
-        self.play_bar.SetRange(length-1000)  # FIXME: Don't know why, but it does not reach the end
+        self.play_bar.SetRange(length-1000)  # FIXME: Don't know why it does not reach the end
         self.play_bar.SetValue(time)
 
         self.play_time.SetLabel('-%02d:%02d' % divmod(length/1000 - time/1000, 60))
@@ -383,6 +376,7 @@ class MainFrame(wx.Frame):
         if state not in range(5):
             self.timer.Stop()
             self.play_bar.SetValue(0)
+            self.switch_to_img()
 
 if __name__ == "__main__":
     app = wx.App(False)
