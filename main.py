@@ -80,10 +80,16 @@ class MainFrame(wx.Frame):
         self.vol_control.SetRange(-1, 200)
         self.Bind(wx.EVT_SPINCTRL, self.set_vol, self.vol_control)
 
-        self.fade_out_btn = wx.Button(self, label="Fade out", size=(100, 20))
+        self.fade_out_btn = wx.Button(self, label="Fade out", size=(70, 20))
         self.fade_out_btn.Enable(False)
         self.toolbar.Add(self.fade_out_btn, 0)
         self.fade_out_btn.Bind(wx.EVT_BUTTON, self.stop)
+
+        self.play_time = wx.Gauge(self, range=1, size=(-1, 20))
+        self.toolbar.Add(self.play_time, 1)
+
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.on_timer, self.timer)
 
         self.vid_btn = wx.ToggleButton(self, label='VID', size=(35, 20))
         self.img_btn = wx.ToggleButton(self, label='IMG', size=(35, 20))
@@ -105,22 +111,20 @@ class MainFrame(wx.Frame):
             self.Unbind(wx.grid.EVT_GRID_RANGE_SELECT)
             self.grid.SelectRow(e.Row if hasattr(e, 'Row') else e.TopRow)
             self.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
+
         self.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
         self.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
 
         main_sizer.Add(self.toolbar, 0, wx.EXPAND)
         main_sizer.Add(self.grid, 1, wx.EXPAND)
 
-        # TODO: Progress bar
         # TODO: Search
 
         self.SetSizer(main_sizer)
 
         # ------------------ Status Bar ------------------
         self.status_bar = self.CreateStatusBar(3)
-
         self.status("Ready")
-
         self.SetAcceleratorTable(wx.AcceleratorTable(accelerator_table))
         self.Show(True)
 
@@ -131,10 +135,13 @@ class MainFrame(wx.Frame):
         self.player.audio_set_volume(100)
         self.player.audio_set_mute(False)
         self.vol_control.SetValue(self.player.audio_get_volume())
+        self.get_player_state(True)
+
+        self.grid.SetFocus()
 
         self.load_data()
 
-# ---------------------------------------------------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------------------------------------------------
 
     def grid_set_shape(self, new_rows, new_cols):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
@@ -153,7 +160,7 @@ class MainFrame(wx.Frame):
     def image_status(self, text):
         self.status_bar.SetStatusText(text, 1)
 
-    def sound_status(self, text):
+    def player_status(self, text):
         self.status_bar.SetStatusText(text, 2)
 
     def on_exit(self, e):
@@ -261,21 +268,22 @@ class MainFrame(wx.Frame):
             self.image_status("Showing: %s" % self.items[id]['name'])
             self.status("ZAD Fired!")
         except IndexError:
-            self.clear_zad("No zad for '%s'" % self.items[id]['name'])
+            self.status("No zad for '%s'" % self.items[id]['name'])
+            self.clear_zad()
 
     def no_show(self, e=None):
         if isinstance(self.proj_win, ProjectorWindow):
-            self.clear_zad("No show")
+            self.clear_zad()
         self.stop(fade_out=False)
+        self.status("FULL STOP!")
 
-    def clear_zad(self, main_status="ZAD Cleared!"):
+    def clear_zad(self):
         if background_zad:
             self.proj_win.load_zad(background_zad, True)
             self.image_status("Background")
         else:
             self.proj_win.no_show()
             self.image_status("No show")
-        self.status(main_status)
 
     def play(self, e=None):
         id = self.grid.GetCellValue(self.grid.GetGridCursorRow(), 0)
@@ -288,8 +296,12 @@ class MainFrame(wx.Frame):
             self.player.set_media(media)
 
             if self.player.play() != -1:
-                # Playing ...
+                self.get_player_state(True)
+                self.play_time.SetRange(self.player.get_length())
+                self.timer.Start(500)
                 self.fade_out_btn.Enable(True)
+
+                self.status("SOUND Fired!")
 
                 if file_path.rsplit('.', 1)[1] not in {'mp3', 'wav'}:
                     self.ensure_proj_win()
@@ -299,36 +311,58 @@ class MainFrame(wx.Frame):
                 while self.player.audio_get_volume() != self.vol_control.GetValue():
                     self.player.audio_set_mute(False)
                     self.player.audio_set_volume(self.vol_control.GetValue())
-                    self.sound_status("Trying to unmute...")
-                    print "Trying to set unmute..."
+                    self.player_status("Trying to unmute...")
                     time.sleep(0.05)
-                self.sound_status("Playing...")
+
             else:
-                self.sound_status("ERROR PLAYING FILE!!!")
+                self.player_status("ERROR PLAYING FILE!!!")
 
         except IndexError:
-            self.sound_status("Nothing to play for '%s'" % self.items[id]['name'])
+            self.player_status("Nothing to play for '%s'" % self.items[id]['name'])
 
     def stop(self, e=None, fade_out=True):
         self.fade_out_btn.Enable(False)
-        self.sound_status("Fading out...")
-        label = self.fade_out_btn.GetLabel()
+        self.timer.Stop()
+        self.player_status("Fading out...")
         if fade_out:
+            label = self.fade_out_btn.GetLabel()
             for i in range(self.player.audio_get_volume(), 0, -1):
                 self.set_vol(vol=i, status='Fading out... ')
                 time.sleep(0.01)
+            self.fade_out_btn.SetLabel(label)
         self.player.stop()
-        self.sound_status("Stopped")
-        self.fade_out_btn.SetLabel(label)
+        self.play_time.SetValue(0)
+        self.get_player_state(True)
 
     def set_vol(self, e=None, vol=100, status=''):
         value = e.Int if e else vol
         if self.player.audio_set_volume(value) == -1:
-            self.sound_status("Failed to set volume")
+            self.player_status("Failed to set volume")
         real_vol = self.player.audio_get_volume()
         if real_vol < 0:
             self.player.audio_set_mute(False)
-        self.sound_status(status + "Vol: %d" % real_vol)
+        self.player_status(status + "Vol: %d" % real_vol)
+
+    def get_player_state(self, set_status_bar=False):
+        state_int = self.player.get_state()
+        state_str = {0: 'Ready',
+                     1: 'Opening',
+                     2: 'Buffering',
+                     3: 'Playing...',
+                     4: 'Paused',
+                     5: 'Stopped',
+                     6: 'Ended',
+                     7: 'Error'}[state_int]
+        if set_status_bar:
+            self.player_status(state_str)
+        return state_int
+
+    def on_timer(self, e):
+        self.play_time.SetValue(self.player.get_time())
+        state = self.get_player_state(True)
+        if state not in range(5):
+            self.timer.Stop()
+            self.play_time.SetValue(0)
 
 if __name__ == "__main__":
     app = wx.App(False)
