@@ -65,8 +65,8 @@ class MainFrame(wx.Frame):
 
         # --- Data ---
         menu_data = wx.Menu()
-        self.Bind(wx.EVT_MENU, self.load_data,
-                  menu_data.Append(wx.ID_ANY, "&Load Data"))
+        self.load_data_item = menu_data.Append(wx.ID_ANY, "&Load Data")
+        self.Bind(wx.EVT_MENU, self.load_data, self.load_data_item)
 
         menu_data.AppendSeparator()
 
@@ -79,9 +79,10 @@ class MainFrame(wx.Frame):
         # --- Projector Window ---
         proj_win_menu = wx.Menu()
         self.Bind(wx.EVT_MENU, self.ensure_proj_win,
-                  proj_win_menu.Append(wx.ID_ANY, "&Create"))
-        self.Bind(wx.EVT_MENU, self.destroy_proj_win,
-                  proj_win_menu.Append(wx.ID_ANY, "&Destroy"))
+                  proj_win_menu.Append(wx.ID_ANY, "&Create/Show"))
+        self.destroy_proj_win_item = proj_win_menu.Append(wx.ID_ANY, "&Destroy")
+        self.destroy_proj_win_item.Enable(False)
+        self.Bind(wx.EVT_MENU, self.destroy_proj_win, self.destroy_proj_win_item)
         menu_bar.Append(proj_win_menu, "&Projector Window")
 
         # --- Play ---
@@ -165,12 +166,13 @@ class MainFrame(wx.Frame):
 
         # ----------------------- VLC ---------------------
 
+
         self.vlc_instance = vlc.Instance()
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(100)
         self.player.audio_set_mute(False)
         self.vol_control.SetValue(self.player.audio_get_volume())
-        self.get_player_state(True)
+        self.player_status("VLC v.%s: %s" % (vlc.libvlc_get_version(), self.get_player_state(return_str=True)))
 
         self.grid.SetFocus()
 
@@ -218,13 +220,17 @@ class MainFrame(wx.Frame):
             self.switch_to_zad()
         self.proj_win.Show()
         self.Raise()
+        self.destroy_proj_win_item.Enable(True)
 
     def destroy_proj_win(self, e=None):
         if not self.proj_win_exists():
             return
         self.proj_win.Close(True)
+        self.vid_btn.SetValue(False)
         self.vid_btn.Enable(False)
+        self.zad_btn.SetValue(False)
         self.zad_btn.Enable(False)
+        self.destroy_proj_win_item.Enable(False)
 
     def switch_to_vid(self, e=None):
         if not self.proj_win_exists():
@@ -317,6 +323,7 @@ class MainFrame(wx.Frame):
 
         self.grid.AutoSizeColumns()
         self.status("Loaded %d items" % i)
+        self.load_data_item.Enable(False)
 
     def on_grid_cell_changed(self, e):
         self.grid.Unbind(wx.grid.EVT_GRID_CELL_CHANGED)
@@ -428,7 +435,7 @@ class MainFrame(wx.Frame):
         if real_vol < 0:
             self.player.audio_set_mute(False)
 
-    def get_player_state(self, set_status_bar=False):
+    def get_player_state(self, set_status_bar=False, return_str=False):
         state_int = self.player.get_state()
         state_str = {0: 'Ready',
                      1: 'Opening',
@@ -440,7 +447,7 @@ class MainFrame(wx.Frame):
                      7: 'Error'}[state_int]
         if set_status_bar:
             self.player_status(state_str)
-        return state_int
+        return state_str if return_str else state_int
 
     def on_timer(self, e):
         length, time = self.player.get_length(), self.player.get_time()
