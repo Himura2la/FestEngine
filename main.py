@@ -5,6 +5,7 @@ import os
 import re
 import time
 import webbrowser
+import bisect
 
 import wx
 import wx.grid
@@ -12,7 +13,7 @@ import vlc
 
 from projector import ProjectorWindow
 from settings import SettingsDialog
-from strings import Config
+from constants import Config, Colors, Columns
 
 # TODO: Move this to settings
 zad_path = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
@@ -29,6 +30,7 @@ class MainFrame(wx.Frame):
         self.proj_win = None
         self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1}  # The last one
         self.items = None
+        self.grid_rows = None
 
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
@@ -228,7 +230,7 @@ class MainFrame(wx.Frame):
     def show_zad(self, e):
         self.ensure_proj_win()
         self.proj_win.switch_to_images()
-        id = self.grid.GetCellValue(self.grid.GetGridCursorRow(), 0)
+        id = self.get_id(self.grid.GetGridCursorRow())
         try:
             file_path = filter(lambda a: a.rsplit('.', 1)[1] in {'jpg', 'png'}, self.items[id]['files'])[0]
             self.proj_win.load_zad(file_path, True)
@@ -273,14 +275,12 @@ class MainFrame(wx.Frame):
         #     d.ShowModal()
         #     d.Destroy()
 
-        self.grid_set_shape(len(self.items), 7)
-        self.grid.SetColLabelValue(0, 'ID')
-        self.grid.SetColLabelValue(1, 'nom')
-        self.grid.SetColLabelValue(2, 'start')
-        self.grid.SetColLabelValue(3, 'name')
-        self.grid.SetColLabelValue(4, 'files')
-        self.grid.SetColLabelValue(5, 'num')
-        self.grid.SetColLabelValue(6, 'notes')
+        self.grid_rows = [Columns.ID, Columns.NOM, Columns.START, Columns.NAME,
+                          Columns.FILES, Columns.NUM, Columns.NOTES]
+
+        self.grid_set_shape(len(self.items), len(self.grid_rows))
+        for i in range(len(self.grid_rows)):
+            self.grid.SetColLabelValue(i, self.grid_rows[i])
 
         i = 0
         for id, files in sorted(self.items.items()):
@@ -306,10 +306,9 @@ class MainFrame(wx.Frame):
         self.status("Loaded %d items" % i)
 
     def on_grid_cell_changed(self, e):
-        id_label = 'ID'
-        notes_label = 'notes' # TODO: To strings
+        self.grid.Unbind(wx.grid.EVT_GRID_CELL_CHANGED)
 
-        if not self.grid.GetColLabelValue(e.Col) == notes_label:
+        if not self.grid.GetColLabelValue(e.Col) == Columns.NOTES:
             return
         note = self.grid.GetCellValue(e.Row, e.Col)
         match = re.search('>(\d{3}(\w)?)([^\w].*)?', note)  # ">234" or ">305a" or ">152 ??"
@@ -317,21 +316,39 @@ class MainFrame(wx.Frame):
             return
         new_id, _, note = match.groups()
 
-        row = {self.grid.GetColLabelValue(i): {'pos': i, 'val': self.grid.GetCellValue(e.Row, i)}
-               for i in range(self.grid.GetNumberCols())}
-        row[id_label] = new_id
-        row[notes_label] = note
+        row = {self.grid.GetColLabelValue(i): {'col': i, 'val': self.grid.GetCellValue(e.Row, i)}
+               for i in range(self.grid.GetNumberCols())}  # TODO: Use self.grid_rows
+        old_id = row[Columns.ID]['val']
+        row[Columns.ID]['val'] = new_id
+        row[Columns.NOTES]['val'] = '<%s %s' % (old_id, note) if note else '<%s' % old_id
 
-        # TODO (#4):
-        # Get list of IDs
-        # Find insertion point using https://docs.python.org/2/library/bisect.html
-        # Insert row
-        # Paint it
+        ids = [self.grid.GetCellValue(i, row[Columns.ID]['col']) for i in range(self.grid.GetNumberRows())]
+
+        i = ord('a')
+        while row[Columns.ID]['val'] in ids:  # If ID already exists, append a letter
+            row[Columns.ID]['val'] = new_id + chr(i)
+            i += 1
+
+        new_row = bisect.bisect(ids, row[Columns.ID]['val'])  # determining row insertion point
+        self.grid.InsertRows(new_row, 1)
+
+        for cell in row.values():
+            self.grid.SetCellValue(new_row, cell['col'], cell['val'])
+            self.grid.SetCellBackgroundColour(new_row, cell['col'], Colors.DUP_ROW)
+            self.grid.SetReadOnly(new_row, cell['col'])
+
+        self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
+
+    def get_id(self, row):
+        if self.grid.GetCellBackgroundColour(row, 0) == Colors.DUP_ROW:
+            return self.grid.GetCellValue(row, self.grid_rows.index(Columns.NOTES))[1:4]
+        else:
+            return self.grid.GetCellValue(row, self.grid_rows.index(Columns.ID))
 
     # -------------------------------------------------- Player --------------------------------------------------
 
     def play(self, e=None):
-        id = self.grid.GetCellValue(self.grid.GetGridCursorRow(), 0)
+        id = self.get_id(self.grid.GetGridCursorRow())
         try:
             file_path = filter(lambda a: a.rsplit('.', 1)[1] in {'mp3', 'wav', 'mp4', 'avi'},
                                self.items[id]['files'])[0]
