@@ -128,15 +128,17 @@ class MainFrame(wx.Frame):
         self.grid.SetSelectionMode(wx.grid.Grid.wxGridSelectRows)
 
         def select_row(e):
-            self.Unbind(wx.grid.EVT_GRID_RANGE_SELECT)
+            self.grid.Unbind(wx.grid.EVT_GRID_RANGE_SELECT)
             self.grid.SelectRow(e.Row if hasattr(e, 'Row') else e.TopRow)
-            self.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
+            self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
 
-        self.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
-        self.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
+        self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
+        self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
+        self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
 
         main_sizer.Add(self.toolbar, 0, wx.EXPAND)
         main_sizer.Add(self.grid, 1, wx.EXPAND | wx.TOP, border=1)
+
 
         self.SetSizer(main_sizer)
 
@@ -302,6 +304,29 @@ class MainFrame(wx.Frame):
 
         self.grid.AutoSizeColumns()
         self.status("Loaded %d items" % i)
+
+    def on_grid_cell_changed(self, e):
+        id_label = 'ID'
+        notes_label = 'notes' # TODO: To strings
+
+        if not self.grid.GetColLabelValue(e.Col) == notes_label:
+            return
+        note = self.grid.GetCellValue(e.Row, e.Col)
+        match = re.search('>(\d{3}(\w)?)([^\w].*)?', note)  # ">234" or ">305a" or ">152 ??"
+        if not match:
+            return
+        new_id, _, note = match.groups()
+
+        row = {self.grid.GetColLabelValue(i): {'pos': i, 'val': self.grid.GetCellValue(e.Row, i)}
+               for i in range(self.grid.GetNumberCols())}
+        row[id_label] = new_id
+        row[notes_label] = note
+
+        # TODO (#4):
+        # Get list of IDs
+        # Find insertion point using https://docs.python.org/2/library/bisect.html
+        # Insert row
+        # Paint it
 
     # -------------------------------------------------- Player --------------------------------------------------
 
