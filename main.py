@@ -311,26 +311,29 @@ class MainFrame(wx.Frame):
         if not self.grid.GetColLabelValue(e.Col) == Columns.NOTES:
             return
         note = self.grid.GetCellValue(e.Row, e.Col)
-        match = re.search('>(\d{3}(\w)?)([^\w].*)?', note)  # ">234" or ">305a" or ">152 ??"
+        match = re.search('>(\d{3}(\w)?)([^\w].*)?', note)  # ">234" or ">305a" or ">152a maybe"
         if not match:
             return
         new_id, _, note = match.groups()
 
         row = {self.grid.GetColLabelValue(i): {'col': i, 'val': self.grid.GetCellValue(e.Row, i)}
-               for i in range(self.grid.GetNumberCols())}  # TODO: Use self.grid_rows
+               for i in range(self.grid.GetNumberCols())}
+
         old_id = row[Columns.ID]['val']
         row[Columns.ID]['val'] = new_id
         row[Columns.NOTES]['val'] = '<%s %s' % (old_id, note) if note else '<%s' % old_id
 
         ids = [self.grid.GetCellValue(i, row[Columns.ID]['col']) for i in range(self.grid.GetNumberRows())]
 
-        i = ord('a')
-        while row[Columns.ID]['val'] in ids:  # If ID already exists, append a letter
-            row[Columns.ID]['val'] = new_id + chr(i)
-            i += 1
-
-        new_row = bisect.bisect(ids, row[Columns.ID]['val'])  # determining row insertion point
-        self.grid.InsertRows(new_row, 1)
+        if new_id not in ids or not self.is_dup_row(ids.index(new_id)):
+            i = ord('a')
+            while row[Columns.ID]['val'] in ids:  # If ID already exists, append a letter
+                row[Columns.ID]['val'] = new_id + chr(i)
+                i += 1
+            new_row = bisect.bisect(ids, row[Columns.ID]['val'])  # determining row insertion point
+            self.grid.InsertRows(new_row, 1)
+        else:
+            new_row = ids.index(new_id)
 
         for cell in row.values():
             self.grid.SetCellValue(new_row, cell['col'], cell['val'])
@@ -339,8 +342,11 @@ class MainFrame(wx.Frame):
 
         self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
 
+    def is_dup_row(self, row):
+        return self.grid.GetCellBackgroundColour(row, 0) == Colors.DUP_ROW
+
     def get_id(self, row):
-        if self.grid.GetCellBackgroundColour(row, 0) == Colors.DUP_ROW:
+        if self.is_dup_row(row):
             return self.grid.GetCellValue(row, self.grid_rows.index(Columns.NOTES))[1:4]
         else:
             return self.grid.GetCellValue(row, self.grid_rows.index(Columns.ID))
