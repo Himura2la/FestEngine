@@ -37,8 +37,6 @@ class MainFrame(wx.Frame):
 
         # --- File ---
         menu_file = wx.Menu()
-        self.Bind(wx.EVT_MENU, self.load_data,
-                  menu_file.Append(wx.ID_ANY, "&Load Data"))
         self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(mp3_path)),
                   menu_file.Append(wx.ID_ANY, "Open &mp3 folder"))
         self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(zad_path)),
@@ -64,6 +62,20 @@ class MainFrame(wx.Frame):
                   menu_file.Append(wx.ID_EXIT, "E&xit"))
         menu_bar.Append(menu_file, "Fil&e")
 
+
+        # --- Data ---
+        menu_data = wx.Menu()
+        self.Bind(wx.EVT_MENU, self.load_data,
+                  menu_data.Append(wx.ID_ANY, "&Load Data"))
+
+        menu_data.AppendSeparator()
+
+        self.del_dup_row = menu_data.Append(wx.ID_ANY, "&Delete row duplicate")
+        self.del_dup_row.Enable(False)
+        self.Bind(wx.EVT_MENU, self.del_active_row, self.del_dup_row)
+
+        menu_bar.Append(menu_data, "&Data")
+
         # --- Projector Window ---
         proj_win_menu = wx.Menu()
         self.Bind(wx.EVT_MENU, self.ensure_proj_win,
@@ -75,7 +87,7 @@ class MainFrame(wx.Frame):
         # --- Play ---
         menu_play = wx.Menu()
         menu_no_show = menu_play.Append(wx.ID_ANY, "&No Show\tEsc")
-        menu_show_zad = menu_play.Append(wx.ID_ANY, "$Show zad\tF1")
+        menu_show_zad = menu_play.Append(wx.ID_ANY, "Show &zad\tF1")
         menu_play_mp3 = menu_play.Append(wx.ID_ANY, "&Play\tF2")
         self.Bind(wx.EVT_MENU, self.no_show, menu_no_show)
         self.Bind(wx.EVT_MENU, self.show_zad, menu_show_zad)
@@ -130,9 +142,11 @@ class MainFrame(wx.Frame):
         self.grid.SetSelectionMode(wx.grid.Grid.wxGridSelectRows)
 
         def select_row(e):
+            row = e.Row if hasattr(e, 'Row') else e.TopRow
             self.grid.Unbind(wx.grid.EVT_GRID_RANGE_SELECT)
-            self.grid.SelectRow(e.Row if hasattr(e, 'Row') else e.TopRow)
+            self.grid.SelectRow(row)
             self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
+            self.del_dup_row.Enable(self.is_dup_row(row))
 
         self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
         self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
@@ -140,7 +154,6 @@ class MainFrame(wx.Frame):
 
         main_sizer.Add(self.toolbar, 0, wx.EXPAND)
         main_sizer.Add(self.grid, 1, wx.EXPAND | wx.TOP, border=1)
-
 
         self.SetSizer(main_sizer)
 
@@ -350,6 +363,11 @@ class MainFrame(wx.Frame):
             return self.grid.GetCellValue(row, self.grid_rows.index(Columns.NOTES))[1:4]
         else:
             return self.grid.GetCellValue(row, self.grid_rows.index(Columns.ID))
+
+    def del_active_row(self, e=None):
+        row = self.grid.GetSelectedRows()[0]
+        if self.is_dup_row(row):  # Extra check, this method is very dangerous.
+            self.grid.DeleteRows(row)
 
     # -------------------------------------------------- Player --------------------------------------------------
 
