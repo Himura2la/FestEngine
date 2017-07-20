@@ -186,14 +186,16 @@ class MainFrame(wx.Frame):
         settings_dialog.Destroy()
 
     def switch_to_vid(self, e=None):
-        self.vid_btn.SetValue(True)
-        self.img_btn.SetValue(False)
-        self.proj_win.switch_to_video()
+        if isinstance(self.proj_win, ProjectorWindow):
+            self.vid_btn.SetValue(True)
+            self.img_btn.SetValue(False)
+            self.proj_win.switch_to_video()
 
     def switch_to_img(self, e=None):
-        self.vid_btn.SetValue(False)
-        self.img_btn.SetValue(True)
-        self.proj_win.switch_to_images()
+        if isinstance(self.proj_win, ProjectorWindow):
+            self.vid_btn.SetValue(False)
+            self.img_btn.SetValue(True)
+            self.proj_win.switch_to_images()
 
     # ----------------------------------------------------
 
