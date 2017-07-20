@@ -38,22 +38,29 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.load_data,
                   menu_file.Append(wx.ID_ANY, "&Load Data"))
         self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(mp3_path)),
-                  menu_file.Append(wx.ID_ANY, "&Open mp3 folder"))
+                  menu_file.Append(wx.ID_ANY, "Open &mp3 folder"))
         self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(zad_path)),
-                  menu_file.Append(wx.ID_ANY, "&Open zad folder"))
+                  menu_file.Append(wx.ID_ANY, "Open &zad folder"))
 
         menu_file.AppendSeparator()
 
-        self.Bind(wx.EVT_MENU, self.on_settings,
+        def on_settings(e):
+            settings_dialog = SettingsDialog(self.settings, self)
+            res = settings_dialog.ShowModal()
+            if res == wx.ID_OK:
+                self.settings = settings_dialog.get_settings()
+            settings_dialog.Destroy()
+
+        self.Bind(wx.EVT_MENU, on_settings,
                   menu_file.Append(wx.ID_ANY, "&Setings"))
 
         menu_file.AppendSeparator()
 
-        self.Bind(wx.EVT_MENU, lambda _: webbrowser.open('https://github.com/Himura2la'),
+        self.Bind(wx.EVT_MENU, lambda _: webbrowser.open('https://github.com/Himura2la/FestEngine'),
                   menu_file.Append(wx.ID_ABOUT, "&About"))
         self.Bind(wx.EVT_MENU, self.on_exit,
                   menu_file.Append(wx.ID_EXIT, "E&xit"))
-        menu_bar.Append(menu_file, "&File")
+        menu_bar.Append(menu_file, "Fil&e")
 
         # --- Projector Window ---
         proj_win_menu = wx.Menu()
@@ -66,7 +73,7 @@ class MainFrame(wx.Frame):
         # --- Play ---
         menu_play = wx.Menu()
         menu_no_show = menu_play.Append(wx.ID_ANY, "&No Show\tEsc")
-        menu_show_zad = menu_play.Append(wx.ID_ANY, "Sho&w zad\tF1")
+        menu_show_zad = menu_play.Append(wx.ID_ANY, "$Show zad\tF1")
         menu_play_mp3 = menu_play.Append(wx.ID_ANY, "&Play\tF2")
         self.Bind(wx.EVT_MENU, self.no_show, menu_no_show)
         self.Bind(wx.EVT_MENU, self.show_zad, menu_show_zad)
@@ -105,11 +112,11 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.on_timer, self.timer)
 
         self.vid_btn = wx.ToggleButton(self, label='VID', size=(35, toolbar_base_height + 2))
-        self.img_btn = wx.ToggleButton(self, label='IMG', size=(35, toolbar_base_height + 2))
+        self.zad_btn = wx.ToggleButton(self, label='ZAD', size=(35, toolbar_base_height + 2))
         self.vid_btn.Enable(False)
-        self.img_btn.Enable(False)
+        self.zad_btn.Enable(False)
         self.toolbar.Add(self.vid_btn, 0)
-        self.toolbar.Add(self.img_btn, 0)
+        self.toolbar.Add(self.zad_btn, 0)
 
         # --- Table ---
         self.grid = wx.grid.Grid(self)
@@ -152,7 +159,7 @@ class MainFrame(wx.Frame):
 
         self.load_data()
 
-    # ---------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
 
     def grid_set_shape(self, new_rows, new_cols):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
@@ -178,45 +185,72 @@ class MainFrame(wx.Frame):
         self.destroy_proj_win()
         self.Close(True)
 
-    def on_settings(self, e):
-        settings_dialog = SettingsDialog(self.settings, self)
-        res = settings_dialog.ShowModal()
-        if res == wx.ID_OK:
-            self.settings = settings_dialog.get_settings()
-        settings_dialog.Destroy()
+    # -------------------------------------------------- Actions --------------------------------------------------
 
-    def switch_to_vid(self, e=None):
-        if isinstance(self.proj_win, ProjectorWindow):
-            self.vid_btn.SetValue(True)
-            self.img_btn.SetValue(False)
-            self.proj_win.switch_to_video()
-
-    def switch_to_img(self, e=None):
-        if isinstance(self.proj_win, ProjectorWindow):
-            self.vid_btn.SetValue(False)
-            self.img_btn.SetValue(True)
-            self.proj_win.switch_to_images()
-
-    # ----------------------------------------------------
+    def proj_win_exists(self):
+        return isinstance(self.proj_win, ProjectorWindow)
 
     def ensure_proj_win(self, e=None):
-        if not isinstance(self.proj_win, ProjectorWindow):
+        if not self.proj_win_exists():
             self.proj_win = ProjectorWindow(self, self.settings[Config.PROJECTOR_SCREEN])
 
             self.vid_btn.Bind(wx.EVT_TOGGLEBUTTON, self.switch_to_vid)
-            self.img_btn.Bind(wx.EVT_TOGGLEBUTTON, self.switch_to_img)
+            self.zad_btn.Bind(wx.EVT_TOGGLEBUTTON, self.switch_to_zad)
             self.vid_btn.Enable(True)
-            self.img_btn.Enable(True)
-            self.img_btn.SetValue(True)
-
+            self.zad_btn.Enable(True)
+            self.switch_to_zad()
         self.proj_win.Show()
         self.Raise()
 
     def destroy_proj_win(self, e=None):
-        if isinstance(self.proj_win, ProjectorWindow):
-            self.proj_win.Close(True)
-            self.vid_btn.Enable(False)
-            self.img_btn.Enable(False)
+        if not self.proj_win_exists():
+            return
+        self.proj_win.Close(True)
+        self.vid_btn.Enable(False)
+        self.zad_btn.Enable(False)
+
+    def switch_to_vid(self, e=None):
+        if not self.proj_win_exists():
+            return
+        self.vid_btn.SetValue(True)
+        self.zad_btn.SetValue(False)
+        self.proj_win.switch_to_video()
+
+    def switch_to_zad(self, e=None):
+        if not self.proj_win_exists():
+            return
+        self.vid_btn.SetValue(False)
+        self.zad_btn.SetValue(True)
+        self.proj_win.switch_to_images()
+
+    def show_zad(self, e):
+        self.ensure_proj_win()
+        self.proj_win.switch_to_images()
+        id = self.grid.GetCellValue(self.grid.GetGridCursorRow(), 0)
+        try:
+            file_path = filter(lambda a: a.rsplit('.', 1)[1] in {'jpg', 'png'}, self.items[id]['files'])[0]
+            self.proj_win.load_zad(file_path, True)
+            self.image_status("Showing ID %s" % id)
+            self.status("ZAD Fired!")
+        except IndexError:
+            self.status("No zad for ID %s" % id)
+            self.clear_zad()
+
+    def clear_zad(self):
+        if background_zad_path:
+            self.proj_win.load_zad(background_zad_path, True)
+            self.image_status("Background")
+        else:
+            self.proj_win.no_show()
+            self.image_status("No show")
+
+    def no_show(self, e=None):
+        if self.proj_win_exists():
+            self.clear_zad()
+        self.stop(fade_out=False)
+        self.status("FULL STOP!")
+
+    # -------------------------------------------------- Data --------------------------------------------------
 
     def load_data(self, e=None):
         zad_file_names = os.listdir(zad_path)
@@ -269,32 +303,7 @@ class MainFrame(wx.Frame):
         self.grid.AutoSizeColumns()
         self.status("Loaded %d items" % i)
 
-    def show_zad(self, e):
-        self.ensure_proj_win()
-        self.proj_win.switch_to_images()
-        id = self.grid.GetCellValue(self.grid.GetGridCursorRow(), 0)
-        try:
-            file_path = filter(lambda a: a.rsplit('.', 1)[1] in {'jpg', 'png'}, self.items[id]['files'])[0]
-            self.proj_win.load_zad(file_path, True)
-            self.image_status("Showing ID %s" % id)
-            self.status("ZAD Fired!")
-        except IndexError:
-            self.status("No zad for ID %s" % id)
-            self.clear_zad()
-
-    def no_show(self, e=None):
-        if isinstance(self.proj_win, ProjectorWindow):
-            self.clear_zad()
-        self.stop(fade_out=False)
-        self.status("FULL STOP!")
-
-    def clear_zad(self):
-        if background_zad_path:
-            self.proj_win.load_zad(background_zad_path, True)
-            self.image_status("Background")
-        else:
-            self.proj_win.no_show()
-            self.image_status("No show")
+    # -------------------------------------------------- Player --------------------------------------------------
 
     def play(self, e=None):
         id = self.grid.GetCellValue(self.grid.GetGridCursorRow(), 0)
@@ -378,7 +387,7 @@ class MainFrame(wx.Frame):
         if state not in range(5):
             self.timer.Stop()
             self.play_bar.SetValue(0)
-            self.switch_to_img()
+            self.switch_to_zad()
 
 if __name__ == "__main__":
     app = wx.App(False)
