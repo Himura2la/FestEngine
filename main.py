@@ -32,7 +32,9 @@ class MainFrame(wx.Frame):
         self.items = None
         self.grid_rows = None
         self.in_search = False
-        self.full_grid = None
+        self.grid_default_bg_color = None
+        self.grid_filtered_bg_color = (255, 255, 128)
+        self.full_grid_data = None
 
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
@@ -132,33 +134,33 @@ class MainFrame(wx.Frame):
         self.timer = wx.Timer(self)  # Events make the app unstable. Plus we can update not too often
         self.timer.Bind(wx.EVT_TIMER, self.on_timer, self.timer)
 
-        self.search_bar = wx.TextCtrl(self, size=(35, toolbar_base_height), value='Find')
-        self.search_bar.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_GRAYTEXT))
-        self.toolbar.Add(self.search_bar, 0, wx.ALIGN_CENTER_VERTICAL)
+        self.search_box = wx.TextCtrl(self, size=(35, toolbar_base_height), value='Find')
+        self.search_box.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_GRAYTEXT))
+        self.toolbar.Add(self.search_box, 0, wx.ALIGN_CENTER_VERTICAL)
 
         def quit_search(e=None):
-            self.search_bar.SetValue('Find')
-            self.search_bar.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_GRAYTEXT))
+            self.search_box.SetValue('Find')
+            self.search_box.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_GRAYTEXT))
             self.quit_search()
             self.SetFocus()
 
         def tooltip_focus_handler(e):
-            if self.search_bar.GetValue() == 'Find':
-                self.search_bar.Clear()
-                self.search_bar.SetForegroundColour(wx.BLACK)
+            if self.search_box.GetValue() == 'Find':
+                self.search_box.Clear()
+                self.search_box.SetForegroundColour(wx.BLACK)
                 self.enter_search()
             e.Skip()
 
         def tooltip_leave_handler(e):
-            if self.search_bar.GetValue() == '':
+            if self.search_box.GetValue() == '':
                 quit_search()
             e.Skip()
 
-        self.search_bar.Bind(wx.EVT_SET_FOCUS, tooltip_focus_handler)
-        self.search_bar.Bind(wx.EVT_KILL_FOCUS, tooltip_leave_handler)
-        self.search_bar.Bind(wx.EVT_TEXT, self.search)
-        self.search_bar.Bind(wx.EVT_RIGHT_DOWN, quit_search)
-        self.search_bar.SetToolTipString('Right-click to quit search')
+        self.search_box.Bind(wx.EVT_SET_FOCUS, tooltip_focus_handler)
+        self.search_box.Bind(wx.EVT_KILL_FOCUS, tooltip_leave_handler)
+        self.search_box.Bind(wx.EVT_TEXT, self.search)
+        self.search_box.Bind(wx.EVT_RIGHT_DOWN, quit_search)
+        self.search_box.SetToolTipString('Right-click to quit search')
 
         self.vid_btn = wx.ToggleButton(self, label='VID', size=(35, toolbar_base_height + 2))
         self.zad_btn = wx.ToggleButton(self, label='ZAD', size=(35, toolbar_base_height + 2))
@@ -215,14 +217,13 @@ class MainFrame(wx.Frame):
 
     def grid_set_shape(self, new_rows, new_cols):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
-        if new_rows < current_rows:
-            self.grid.DeleteRows(0, current_rows - new_rows, True)
-        elif new_rows > current_rows:
-            self.grid.AppendRows(new_rows - current_rows)
+        self.grid.DeleteRows(0, current_rows, False)
+        self.grid.AppendRows(new_rows)
         if new_cols < current_cols:
-            self.grid.DeleteCols(0, current_cols - new_cols, True)
+            self.grid.DeleteCols(0, current_cols - new_cols, False)
         elif new_cols > current_cols:
             self.grid.AppendCols(new_cols - current_cols)
+
 
     def status(self, text):
         self.status_bar.SetStatusText(text, 0)
@@ -410,37 +411,57 @@ class MainFrame(wx.Frame):
             self.grid.DeleteRows(row)
 
     def grid_push(self):
-        self.full_grid = [{'cols': [self.grid.GetCellValue(row, col) for col in range(self.grid.GetNumberCols())],
-                            'color':self.grid.GetCellBackgroundColour(row, 0)}
-                          for row in range(self.grid.GetNumberRows())]
+        self.grid_default_bg_color = self.grid.GetDefaultCellBackgroundColour()
+        self.full_grid_data = [{'cols': [self.grid.GetCellValue(row, col) for col in range(self.grid.GetNumberCols())],
+                                'color':self.grid.GetCellBackgroundColour(row, 0)}
+                               for row in range(self.grid.GetNumberRows())]
 
-    def grid_set(self, grid_state):
+    def grid_set(self, grid_state, default_bg=None):
+        if not default_bg:
+            default_bg = self.grid.GetDefaultCellBackgroundColour()
         rows, cols = len(grid_state), len(grid_state[0]['cols'])
         self.grid_set_shape(rows, cols)
         for row in range(rows):
             for col in range(cols):
-                self.grid.SetCellBackgroundColour(row, col, grid_state[row]['color'])
+                if grid_state[row]['color'] != default_bg:
+                    self.grid.SetCellBackgroundColour(row, col, grid_state[row]['color'])
                 self.grid.SetCellValue(row, col, grid_state[row]['cols'][col])
 
     def grid_pop(self):
-        self.grid_set(self.full_grid)
+        self.grid.SetDefaultCellBackgroundColour(self.grid_default_bg_color)
+        self.grid_set(self.full_grid_data)
 
     def enter_search(self):
         self.in_search = True
         self.grid_push()
-        self.grid.SetDefaultCellBackgroundColour((255, 255, 128))
+        self.grid.SetDefaultCellBackgroundColour(self.grid_filtered_bg_color)
         self.grid.ForceRefresh()
 
+    def paint_search_box(self, val):
+        if val:
+            self.search_box.SetBackgroundColour((255, 200, 200))
+        else:
+            self.search_box.SetBackgroundColour(wx.WHITE)
+        self.search_box.Refresh()
+
     def search(self, e=None):
-        string = self.search_bar.GetValue()
+        string = self.search_box.GetValue()
         if string == 'Find' or not self.in_search or not string:
             return
 
-        # TODO: Show only rows that match search conditions
+        def match(row):
+            """Returns True if any cell in a row matches"""
+            return reduce(lambda a, b: a or b, [self.search_box.GetValue().lower() in cell.lower()
+                                                for cell in row['cols']])
+
+        filtered_grid_data = filter(match, self.full_grid_data)
+        if filtered_grid_data:
+            self.grid_set(filtered_grid_data, default_bg=wx.WHITE)
+        self.paint_search_box(not bool(filtered_grid_data))
 
     def quit_search(self):
         self.in_search = False
-        self.grid.SetDefaultCellBackgroundColour(wx.WHITE)
+        self.paint_search_box(False)
         self.grid_pop()
         self.grid.ForceRefresh()
 
