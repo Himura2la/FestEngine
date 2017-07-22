@@ -417,10 +417,14 @@ class MainFrame(wx.Frame):
 
     def enter_search(self):
         self.in_search = True
+        self.grid.SetDefaultCellBackgroundColour((255, 255, 128))
+        self.grid.ForceRefresh()
         print 'enter search'
 
     def quit_search(self):
         self.in_search = False
+        self.grid.SetDefaultCellBackgroundColour(wx.WHITE)
+        self.grid.ForceRefresh()
         print 'quit search'
 
     # -------------------------------------------------- Player --------------------------------------------------
