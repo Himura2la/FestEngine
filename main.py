@@ -464,10 +464,11 @@ class MainFrame(wx.Frame):
         self.paint_search_box(not bool(filtered_grid_data))
 
     def quit_search(self):
-        self.in_search = False
-        self.paint_search_box(False)
-        self.grid_pop()
-        self.grid.ForceRefresh()
+        if self.in_search:
+            self.in_search = False
+            self.paint_search_box(False)
+            self.grid_pop()
+            self.grid.ForceRefresh()
 
     # -------------------------------------------------- Player --------------------------------------------------
 
