@@ -214,7 +214,7 @@ class MainFrame(wx.Frame):
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def grid_set_shape(self, new_rows, new_cols, set_readonly=False):
+    def grid_set_shape(self, new_rows, new_cols, readonly_cols=None):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
         self.grid.DeleteRows(0, current_rows, False)
         self.grid.AppendRows(new_rows)
@@ -222,9 +222,10 @@ class MainFrame(wx.Frame):
             self.grid.DeleteCols(0, current_cols - new_cols, False)
         elif new_cols > current_cols:
             self.grid.AppendCols(new_cols - current_cols)
-        if set_readonly:
-            note_col = [self.grid.GetColLabelValue(col) for col in range(new_cols)].index(Columns.NOTES)
-            [self.grid.SetReadOnly(row, col) for row in range(new_rows) for col in range(new_cols) if col != note_col]
+        if readonly_cols:
+            [self.grid.SetReadOnly(row, col)
+             for row in range(new_rows)
+             for col in range(new_cols) if col in readonly_cols]
 
     def status(self, text):
         self.status_bar.SetStatusText(text, 0)
@@ -417,11 +418,13 @@ class MainFrame(wx.Frame):
                                 'color':self.grid.GetCellBackgroundColour(row, 0)}
                                for row in range(self.grid.GetNumberRows())]
 
-    def grid_set(self, grid_state, default_bg=None):
+    def grid_set(self, grid_state, default_bg=None, readonly=False):
         if not default_bg:
             default_bg = self.grid.GetDefaultCellBackgroundColour()
         rows, cols = len(grid_state), len(grid_state[0]['cols'])
-        self.grid_set_shape(rows, cols, True)
+        readonly_cols = [col for col in range(cols) if self.grid.GetColLabelValue(col) != Columns.NOTES or readonly]
+
+        self.grid_set_shape(rows, cols, readonly_cols)
         for row in range(rows):
             for col in range(cols):
                 if grid_state[row]['color'] != default_bg:
@@ -457,7 +460,7 @@ class MainFrame(wx.Frame):
 
         filtered_grid_data = filter(match, self.full_grid_data)
         if filtered_grid_data:
-            self.grid_set(filtered_grid_data, self.grid_default_bg_color)
+            self.grid_set(filtered_grid_data, self.grid_default_bg_color, True)
         self.paint_search_box(not bool(filtered_grid_data))
 
     def quit_search(self):
