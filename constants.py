@@ -13,5 +13,6 @@ class Columns:
     FILES = 'files'
     NUM = 'num'
 
+
 class Colors:
     DUP_ROW = (255, 128, 255, 255)

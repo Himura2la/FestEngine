@@ -31,6 +31,7 @@ class MainFrame(wx.Frame):
         self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1}  # The last one
         self.items = None
         self.grid_rows = None
+        self.in_search = False
 
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
@@ -107,11 +108,16 @@ class MainFrame(wx.Frame):
         self.toolbar = wx.BoxSizer(wx.HORIZONTAL)
         toolbar_base_height = 20
 
+        # self.status_color_box = wx.Panel(self, size=(toolbar_base_height, toolbar_base_height))
+        # self.toolbar.Add(self.status_color_box, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=1)
+        # self.status_color_box.SetBackgroundColour((0, 255, 0))
+        # TODO: #9
+
         self.toolbar.Add(wx.StaticText(self, label=' VOL '), 0, wx.ALIGN_CENTER_VERTICAL)
         self.vol_control = wx.SpinCtrl(self, value='-1', size=(50, toolbar_base_height))
         self.toolbar.Add(self.vol_control, 0, wx.ALIGN_CENTER_VERTICAL)
         self.vol_control.SetRange(-1, 200)
-        self.Bind(wx.EVT_SPINCTRL, self.set_vol, self.vol_control)
+        self.vol_control.Bind(wx.EVT_SPINCTRL, self.set_vol, self.vol_control)
 
         self.fade_out_btn = wx.Button(self, label="Fade out", size=(70, toolbar_base_height + 2))
         self.fade_out_btn.Enable(False)
@@ -124,7 +130,35 @@ class MainFrame(wx.Frame):
         self.toolbar.Add(self.play_time, 0, wx.ALIGN_CENTER_VERTICAL)
 
         self.timer = wx.Timer(self)  # Events make the app unstable. Plus we can update not too often
-        self.Bind(wx.EVT_TIMER, self.on_timer, self.timer)
+        self.timer.Bind(wx.EVT_TIMER, self.on_timer, self.timer)
+
+        self.search_bar = wx.TextCtrl(self, size=(35, toolbar_base_height), value='Find')
+        self.search_bar.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_GRAYTEXT))
+        self.toolbar.Add(self.search_bar, 0, wx.ALIGN_CENTER_VERTICAL)
+
+        def quit_search(e=None):
+            self.search_bar.SetValue('Find')
+            self.search_bar.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_GRAYTEXT))
+            self.quit_search()
+            self.SetFocus()
+
+        def tooltip_focus_handler(e):
+            if self.search_bar.GetValue() == 'Find':
+                self.search_bar.Clear()
+                self.search_bar.SetForegroundColour(wx.BLACK)
+                self.enter_search()
+            e.Skip()
+
+        def tooltip_leave_handler(e):
+            if self.search_bar.GetValue() == '':
+                quit_search()
+            e.Skip()
+
+        self.search_bar.Bind(wx.EVT_SET_FOCUS, tooltip_focus_handler)
+        self.search_bar.Bind(wx.EVT_KILL_FOCUS, tooltip_leave_handler)
+        self.search_bar.Bind(wx.EVT_TEXT, self.search)
+        self.search_bar.Bind(wx.EVT_RIGHT_DOWN, quit_search)
+        self.search_bar.SetToolTipString('Right-click to quit search')
 
         self.vid_btn = wx.ToggleButton(self, label='VID', size=(35, toolbar_base_height + 2))
         self.zad_btn = wx.ToggleButton(self, label='ZAD', size=(35, toolbar_base_height + 2))
@@ -165,7 +199,6 @@ class MainFrame(wx.Frame):
         self.Show(True)
 
         # ----------------------- VLC ---------------------
-
 
         self.vlc_instance = vlc.Instance()
         self.player = self.vlc_instance.media_player_new()
@@ -375,6 +408,20 @@ class MainFrame(wx.Frame):
         row = self.grid.GetSelectedRows()[0]
         if self.is_dup_row(row):  # Extra check, this method is very dangerous.
             self.grid.DeleteRows(row)
+
+    def search(self, e=None):
+        string = self.search_bar.GetValue()
+        if string == 'Find' or not self.in_search or not string:
+            return
+        print 'search:' + string
+
+    def enter_search(self):
+        self.in_search = True
+        print 'enter search'
+
+    def quit_search(self):
+        self.in_search = False
+        print 'quit search'
 
     # -------------------------------------------------- Player --------------------------------------------------
 
