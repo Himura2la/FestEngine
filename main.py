@@ -141,7 +141,7 @@ class MainFrame(wx.Frame):
             self.search_box.SetValue('Find')
             self.search_box.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_GRAYTEXT))
             self.quit_search()
-            self.SetFocus()
+            self.grid.SetFocus()
 
         def search_box_focus_handler(e):
             if self.search_box.GetValue() == 'Find':
@@ -361,6 +361,8 @@ class MainFrame(wx.Frame):
         self.status("Loaded %d items" % i)
         self.load_data_item.Enable(False)
 
+    # --- Duplication from notes ---
+
     def on_grid_cell_changed(self, e):
         self.grid.Unbind(wx.grid.EVT_GRID_CELL_CHANGED)
 
@@ -412,28 +414,7 @@ class MainFrame(wx.Frame):
         if self.is_dup_row(row):  # Extra check, this method is very dangerous.
             self.grid.DeleteRows(row)
 
-    def grid_push(self):
-        self.grid_default_bg_color = self.grid.GetDefaultCellBackgroundColour()
-        self.full_grid_data = [{'cols': [self.grid.GetCellValue(row, col) for col in range(self.grid.GetNumberCols())],
-                                'color':self.grid.GetCellBackgroundColour(row, 0)}
-                               for row in range(self.grid.GetNumberRows())]
-
-    def grid_set(self, grid_state, default_bg=None, readonly=False):
-        if not default_bg:
-            default_bg = self.grid.GetDefaultCellBackgroundColour()
-        rows, cols = len(grid_state), len(grid_state[0]['cols'])
-        readonly_cols = [col for col in range(cols) if self.grid.GetColLabelValue(col) != Columns.NOTES or readonly]
-
-        self.grid_set_shape(rows, cols, readonly_cols)
-        for row in range(rows):
-            for col in range(cols):
-                if grid_state[row]['color'] != default_bg:
-                    self.grid.SetCellBackgroundColour(row, col, grid_state[row]['color'])
-                self.grid.SetCellValue(row, col, grid_state[row]['cols'][col])
-
-    def grid_pop(self):
-        self.grid.SetDefaultCellBackgroundColour(self.grid_default_bg_color)
-        self.grid_set(self.full_grid_data)
+    # --- Search ---
 
     def enter_search(self):
         self.in_search = True
@@ -441,12 +422,28 @@ class MainFrame(wx.Frame):
         self.grid.SetDefaultCellBackgroundColour(Colors.FILTERED_GRID)
         self.grid.ForceRefresh()
 
-    def paint_search_box(self, val):
-        if val:
-            self.search_box.SetBackgroundColour((255, 200, 200))
-        else:
-            self.search_box.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
-        self.search_box.Refresh()
+    def grid_push(self):
+        self.grid_default_bg_color = self.grid.GetDefaultCellBackgroundColour()
+        self.full_grid_data = [{'cols': [self.grid.GetCellValue(row, col) for col in range(self.grid.GetNumberCols())],
+                                'color':self.grid.GetCellBackgroundColour(row, 0)}
+                               for row in range(self.grid.GetNumberRows())]
+
+    def grid_pop(self):
+        self.grid.SetDefaultCellBackgroundColour(self.grid_default_bg_color)
+        self.grid_set(self.full_grid_data)
+
+    def grid_set(self, dataset, default_bg_in_dataset=None, readonly=False):
+        if not default_bg_in_dataset:
+            default_bg_in_dataset = self.grid.GetDefaultCellBackgroundColour()
+        rows, cols = len(dataset), len(dataset[0]['cols'])
+        readonly_cols = [col for col in range(cols) if self.grid.GetColLabelValue(col) != Columns.NOTES or readonly]
+
+        self.grid_set_shape(rows, cols, readonly_cols)
+        for row in range(rows):
+            for col in range(cols):
+                if dataset[row]['color'] != default_bg_in_dataset:
+                    self.grid.SetCellBackgroundColour(row, col, dataset[row]['color'])
+                self.grid.SetCellValue(row, col, dataset[row]['cols'][col])
 
     def search(self, e=None):
         string = self.search_box.GetValue()
@@ -459,16 +456,34 @@ class MainFrame(wx.Frame):
                                                 for cell in row['cols']])
 
         filtered_grid_data = filter(match, self.full_grid_data)
-        if filtered_grid_data:
+        found = bool(filtered_grid_data)
+        if found:
             self.grid_set(filtered_grid_data, self.grid_default_bg_color, True)
-        self.paint_search_box(not bool(filtered_grid_data))
+        self.paint_search_box(not found)
+
+    def paint_search_box(self, val):
+        if val:
+            self.search_box.SetBackgroundColour((255, 200, 200))
+        else:
+            self.search_box.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+        self.search_box.Refresh()
 
     def quit_search(self):
         if self.in_search:
             self.in_search = False
             self.paint_search_box(False)
+            selected_row = [self.grid.GetCellValue(self.grid.GetSelectedRows()[0], col)
+                            for col in range(self.grid.GetNumberCols())]
+            selected_i = 0
+            for i in range(len(self.full_grid_data)):
+                if self.full_grid_data[i]['cols'] == selected_row:
+                    selected_i = i
+                    break
             self.grid_pop()
-            self.grid.ForceRefresh()
+            self.grid.ForceRefresh()  # Updates colors
+
+            self.grid.SelectRow(selected_i)
+            self.grid.MakeCellVisible(selected_i, 0)
 
     # -------------------------------------------------- Player --------------------------------------------------
 
