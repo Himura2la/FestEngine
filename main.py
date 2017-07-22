@@ -137,28 +137,15 @@ class MainFrame(wx.Frame):
         self.search_box.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_GRAYTEXT))
         self.toolbar.Add(self.search_box, 0, wx.ALIGN_CENTER_VERTICAL)
 
-        def quit_search(e=None):
-            self.search_box.SetValue('Find')
-            self.search_box.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_GRAYTEXT))
-            self.quit_search()
-            self.grid.SetFocus()
-
-        def search_box_focus_handler(e):
-            if self.search_box.GetValue() == 'Find':
-                self.search_box.Clear()
-                self.search_box.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOWTEXT))
-                self.enter_search()
-            e.Skip()
-
         def search_box_leave_handler(e):
             if self.search_box.GetValue() == '':
-                quit_search()
+                self.quit_search()
             e.Skip()
 
-        self.search_box.Bind(wx.EVT_SET_FOCUS, search_box_focus_handler)
+        self.search_box.Bind(wx.EVT_SET_FOCUS, self.enter_search)
         self.search_box.Bind(wx.EVT_KILL_FOCUS, search_box_leave_handler)
         self.search_box.Bind(wx.EVT_TEXT, self.search)
-        self.search_box.Bind(wx.EVT_RIGHT_DOWN, quit_search)
+        self.search_box.Bind(wx.EVT_RIGHT_DOWN, self.quit_search)
         self.search_box.SetToolTipString('Right-click to quit search')
 
         self.vid_btn = wx.ToggleButton(self, label='VID', size=(35, toolbar_base_height + 2))
@@ -416,11 +403,16 @@ class MainFrame(wx.Frame):
 
     # --- Search ---
 
-    def enter_search(self):
-        self.in_search = True
-        self.grid_push()
-        self.grid.SetDefaultCellBackgroundColour(Colors.FILTERED_GRID)
-        self.grid.ForceRefresh()
+    def enter_search(self, e=None):
+        if self.search_box.GetValue() == 'Find':
+            self.search_box.Clear()
+            self.search_box.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOWTEXT))
+            self.in_search = True
+            self.grid_push()
+            self.grid.SetDefaultCellBackgroundColour(Colors.FILTERED_GRID)
+            self.grid.ForceRefresh()  # Updates colors
+        if e:
+            e.Skip()
 
     def grid_push(self):
         self.grid_default_bg_color = self.grid.GetDefaultCellBackgroundColour()
@@ -430,9 +422,10 @@ class MainFrame(wx.Frame):
 
     def grid_pop(self):
         self.grid.SetDefaultCellBackgroundColour(self.grid_default_bg_color)
-        self.grid_set(self.full_grid_data)
+        self.grid_set_data(self.full_grid_data)
+        self.grid.ForceRefresh()  # Updates colors
 
-    def grid_set(self, dataset, default_bg_in_dataset=None, readonly=False):
+    def grid_set_data(self, dataset, default_bg_in_dataset=None, readonly=False):
         if not default_bg_in_dataset:
             default_bg_in_dataset = self.grid.GetDefaultCellBackgroundColour()
         rows, cols = len(dataset), len(dataset[0]['cols'])
@@ -458,7 +451,7 @@ class MainFrame(wx.Frame):
         filtered_grid_data = filter(match, self.full_grid_data)
         found = bool(filtered_grid_data)
         if found:
-            self.grid_set(filtered_grid_data, self.grid_default_bg_color, True)
+            self.grid_set_data(filtered_grid_data, self.grid_default_bg_color, True)
         self.paint_search_box(not found)
 
     def paint_search_box(self, val):
@@ -468,22 +461,28 @@ class MainFrame(wx.Frame):
             self.search_box.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
         self.search_box.Refresh()
 
-    def quit_search(self):
+    def quit_search(self, e=None):
         if self.in_search:
             self.in_search = False
             self.paint_search_box(False)
+
+            self.search_box.SetValue('Find')
+            self.search_box.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_GRAYTEXT))
+
             selected_row = [self.grid.GetCellValue(self.grid.GetSelectedRows()[0], col)
                             for col in range(self.grid.GetNumberCols())]
-            selected_i = 0
+            selected_row_i = 0
             for i in range(len(self.full_grid_data)):
                 if self.full_grid_data[i]['cols'] == selected_row:
-                    selected_i = i
+                    selected_row_i = i
                     break
             self.grid_pop()
-            self.grid.ForceRefresh()  # Updates colors
 
-            self.grid.SelectRow(selected_i)
-            self.grid.MakeCellVisible(selected_i, 0)
+            self.grid.SelectRow(selected_row_i)
+            self.grid.MakeCellVisible(selected_row_i, 0)
+
+            self.grid.SetFocus()
+        # if e: e.Skip() # Invokes default handler with context menu
 
     # -------------------------------------------------- Player --------------------------------------------------
 
