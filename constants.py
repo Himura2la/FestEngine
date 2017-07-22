@@ -16,3 +16,4 @@ class Columns:
 
 class Colors:
     DUP_ROW = (255, 128, 255, 255)
+    FILTERED_GRID = (255, 255, 128, 255)

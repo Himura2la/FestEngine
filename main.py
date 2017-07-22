@@ -33,7 +33,6 @@ class MainFrame(wx.Frame):
         self.grid_rows = None
         self.in_search = False
         self.grid_default_bg_color = None
-        self.grid_filtered_bg_color = (255, 255, 128)
         self.full_grid_data = None
 
         # ------------------ Menu ------------------
@@ -144,20 +143,20 @@ class MainFrame(wx.Frame):
             self.quit_search()
             self.SetFocus()
 
-        def tooltip_focus_handler(e):
+        def search_box_focus_handler(e):
             if self.search_box.GetValue() == 'Find':
                 self.search_box.Clear()
-                self.search_box.SetForegroundColour(wx.BLACK)
+                self.search_box.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOWTEXT))
                 self.enter_search()
             e.Skip()
 
-        def tooltip_leave_handler(e):
+        def search_box_leave_handler(e):
             if self.search_box.GetValue() == '':
                 quit_search()
             e.Skip()
 
-        self.search_box.Bind(wx.EVT_SET_FOCUS, tooltip_focus_handler)
-        self.search_box.Bind(wx.EVT_KILL_FOCUS, tooltip_leave_handler)
+        self.search_box.Bind(wx.EVT_SET_FOCUS, search_box_focus_handler)
+        self.search_box.Bind(wx.EVT_KILL_FOCUS, search_box_leave_handler)
         self.search_box.Bind(wx.EVT_TEXT, self.search)
         self.search_box.Bind(wx.EVT_RIGHT_DOWN, quit_search)
         self.search_box.SetToolTipString('Right-click to quit search')
@@ -198,7 +197,6 @@ class MainFrame(wx.Frame):
         self.status_bar = self.CreateStatusBar(3)
         self.status("Ready")
         self.SetAcceleratorTable(wx.AcceleratorTable(accelerator_table))
-        self.Show(True)
 
         # ----------------------- VLC ---------------------
 
@@ -209,13 +207,14 @@ class MainFrame(wx.Frame):
         self.vol_control.SetValue(self.player.audio_get_volume())
         self.player_status("VLC v.%s: %s" % (vlc.libvlc_get_version(), self.get_player_state(return_str=True)))
 
+        self.Show(True)
         self.grid.SetFocus()
 
         self.load_data()
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def grid_set_shape(self, new_rows, new_cols):
+    def grid_set_shape(self, new_rows, new_cols, set_readonly=False):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
         self.grid.DeleteRows(0, current_rows, False)
         self.grid.AppendRows(new_rows)
@@ -223,7 +222,9 @@ class MainFrame(wx.Frame):
             self.grid.DeleteCols(0, current_cols - new_cols, False)
         elif new_cols > current_cols:
             self.grid.AppendCols(new_cols - current_cols)
-
+        if set_readonly:
+            note_col = [self.grid.GetColLabelValue(col) for col in range(new_cols)].index(Columns.NOTES)
+            [self.grid.SetReadOnly(row, col) for row in range(new_rows) for col in range(new_cols) if col != note_col]
 
     def status(self, text):
         self.status_bar.SetStatusText(text, 0)
@@ -420,7 +421,7 @@ class MainFrame(wx.Frame):
         if not default_bg:
             default_bg = self.grid.GetDefaultCellBackgroundColour()
         rows, cols = len(grid_state), len(grid_state[0]['cols'])
-        self.grid_set_shape(rows, cols)
+        self.grid_set_shape(rows, cols, True)
         for row in range(rows):
             for col in range(cols):
                 if grid_state[row]['color'] != default_bg:
@@ -434,14 +435,14 @@ class MainFrame(wx.Frame):
     def enter_search(self):
         self.in_search = True
         self.grid_push()
-        self.grid.SetDefaultCellBackgroundColour(self.grid_filtered_bg_color)
+        self.grid.SetDefaultCellBackgroundColour(Colors.FILTERED_GRID)
         self.grid.ForceRefresh()
 
     def paint_search_box(self, val):
         if val:
             self.search_box.SetBackgroundColour((255, 200, 200))
         else:
-            self.search_box.SetBackgroundColour(wx.WHITE)
+            self.search_box.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
         self.search_box.Refresh()
 
     def search(self, e=None):
@@ -456,7 +457,7 @@ class MainFrame(wx.Frame):
 
         filtered_grid_data = filter(match, self.full_grid_data)
         if filtered_grid_data:
-            self.grid_set(filtered_grid_data, default_bg=wx.WHITE)
+            self.grid_set(filtered_grid_data, self.grid_default_bg_color)
         self.paint_search_box(not bool(filtered_grid_data))
 
     def quit_search(self):
