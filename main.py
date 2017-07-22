@@ -32,6 +32,7 @@ class MainFrame(wx.Frame):
         self.items = None
         self.grid_rows = None
         self.in_search = False
+        self.full_grid = None
 
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
@@ -62,7 +63,6 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_exit,
                   menu_file.Append(wx.ID_EXIT, "E&xit"))
         menu_bar.Append(menu_file, "Fil&e")
-
 
         # --- Data ---
         menu_data = wx.Menu()
@@ -409,23 +409,40 @@ class MainFrame(wx.Frame):
         if self.is_dup_row(row):  # Extra check, this method is very dangerous.
             self.grid.DeleteRows(row)
 
+    def grid_push(self):
+        self.full_grid = [{'cols': [self.grid.GetCellValue(row, col) for col in range(self.grid.GetNumberCols())],
+                            'color':self.grid.GetCellBackgroundColour(row, 0)}
+                          for row in range(self.grid.GetNumberRows())]
+
+    def grid_set(self, grid_state):
+        rows, cols = len(grid_state), len(grid_state[0]['cols'])
+        self.grid_set_shape(rows, cols)
+        for row in range(rows):
+            for col in range(cols):
+                self.grid.SetCellBackgroundColour(row, col, grid_state[row]['color'])
+                self.grid.SetCellValue(row, col, grid_state[row]['cols'][col])
+
+    def grid_pop(self):
+        self.grid_set(self.full_grid)
+
+    def enter_search(self):
+        self.in_search = True
+        self.grid_push()
+        self.grid.SetDefaultCellBackgroundColour((255, 255, 128))
+        self.grid.ForceRefresh()
+
     def search(self, e=None):
         string = self.search_bar.GetValue()
         if string == 'Find' or not self.in_search or not string:
             return
-        print 'search:' + string
 
-    def enter_search(self):
-        self.in_search = True
-        self.grid.SetDefaultCellBackgroundColour((255, 255, 128))
-        self.grid.ForceRefresh()
-        print 'enter search'
+        # TODO: Show only rows that match search conditions
 
     def quit_search(self):
         self.in_search = False
         self.grid.SetDefaultCellBackgroundColour(wx.WHITE)
+        self.grid_pop()
         self.grid.ForceRefresh()
-        print 'quit search'
 
     # -------------------------------------------------- Player --------------------------------------------------
 
@@ -502,16 +519,17 @@ class MainFrame(wx.Frame):
 
     def on_timer(self, e):
         length, time = self.player.get_length(), self.player.get_time()
-        self.play_bar.SetRange(length-1000)  # FIXME: Don't know why it does not reach the end
+        self.play_bar.SetRange(length - 1000)  # FIXME: Don't know why it does not reach the end
         self.play_bar.SetValue(time)
 
-        self.play_time.SetLabel('-%02d:%02d' % divmod(length/1000 - time/1000, 60))
+        self.play_time.SetLabel('-%02d:%02d' % divmod(length / 1000 - time / 1000, 60))
 
         state = self.get_player_state(True)
         if state not in range(5):
             self.timer.Stop()
             self.play_bar.SetValue(0)
             self.switch_to_zad()
+
 
 if __name__ == "__main__":
     app = wx.App(False)
