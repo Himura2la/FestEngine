@@ -75,8 +75,9 @@ class BackgroundMusicPlayer(object):
             self.parent.bg_player_status(status)
             time.sleep(0.005)
 
+        self.parent.timer_start(500)
+
         if self.window_exists():
-            self.window.timer.Start(500)
             self.window.pause_btn.Enable(True)
 
         volume = 0 if self.fade_in_out else self.volume
@@ -105,7 +106,14 @@ class BackgroundMusicPlayer(object):
 
         if self.fade_in_out:
             pass
-        pass
+
+        self.player.set_pause(paused)
+
+#    |  ^
+#    |  |
+# [MainFrame]
+#    |  |
+#    v  |
 
 
 class BackgroundMusicFrame(wx.Frame):
@@ -175,9 +183,6 @@ class BackgroundMusicFrame(wx.Frame):
         self.time_label = wx.StaticText(self, label='Stopped', size=(50, -1), style=wx.ALIGN_CENTER)
         self.bottom_toolbar.Add(self.time_label, 0, wx.ALIGN_CENTER_VERTICAL)
 
-        self.timer = wx.Timer(self)  # Events make the app unstable. Plus we can update not too often
-        self.Bind(wx.EVT_TIMER, self.on_timer, self.timer)
-
         main_sizer.Add(self.top_toolbar, 0, wx.EXPAND)
         main_sizer.Add(self.grid, 1, wx.EXPAND | wx.TOP, border=1)
         main_sizer.Add(self.bottom_toolbar, 0, wx.EXPAND)
@@ -189,22 +194,3 @@ class BackgroundMusicFrame(wx.Frame):
         self.parent.background_volume = self.vol_slider.GetValue()  # Forwards to player
         self.vol_label.SetLabel('VOL: %d' % self.parent.background_volume)  # Gets from player
 
-    def on_timer(self, e):
-        player = self.parent.bg_player.player
-        length, time = player.get_length(), player.get_time()
-        self.time_slider.SetRange(0, length)
-        self.time_slider.SetValue(time)
-
-        time_remaining = '-%02d:%02d' % divmod(length / 1000 - time / 1000, 60)
-        self.time_label.SetLabel(time_remaining)
-
-        player_state = player.get_state()
-        status = '%s Vol:%d Time:%s' % (self.parent.player_state_parse(player_state),
-                                        player.audio_get_volume(), time_remaining)
-
-        self.parent.bg_player_status(status)
-
-        if player_state not in range(5):
-            self.timer.Stop()
-            self.time_slider.SetValue(0)
-            # Switch to next

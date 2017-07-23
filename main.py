@@ -39,6 +39,8 @@ class MainFrame(wx.Frame):
         self.full_grid_data = None
 
         self.bg_player = BackgroundMusicPlayer(self)
+        self.bg_player_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.on_background_timer, self.bg_player_timer)
 
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
@@ -646,6 +648,35 @@ class MainFrame(wx.Frame):
         if self.bg_player.window_exists():
             self.bg_player.window.vol_slider.SetValue(value)
 
+    def timer_start(self, val):
+        if val:
+            self.bg_player_timer.Start(val)
+        else:
+            self.bg_player_timer.Stop()
+
+    def on_background_timer(self, e):
+        player = self.bg_player.player
+        length, time = player.get_length(), player.get_time()
+
+        time_remaining = '-%02d:%02d' % divmod(length / 1000 - time / 1000, 60)
+
+        if self.bg_player.window_exists():
+            self.bg_player.window.time_slider.SetRange(0, length)
+            self.bg_player.window.time_slider.SetValue(time)
+            self.bg_player.window.time_label.SetLabel(time_remaining)
+
+        player_state = player.get_state()
+        status = '%s Vol:%d Time:%s' % (self.player_state_parse(player_state),
+                                        player.audio_get_volume(), time_remaining)
+
+        self.bg_player_status(status)
+
+        if player_state not in range(5):
+            self.timer.Stop()
+            if self.bg_player.window_exists():
+                self.bg_player.window.time_slider.SetValue(0)
+
+            # Switch to next
 
 if __name__ == "__main__":
     app = wx.App(False)
