@@ -1,4 +1,5 @@
 import os
+import time
 
 import vlc
 import wx
@@ -14,16 +15,8 @@ class BackgroundMusicPlayer(object):
         self.player.audio_set_mute(False)
         self.window = BackgroundMusicFrame(self.parent)  # None
         self.playlist = None
-        self._fade_in_out = True
-
-    @property
-    def fade_in_out(self):
-        return self._fade_in_out
-
-    @fade_in_out.setter
-    def fade_in_out(self, value):
-        self.window.fade_in_out_switch.SetValue(value)
-        self._fade_in_out = value
+        self._current_track_i = -1
+        self.fade_in_out = True
 
     def window_exists(self):
         return isinstance(self.window, BackgroundMusicFrame)
@@ -40,7 +33,7 @@ class BackgroundMusicPlayer(object):
 
     def load_files(self, dir):
         file_names = sorted(os.listdir(dir))
-        self.playlist = [{'name': f.rsplit('.', 1)[0], 'path': os.path.join(dir, f)} for f in file_names]
+        self.playlist = [{'title': f.rsplit('.', 1)[0], 'path': os.path.join(dir, f)} for f in file_names]
         if self.window_exists():
             self.load_playlist_to_grid()
 
@@ -49,16 +42,64 @@ class BackgroundMusicPlayer(object):
             self.window.grid.DeleteRows(0, self.window.grid.GetNumberRows(), False)
         self.window.grid.AppendRows(len(self.playlist))
         for i in range(len(self.playlist)):
-            self.window.grid.SetCellValue(i, 0, self.playlist[i]['name'])
+            self.window.grid.SetCellValue(i, 0, self.playlist[i]['title'])
             self.window.grid.SetReadOnly(i, 0)
         self.window.grid.AutoSize()
         self.window.Layout()
+        self.window.play_btn.Enable(True)
+
+    def select_track(self):
+        if not self.playlist:
+            return
+        if self.window_exists():
+            self._current_track_i = self.window.grid.GetSelectedRows()[0]
+        else:
+            self._current_track_i = (self._current_track_i + 1) % len(self.playlist)
+        return self._current_track_i
 
     def play(self):
+        if not self.playlist:
+            return
+
+        self.player.set_media(self.vlc_instance.media_new(self.playlist[self.select_track()]['path']))
+        if self.player.play() != 0:  # [Play] button is pushed here!
+            return
+
+        state = self.player.get_state()
+        start = time.time()
+        while state != vlc.State.Playing:
+            state = self.player.get_state()
+            status = "%s [%fs]" % (self.parent.player_state_parse(state), (time.time() - start))
+            self.parent.bg_player_status(status)
+            time.sleep(0.005)
+
+        # self.timer.Start(500)
+        self.window.pause_btn.Enable(True)
+
+        volume = 0 if self.fade_in_out else self.window.vol_slider.GetValue()
+        start = time.time()
+        while self.player.audio_get_volume() != volume:
+            self.player.audio_set_mute(False)
+            self.player.audio_set_volume(volume)
+            status = "Trying to unmute... [%fs]" % (time.time() - start)
+            self.parent.bg_player_status(status)
+            time.sleep(0.002)
+
         if self.fade_in_out:
-            pass
+            for i in range(0, self.window.vol_slider.GetValue(), 1):
+                self.player.audio_set_volume(i)
+                vol_msg = 'Vol: %d' % self.player.audio_get_volume()
+                self.parent.bg_player_status('Fading in... ' + vol_msg)
+                time.sleep(0.05)
+
+        self.parent.bg_player_status("%s Vol:%d" %
+                                     (self.parent.player_state_parse(self.player.get_state()),
+                                      self.player.audio_get_volume()))
 
     def pause(self, paused):
+        if not self.playlist:
+            return
+
         if self.fade_in_out:
             pass
         pass
@@ -78,22 +119,25 @@ class BackgroundMusicFrame(wx.Frame):
 
         self.fade_in_out_switch = wx.CheckBox(self, label='FAD')
         self.toolbar.Add(self.fade_in_out_switch, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=3)
+        self.fade_in_out_switch.Bind(wx.EVT_CHECKBOX, self.parent.fade_switched)
 
         self.play_btn = wx.Button(self, label="Play", size=(70, toolbar_base_height + 2))
+        self.play_btn.Enable(False)
         self.toolbar.Add(self.play_btn, 0)
         self.play_btn.Bind(wx.EVT_BUTTON, parent.background_play)
         # Forwarding events through the main window, because this frame is optional and may be absent.
 
         self.pause_btn = wx.ToggleButton(self, label="Pause", size=(70, toolbar_base_height + 2))
+        self.pause_btn.Enable(False)
         self.toolbar.Add(self.pause_btn, 0)
         self.pause_btn.Bind(wx.EVT_TOGGLEBUTTON, parent.background_pause)
 
         self.vol_slider = wx.Slider(self, value=0, minValue=0, maxValue=150)
         self.toolbar.Add(self.vol_slider, 1, wx.EXPAND)
+        self.vol_slider.Bind(wx.EVT_SLIDER, self.set_volume_from_slider)
+
         self.vol_label = wx.StaticText(self, label='VOL', size=(50, -1), style=wx.ALIGN_LEFT)
         self.toolbar.Add(self.vol_label, 0, wx.ALIGN_CENTER_VERTICAL)
-
-        self.vol_slider.Bind(wx.EVT_SLIDER, self.set_volume_from_slider)
 
         # --- Table ---
         self.grid = wx.grid.Grid(self)

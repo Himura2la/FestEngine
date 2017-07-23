@@ -101,11 +101,9 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, lambda e: self.bg_player.show_window(),
                   bg_music_menu.Append(wx.ID_ANY, "&Open Window"))
 
-        def fade_switched(e):
-            self.bg_player.fade_in_out = bool(e.Int)
         self.fade_switch = bg_music_menu.Append(wx.ID_ANY, "&Fade In/Out", kind=wx.ITEM_CHECK)
         self.fade_switch.Check(self.bg_player.fade_in_out)
-        self.Bind(wx.EVT_MENU, fade_switched, self.fade_switch)
+        self.Bind(wx.EVT_MENU, self.fade_switched, self.fade_switch)
 
         menu_bar.Append(bg_music_menu, "&Background Music")
 
@@ -622,13 +620,20 @@ class MainFrame(wx.Frame):
 
     # -------------------------------------------- Background Music Player --------------------------------------------
 
+    def fade_switched(self, e):
+        value = bool(e.Int)
+        self.bg_player.fade_in_out = value
+        if isinstance(e.EventObject, wx.CheckBox):
+            self.fade_switch.Check(value)
+        elif isinstance(e.EventObject, wx.Menu) and self.bg_player.window_exists():
+            self.bg_player.window.fade_in_out_switch.SetValue(value)
+
     def background_play(self, e=None):
         self.bg_player.play()
 
     def background_pause(self, e=None, paused=None):
         value = bool(e.Int) if e else paused
         self.bg_player.pause(value)
-
 
     @property
     def background_volume(self):
