@@ -31,7 +31,7 @@ class BackgroundMusicPlayer(object):
             self.window = BackgroundMusicFrame(self.parent)
         self.window.Show()
         self.window.fade_in_out_switch.SetValue(self.fade_in_out)
-        self.window.vol_slider.SetValue(self.player.audio_get_volume())
+        self.window.vol_slider.SetValue(self.volume)
         self.window.set_volume_from_slider()
         if self.playlist:
             self.load_playlist_to_grid()
@@ -52,8 +52,12 @@ class BackgroundMusicPlayer(object):
         self.window.grid.AutoSize()
         self.window.Layout()
         self.window.play_btn.Enable(True)
-        if self.parent.bg_player.player.get_state() in range(5):  # If playing
+        player_state = self.parent.bg_player.player.get_state()
+        if player_state in range(5):  # If playing
             self.window.grid.SetCellBackgroundColour(self.current_track_i, 0, Colors.DUP_ROW)
+            self.window.pause_btn.SetValue(player_state == vlc.State.Paused)
+
+
 
     def select_track(self, select_next=False):
         if not self.playlist:

@@ -98,14 +98,27 @@ class MainFrame(wx.Frame):
 
         bg_music_menu = wx.Menu()
 
-        self.Bind(wx.EVT_MENU, lambda e: self.bg_player.load_files(background_mp3_dir),
+        def bg_load_files_handler(e):
+            self.bg_player.load_files(background_mp3_dir)
+            self.bg_play_menu_item.Enable(True)
+        self.Bind(wx.EVT_MENU, bg_load_files_handler,
                   bg_music_menu.Append(wx.ID_ANY, "&Load Files"))
         self.Bind(wx.EVT_MENU, lambda e: self.bg_player.show_window(),
                   bg_music_menu.Append(wx.ID_ANY, "&Open Window"))
 
-        self.fade_switch = bg_music_menu.Append(wx.ID_ANY, "&Fade In/Out", kind=wx.ITEM_CHECK)
-        self.fade_switch.Check(self.bg_player.fade_in_out)
-        self.Bind(wx.EVT_MENU, self.fade_switched, self.fade_switch)
+        bg_music_menu.AppendSeparator()
+
+        self.bg_fade_menu_switch = bg_music_menu.Append(wx.ID_ANY, "&Fade In/Out", kind=wx.ITEM_CHECK)
+        self.bg_fade_menu_switch.Check(self.bg_player.fade_in_out)
+        self.Bind(wx.EVT_MENU, self.fade_switched, self.bg_fade_menu_switch)
+
+        self.bg_play_menu_item = bg_music_menu.Append(wx.ID_ANY, "&Play Next")
+        self.Bind(wx.EVT_MENU, self.background_play, self.bg_play_menu_item)
+        self.bg_play_menu_item.Enable(False)
+
+        self.bg_pause_menu_switch = bg_music_menu.Append(wx.ID_ANY, "&Pause", kind=wx.ITEM_CHECK)
+        self.bg_pause_menu_switch.Enable(False)
+        self.Bind(wx.EVT_MENU, self.background_pause, self.bg_pause_menu_switch)
 
         menu_bar.Append(bg_music_menu, "&Background Music")
 
@@ -626,17 +639,22 @@ class MainFrame(wx.Frame):
         value = bool(e.Int)
         self.bg_player.fade_in_out = value
         if isinstance(e.EventObject, wx.CheckBox):
-            self.fade_switch.Check(value)
+            self.bg_fade_menu_switch.Check(value)
         elif isinstance(e.EventObject, wx.Menu) and self.bg_player.window_exists():
             self.bg_player.window.fade_in_out_switch.SetValue(value)
 
     def background_play(self, e=None):
         self.bg_player.select_track()
         self.bg_player.play()
+        self.bg_pause_menu_switch.Enable(True)
 
     def background_pause(self, e=None, paused=None):
         value = bool(e.Int) if e else paused
         self.bg_player.pause(value)
+        if isinstance(e.EventObject, wx.ToggleButton):
+            self.bg_pause_menu_switch.Check(value)
+        elif isinstance(e.EventObject, wx.Menu) and self.bg_player.window_exists():
+            self.bg_player.window.pause_btn.SetValue(value)
 
     @property
     def background_volume(self):
