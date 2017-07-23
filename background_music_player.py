@@ -25,13 +25,34 @@ class BackgroundMusicPlayer(object):
         self.window.fade_in_out_switch.SetValue(value)
         self._fade_in_out = value
 
+    def window_exists(self):
+        return isinstance(self.window, BackgroundMusicFrame)
+
     def show_window(self):
-        if not isinstance(self.window, BackgroundMusicFrame):
+        if not self.window_exists():
             self.window = BackgroundMusicFrame(self.parent)
         self.window.Show()
         self.window.fade_in_out_switch.SetValue(self.fade_in_out)
         self.window.vol_slider.SetValue(self.player.audio_get_volume())
         self.window.set_volume_from_slider()
+        if self.playlist:
+            self.load_playlist_to_grid()
+
+    def load_files(self, dir):
+        file_names = sorted(os.listdir(dir))
+        self.playlist = [{'name': f.rsplit('.', 1)[0], 'path': os.path.join(dir, f)} for f in file_names]
+        if self.window_exists():
+            self.load_playlist_to_grid()
+
+    def load_playlist_to_grid(self):
+        if self.window.grid.GetNumberRows() > 0:
+            self.window.grid.DeleteRows(0, self.window.grid.GetNumberRows(), False)
+        self.window.grid.AppendRows(len(self.playlist))
+        for i in range(len(self.playlist)):
+            self.window.grid.SetCellValue(i, 0, self.playlist[i]['name'])
+            self.window.grid.SetReadOnly(i, 0)
+        self.window.grid.AutoSize()
+        self.window.Layout()
 
     def play(self):
 
@@ -43,19 +64,6 @@ class BackgroundMusicPlayer(object):
         if self.fade_in_out:
             pass
         pass
-
-    def load_files(self, dir):
-        file_names = sorted(os.listdir(dir))
-        self.playlist = [{'name': f.rsplit('.', 1)[0], 'path': os.path.join(dir, f)} for f in file_names]
-        if self.window.grid.GetNumberRows() > 0:
-            self.window.grid.DeleteRows(0, self.window.grid.GetNumberRows(), False)
-        self.window.grid.AppendRows(len(self.playlist))
-        for i in range(len(self.playlist)):
-            self.window.grid.SetCellValue(i, 0, self.playlist[i]['name'])
-            self.window.grid.SetReadOnly(i, 0)
-        self.window.grid.AutoSize()
-        self.window.Layout()
-
 
 class BackgroundMusicFrame(wx.Frame):
     def __init__(self, parent):
@@ -112,6 +120,5 @@ class BackgroundMusicFrame(wx.Frame):
         self.Layout()
 
     def set_volume_from_slider(self, e=None):
-        value = self.vol_slider.GetValue()
-        self.parent.background_volume = value  # Forwards to player
+        self.parent.background_volume = self.vol_slider.GetValue()  # Forwards to player
         self.vol_label.SetLabel('VOL: %d' % self.parent.background_volume)  # Gets from player
