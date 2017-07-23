@@ -630,6 +630,14 @@ class MainFrame(wx.Frame):
         self.bg_player.stop()
         pass
 
+    @property
+    def background_volume(self):
+        return self.bg_player.player.audio_get_volume()
+
+    @background_volume.setter
+    def background_volume(self, value):
+        self.bg_player.player.audio_set_volume(value)
+        self.bg_player.window.vol_slider.SetValue(value)
 
 
 if __name__ == "__main__":

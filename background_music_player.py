@@ -30,6 +30,8 @@ class BackgroundMusicPlayer(object):
             self.window = BackgroundMusicFrame(self.parent)
         self.window.Show()
         self.window.fade_in_out_switch.SetValue(self.fade_in_out)
+        self.window.vol_slider.SetValue(self.player.audio_get_volume())
+        self.window.set_volume_from_slider()
 
     def play(self):
 
@@ -57,6 +59,7 @@ class BackgroundMusicPlayer(object):
 
 class BackgroundMusicFrame(wx.Frame):
     def __init__(self, parent):
+        self.parent = parent
         wx.Frame.__init__(self, parent, title='Background Music Player', size=(400, 500))
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
 
@@ -77,6 +80,13 @@ class BackgroundMusicFrame(wx.Frame):
         self.stop_btn = wx.Button(self, label="Stop", size=(70, toolbar_base_height + 2))
         self.toolbar.Add(self.stop_btn, 0)
         self.stop_btn.Bind(wx.EVT_BUTTON, parent.background_stop)
+
+        self.vol_slider = wx.Slider(self, value=0, minValue=0, maxValue=150)
+        self.toolbar.Add(self.vol_slider, 1, wx.EXPAND)
+        self.vol_label = wx.StaticText(self, label='VOL', size=(50, -1), style=wx.ALIGN_LEFT)
+        self.toolbar.Add(self.vol_label, 0, wx.ALIGN_CENTER_VERTICAL)
+
+        self.vol_slider.Bind(wx.EVT_SLIDER, self.set_volume_from_slider)
 
         # --- Table ---
         self.grid = wx.grid.Grid(self)
@@ -101,3 +111,7 @@ class BackgroundMusicFrame(wx.Frame):
         self.SetSizer(main_sizer)
         self.Layout()
 
+    def set_volume_from_slider(self, e=None):
+        value = self.vol_slider.GetValue()
+        self.parent.background_volume = value  # Forwards to player
+        self.vol_label.SetLabel('VOL: %d' % self.parent.background_volume)  # Gets from player
