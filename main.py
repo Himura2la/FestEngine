@@ -145,10 +145,10 @@ class MainFrame(wx.Frame):
         self.toolbar.Add(self.fade_out_btn, 0)
         self.fade_out_btn.Bind(wx.EVT_BUTTON, self.stop)
 
-        self.play_bar = wx.Gauge(self, range=1, size=(-1, toolbar_base_height))
-        self.toolbar.Add(self.play_bar, 1, wx.ALIGN_CENTER_VERTICAL)
-        self.play_time = wx.StaticText(self, label='Stopped', size=(50, -1), style=wx.ALIGN_CENTER)
-        self.toolbar.Add(self.play_time, 0, wx.ALIGN_CENTER_VERTICAL)
+        self.time_bar = wx.Gauge(self, range=1, size=(-1, toolbar_base_height))
+        self.toolbar.Add(self.time_bar, 1, wx.ALIGN_CENTER_VERTICAL)
+        self.time_label = wx.StaticText(self, label='Stopped', size=(50, -1), style=wx.ALIGN_CENTER)
+        self.toolbar.Add(self.time_label, 0, wx.ALIGN_CENTER_VERTICAL)
 
         self.timer = wx.Timer(self)  # Events make the app unstable. Plus we can update not too often
         self.Bind(wx.EVT_TIMER, self.on_timer, self.timer)
@@ -576,9 +576,9 @@ class MainFrame(wx.Frame):
                 time.sleep(0.01)
             self.fade_out_btn.SetLabel(label)
         self.player.stop()
-        self.play_bar.SetValue(0)
+        self.time_bar.SetValue(0)
         self.player_status(self.player_state_parse(self.player.get_state()))
-        self.play_time.SetLabel('Stopped')
+        self.time_label.SetLabel('Stopped')
 
     def set_vol(self, e=None, vol=100):
         value = e.Int if e else vol
@@ -601,11 +601,11 @@ class MainFrame(wx.Frame):
 
     def on_timer(self, e):
         length, time = self.player.get_length(), self.player.get_time()
-        self.play_bar.SetRange(length - 1000)  # FIXME: Don't know why it does not reach the end
-        self.play_bar.SetValue(time)
+        self.time_bar.SetRange(length - 1000)  # FIXME: Don't know why it does not reach the end
+        self.time_bar.SetValue(time)
 
         time_remaining = '-%02d:%02d' % divmod(length / 1000 - time / 1000, 60)
-        self.play_time.SetLabel(time_remaining)
+        self.time_label.SetLabel(time_remaining)
 
         player_state = self.player.get_state()
         status = '%s Vol:%d Time:%s' % (self.player_state_parse(player_state),
@@ -615,7 +615,7 @@ class MainFrame(wx.Frame):
 
         if player_state not in range(5):
             self.timer.Stop()
-            self.play_bar.SetValue(0)
+            self.time_bar.SetValue(0)
             self.switch_to_zad()
 
     # -------------------------------------------- Background Music Player --------------------------------------------
@@ -641,8 +641,10 @@ class MainFrame(wx.Frame):
 
     @background_volume.setter
     def background_volume(self, value):
+        self.bg_player.volume = value
         self.bg_player.player.audio_set_volume(value)
-        self.bg_player.window.vol_slider.SetValue(value)
+        if self.bg_player.window_exists():
+            self.bg_player.window.vol_slider.SetValue(value)
 
 
 if __name__ == "__main__":

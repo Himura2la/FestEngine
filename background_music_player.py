@@ -9,9 +9,11 @@ import wx.grid
 class BackgroundMusicPlayer(object):
     def __init__(self, parent):
         self.parent = parent
+
+        self.volume = 50
         self.vlc_instance = vlc.Instance()
         self.player = self.vlc_instance.media_player_new()
-        self.player.audio_set_volume(50)
+        self.player.audio_set_volume(self.volume)
         self.player.audio_set_mute(False)
         self.window = BackgroundMusicFrame(self.parent)  # None
         self.playlist = None
@@ -73,10 +75,11 @@ class BackgroundMusicPlayer(object):
             self.parent.bg_player_status(status)
             time.sleep(0.005)
 
-        # self.timer.Start(500)
-        self.window.pause_btn.Enable(True)
+        if self.window_exists():
+            self.window.timer.Start(500)
+            self.window.pause_btn.Enable(True)
 
-        volume = 0 if self.fade_in_out else self.window.vol_slider.GetValue()
+        volume = 0 if self.fade_in_out else self.volume
         start = time.time()
         while self.player.audio_get_volume() != volume:
             self.player.audio_set_mute(False)
@@ -86,7 +89,7 @@ class BackgroundMusicPlayer(object):
             time.sleep(0.002)
 
         if self.fade_in_out:
-            for i in range(0, self.window.vol_slider.GetValue(), 1):
+            for i in range(0, self.volume + 1, 1):
                 self.player.audio_set_volume(i)
                 vol_msg = 'Vol: %d' % self.player.audio_get_volume()
                 self.parent.bg_player_status('Fading in... ' + vol_msg)
@@ -114,30 +117,30 @@ class BackgroundMusicFrame(wx.Frame):
         # ---------------------------------------------- Layout -----------------------------------------------------
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.toolbar = wx.BoxSizer(wx.HORIZONTAL)
+        self.top_toolbar = wx.BoxSizer(wx.HORIZONTAL)
         toolbar_base_height = 20
 
         self.fade_in_out_switch = wx.CheckBox(self, label='FAD')
-        self.toolbar.Add(self.fade_in_out_switch, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=3)
+        self.top_toolbar.Add(self.fade_in_out_switch, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=3)
         self.fade_in_out_switch.Bind(wx.EVT_CHECKBOX, self.parent.fade_switched)
 
         self.play_btn = wx.Button(self, label="Play", size=(70, toolbar_base_height + 2))
         self.play_btn.Enable(False)
-        self.toolbar.Add(self.play_btn, 0)
+        self.top_toolbar.Add(self.play_btn, 0)
         self.play_btn.Bind(wx.EVT_BUTTON, parent.background_play)
         # Forwarding events through the main window, because this frame is optional and may be absent.
 
         self.pause_btn = wx.ToggleButton(self, label="Pause", size=(70, toolbar_base_height + 2))
         self.pause_btn.Enable(False)
-        self.toolbar.Add(self.pause_btn, 0)
+        self.top_toolbar.Add(self.pause_btn, 0)
         self.pause_btn.Bind(wx.EVT_TOGGLEBUTTON, parent.background_pause)
 
         self.vol_slider = wx.Slider(self, value=0, minValue=0, maxValue=150)
-        self.toolbar.Add(self.vol_slider, 1, wx.EXPAND)
+        self.top_toolbar.Add(self.vol_slider, 1, wx.EXPAND)
         self.vol_slider.Bind(wx.EVT_SLIDER, self.set_volume_from_slider)
 
         self.vol_label = wx.StaticText(self, label='VOL', size=(50, -1), style=wx.ALIGN_LEFT)
-        self.toolbar.Add(self.vol_label, 0, wx.ALIGN_CENTER_VERTICAL)
+        self.top_toolbar.Add(self.vol_label, 0, wx.ALIGN_CENTER_VERTICAL)
 
         # --- Table ---
         self.grid = wx.grid.Grid(self)
@@ -156,8 +159,28 @@ class BackgroundMusicFrame(wx.Frame):
         self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
         self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
 
-        main_sizer.Add(self.toolbar, 0, wx.EXPAND)
+        # --- Time Slider ---
+
+        self.bottom_toolbar = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.lock_btn = wx.ToggleButton(self, label="LOC", size=(35, -1))
+        self.bottom_toolbar.Add(self.lock_btn, 0, wx.ALIGN_CENTER_VERTICAL)
+        self.lock_btn.Bind(wx.EVT_TOGGLEBUTTON, lambda e: self.time_slider.Enable(not e.Int))
+        self.lock_btn.SetValue(True)
+
+        self.time_slider = wx.Slider(self, value=0, minValue=0, maxValue=1)
+        self.bottom_toolbar.Add(self.time_slider, 1, wx.EXPAND)
+        self.time_slider.Enable(False)
+
+        self.time_label = wx.StaticText(self, label='Stopped', size=(50, -1), style=wx.ALIGN_CENTER)
+        self.bottom_toolbar.Add(self.time_label, 0, wx.ALIGN_CENTER_VERTICAL)
+
+        self.timer = wx.Timer(self)  # Events make the app unstable. Plus we can update not too often
+        self.Bind(wx.EVT_TIMER, self.on_timer, self.timer)
+
+        main_sizer.Add(self.top_toolbar, 0, wx.EXPAND)
         main_sizer.Add(self.grid, 1, wx.EXPAND | wx.TOP, border=1)
+        main_sizer.Add(self.bottom_toolbar, 0, wx.EXPAND)
 
         self.SetSizer(main_sizer)
         self.Layout()
@@ -165,3 +188,23 @@ class BackgroundMusicFrame(wx.Frame):
     def set_volume_from_slider(self, e=None):
         self.parent.background_volume = self.vol_slider.GetValue()  # Forwards to player
         self.vol_label.SetLabel('VOL: %d' % self.parent.background_volume)  # Gets from player
+
+    def on_timer(self, e):
+        player = self.parent.bg_player.player
+        length, time = player.get_length(), player.get_time()
+        self.time_slider.SetRange(0, length)
+        self.time_slider.SetValue(time)
+
+        time_remaining = '-%02d:%02d' % divmod(length / 1000 - time / 1000, 60)
+        self.time_label.SetLabel(time_remaining)
+
+        player_state = player.get_state()
+        status = '%s Vol:%d Time:%s' % (self.parent.player_state_parse(player_state),
+                                        player.audio_get_volume(), time_remaining)
+
+        self.parent.bg_player_status(status)
+
+        if player_state not in range(5):
+            self.timer.Stop()
+            self.time_slider.SetValue(0)
+            # Switch to next
