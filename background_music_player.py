@@ -8,6 +8,7 @@ import wx.grid
 from constants import Colors
 
 
+
 class BackgroundMusicPlayer(object):
     def __init__(self, parent):
         self.parent = parent
@@ -38,7 +39,9 @@ class BackgroundMusicPlayer(object):
 
     def load_files(self, dir):
         file_names = sorted(os.listdir(dir))
-        self.playlist = [{'title': f.rsplit('.', 1)[0], 'path': os.path.join(dir, f)} for f in file_names]
+        self.playlist = [{'title': f.rsplit('.', 1)[0],
+                          'path': os.path.join(dir, f),
+                          'color': Colors.BG_NEVER_PLAYED} for f in file_names]
         if self.window_exists():
             self.load_playlist_to_grid()
 
@@ -49,20 +52,27 @@ class BackgroundMusicPlayer(object):
         for i in range(len(self.playlist)):
             self.window.grid.SetCellValue(i, 0, self.playlist[i]['title'])
             self.window.grid.SetReadOnly(i, 0)
+            self.window.grid.SetCellBackgroundColour(i, 0, self.playlist[i]['color'])
         self.window.grid.AutoSize()
         self.window.Layout()
         self.window.play_btn.Enable(True)
         player_state = self.parent.bg_player.player.get_state()
         if player_state in range(5):  # If playing
-            self.window.grid.SetCellBackgroundColour(self.current_track_i, 0, Colors.DUP_ROW)
             self.window.pause_btn.SetValue(player_state == vlc.State.Paused)
-
-
 
     def select_track(self, select_next=False):
         if not self.playlist:
             return
+        if self.current_track_i >= 0:
+            if self.player.get_state() in {vlc.State.Playing, vlc.State.Paused}:
+                self.playlist[self.current_track_i]['color'] = Colors.BG_SKIPPED
+            else:
+                self.playlist[self.current_track_i]['color'] = Colors.BG_PLAYED_TO_END  # BUG: Paints current
+
         if self.window_exists():
+            self.window.grid.SetCellBackgroundColour(self.current_track_i, 0,
+                                                     self.playlist[self.current_track_i]['color'])
+            self.window.grid.ForceRefresh()  # Updates colors
             self.current_track_i = self.window.grid.GetSelectedRows()[0]
         if not self.window_exists() or select_next:
             self.current_track_i = (self.current_track_i + 1) % len(self.playlist)
@@ -99,10 +109,13 @@ class BackgroundMusicPlayer(object):
             time.sleep(0.005)
 
         self.parent.timer_start(self.timer_update_ms)
+        self.playlist[self.current_track_i]['color'] = Colors.BG_PLAYING_NOW
 
         if self.window_exists():
             self.window.pause_btn.Enable(True)
-            self.window.grid.SetCellBackgroundColour(self.current_track_i, 0, Colors.DUP_ROW)
+            self.window.grid.SetCellBackgroundColour(self.current_track_i, 0, Colors.BG_PLAYING_NOW)
+            self.window.grid.ForceRefresh()  # Updates colors
+            self.window.pause_btn.SetValue(False)
 
         volume = 0 if self.fade_in_out else self.volume
         start = time.time()

@@ -112,7 +112,7 @@ class MainFrame(wx.Frame):
         self.bg_fade_menu_switch.Check(self.bg_player.fade_in_out)
         self.Bind(wx.EVT_MENU, self.fade_switched, self.bg_fade_menu_switch)
 
-        self.bg_play_menu_item = bg_music_menu.Append(wx.ID_ANY, "&Play Next")
+        self.bg_play_menu_item = bg_music_menu.Append(wx.ID_ANY, "&Play/Skip")
         self.Bind(wx.EVT_MENU, self.background_play, self.bg_play_menu_item)
         self.bg_play_menu_item.Enable(False)
 
@@ -698,7 +698,6 @@ class MainFrame(wx.Frame):
             if self.bg_player.window_exists():
                 self.bg_player.window.time_slider.SetValue(0)
 
-            self.bg_player.window.grid.SetCellBackgroundColour(self.bg_player.current_track_i, 0,Colors.FILTERED_GRID)
             self.bg_player.select_track(True)
             self.background_play()
 
