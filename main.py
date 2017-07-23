@@ -17,9 +17,10 @@ from constants import Config, Colors, Columns
 from background_music_player import BackgroundMusicPlayer
 
 # TODO: Move this to settings
-zad_path = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
-mp3_path = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered"
+zad_dir = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
+mp3_dir = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered"
 background_zad_path = None
+background_mp3_dir = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\\background"
 filename_re = "^(?P<nom>\w{1,2})( \[(?P<start>[GW]{1})\])?\. (?P<name>.*?)(\(.(?P<num>\d{1,3})\))?$"
 debug_output = True
 
@@ -42,9 +43,9 @@ class MainFrame(wx.Frame):
 
         # --- File ---
         menu_file = wx.Menu()
-        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(mp3_path)),
+        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(mp3_dir)),
                   menu_file.Append(wx.ID_ANY, "Open &mp3 folder"))
-        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(zad_path)),
+        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(zad_dir)),
                   menu_file.Append(wx.ID_ANY, "Open &zad folder"))
 
         menu_file.AppendSeparator()
@@ -69,8 +70,8 @@ class MainFrame(wx.Frame):
 
         # --- Data ---
         menu_data = wx.Menu()
-        self.load_data_item = menu_data.Append(wx.ID_ANY, "&Load Data")
-        self.Bind(wx.EVT_MENU, self.load_data, self.load_data_item)
+        self.load_data_item = menu_data.Append(wx.ID_ANY, "&Load Files")
+        self.Bind(wx.EVT_MENU, self.load_files, self.load_data_item)
 
         menu_data.AppendSeparator()
 
@@ -83,7 +84,7 @@ class MainFrame(wx.Frame):
         # --- Projector Window ---
         proj_win_menu = wx.Menu()
         self.Bind(wx.EVT_MENU, self.ensure_proj_win,
-                  proj_win_menu.Append(wx.ID_ANY, "&Create/Show"))
+                  proj_win_menu.Append(wx.ID_ANY, "&Show"))
         self.destroy_proj_win_item = proj_win_menu.Append(wx.ID_ANY, "&Destroy")
         self.destroy_proj_win_item.Enable(False)
         self.Bind(wx.EVT_MENU, self.destroy_proj_win, self.destroy_proj_win_item)
@@ -93,17 +94,17 @@ class MainFrame(wx.Frame):
 
         bg_music_menu = wx.Menu()
 
-        self.Bind(wx.EVT_MENU, lambda e: self.bg_player.create_window(),
-                  bg_music_menu.Append(wx.ID_ANY, "&Create/Show window"))
-
-
+        self.Bind(wx.EVT_MENU, lambda e: self.bg_player.load_files(background_mp3_dir),
+                  bg_music_menu.Append(wx.ID_ANY, "&Load Files"))
+        self.Bind(wx.EVT_MENU, lambda e: self.bg_player.show_window(),
+                  bg_music_menu.Append(wx.ID_ANY, "&Open Window"))
         menu_bar.Append(bg_music_menu, "&Background Music")
 
         # --- Fire (Play) ---
         menu_play = wx.Menu()
         menu_no_show = menu_play.Append(wx.ID_ANY, "&No Show\tEsc")
-        menu_show_zad = menu_play.Append(wx.ID_ANY, "Show &zad\tF1")
-        menu_play_mp3 = menu_play.Append(wx.ID_ANY, "&Play\tF2")
+        menu_show_zad = menu_play.Append(wx.ID_ANY, "Show &ZAD\tF1")
+        menu_play_mp3 = menu_play.Append(wx.ID_ANY, "&Play Sound/Video\tF2")
         self.Bind(wx.EVT_MENU, self.no_show, menu_no_show)
         self.Bind(wx.EVT_MENU, self.show_zad, menu_show_zad)
         self.Bind(wx.EVT_MENU, self.play, menu_play_mp3)
@@ -213,7 +214,7 @@ class MainFrame(wx.Frame):
         self.Show(True)
         self.grid.SetFocus()
 
-        self.load_data()
+        self.load_files()
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -318,14 +319,14 @@ class MainFrame(wx.Frame):
 
     # -------------------------------------------------- Data --------------------------------------------------
 
-    def load_data(self, e=None):
-        zad_file_names = os.listdir(zad_path)
-        mp3_file_names = os.listdir(mp3_path)
+    def load_files(self, e=None):
+        zad_file_names = os.listdir(zad_dir)
+        mp3_file_names = os.listdir(mp3_dir)
 
-        self.items = {a.split(' ', 1)[0]: {os.path.join(zad_path, a)} for a in zad_file_names}
+        self.items = {a.split(' ', 1)[0]: {os.path.join(zad_dir, a)} for a in zad_file_names}
         for file_name in mp3_file_names:
             id = file_name.split(' ', 1)[0]
-            path = os.path.join(mp3_path, file_name)
+            path = os.path.join(mp3_dir, file_name)
             if id in self.items:
                 self.items[id].add(path)
             else:
@@ -515,8 +516,7 @@ class MainFrame(wx.Frame):
             self.player_status("Nothing to play for '%s'" % self.items[id]['name'])
             return
 
-        media = self.vlc_instance.media_new(file_path)
-        self.player.set_media(media)
+        self.player.set_media(self.vlc_instance.media_new(file_path))
 
         if self.player.play() != 0:                     # [Play] button is pushed here!
             self.player_status("Playback FAILED !!!")
