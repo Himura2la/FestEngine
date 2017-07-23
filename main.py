@@ -631,6 +631,7 @@ class MainFrame(wx.Frame):
             self.bg_player.window.fade_in_out_switch.SetValue(value)
 
     def background_play(self, e=None):
+        self.bg_player.select_track()
         self.bg_player.play()
 
     def background_pause(self, e=None, paused=None):
@@ -655,13 +656,10 @@ class MainFrame(wx.Frame):
             self.bg_player_timer.Stop()
 
     def on_background_timer(self, e):
-
         player = self.bg_player.player
         length, time = player.get_length(), player.get_time()
 
         time_remaining = '-%02d:%02d' % divmod(length / 1000 - time / 1000, 60)
-
-        print 'bg_timer', time
 
         if self.bg_player.window_exists():
             self.bg_player.window.time_slider.SetRange(0, length)
@@ -682,7 +680,9 @@ class MainFrame(wx.Frame):
             if self.bg_player.window_exists():
                 self.bg_player.window.time_slider.SetValue(0)
 
-            # Switch to next
+            self.bg_player.window.grid.SetCellBackgroundColour(self.bg_player.current_track_i, 0,Colors.FILTERED_GRID)
+            self.bg_player.select_track(True)
+            self.background_play()
 
 if __name__ == "__main__":
     app = wx.App(False)
