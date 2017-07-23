@@ -655,10 +655,13 @@ class MainFrame(wx.Frame):
             self.bg_player_timer.Stop()
 
     def on_background_timer(self, e):
+
         player = self.bg_player.player
         length, time = player.get_length(), player.get_time()
 
         time_remaining = '-%02d:%02d' % divmod(length / 1000 - time / 1000, 60)
+
+        print 'bg_timer', time
 
         if self.bg_player.window_exists():
             self.bg_player.window.time_slider.SetRange(0, length)
@@ -671,8 +674,11 @@ class MainFrame(wx.Frame):
 
         self.bg_player_status(status)
 
+        if player_state == vlc.State.Paused:
+            self.bg_player_timer.Stop()
+
         if player_state not in range(5):
-            self.timer.Stop()
+            self.bg_player_timer.Stop()
             if self.bg_player.window_exists():
                 self.bg_player.window.time_slider.SetValue(0)
 

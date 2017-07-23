@@ -10,6 +10,7 @@ class BackgroundMusicPlayer(object):
     def __init__(self, parent):
         self.parent = parent
 
+        self.timer_update_ms = 500
         self.volume = 50
         self.vlc_instance = vlc.Instance()
         self.player = self.vlc_instance.media_player_new()
@@ -75,7 +76,7 @@ class BackgroundMusicPlayer(object):
             self.parent.bg_player_status(status)
             time.sleep(0.005)
 
-        self.parent.timer_start(500)
+        self.parent.timer_start(self.timer_update_ms)
 
         if self.window_exists():
             self.window.pause_btn.Enable(True)
@@ -109,6 +110,10 @@ class BackgroundMusicPlayer(object):
 
         self.player.set_pause(paused)
 
+        if not paused:
+            self.parent.timer_start(self.timer_update_ms)
+
+
 #    |  ^
 #    |  |
 # [MainFrame]
@@ -139,7 +144,12 @@ class BackgroundMusicFrame(wx.Frame):
         # Forwarding events through the main window, because this frame is optional and may be absent.
 
         self.pause_btn = wx.ToggleButton(self, label="Pause", size=(70, toolbar_base_height + 2))
-        self.pause_btn.Enable(False)
+
+        try:
+            self.pause_btn.Enable(self.parent.bg_player.player.get_state() in range(5))
+        except AttributeError:
+            self.pause_btn.Enable(False)
+
         self.top_toolbar.Add(self.pause_btn, 0)
         self.pause_btn.Bind(wx.EVT_TOGGLEBUTTON, parent.background_pause)
 
