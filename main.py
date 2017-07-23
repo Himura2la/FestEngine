@@ -38,6 +38,8 @@ class MainFrame(wx.Frame):
         self.grid_default_bg_color = None
         self.full_grid_data = None
 
+        self.bg_player = BackgroundMusicPlayer(self)
+
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
 
@@ -98,6 +100,13 @@ class MainFrame(wx.Frame):
                   bg_music_menu.Append(wx.ID_ANY, "&Load Files"))
         self.Bind(wx.EVT_MENU, lambda e: self.bg_player.show_window(),
                   bg_music_menu.Append(wx.ID_ANY, "&Open Window"))
+
+        def fade_switched(e):
+            self.bg_player.fade_in_out = bool(e.Int)
+        self.fade_switch = bg_music_menu.Append(wx.ID_ANY, "&Fade In/Out", kind=wx.ITEM_CHECK)
+        self.fade_switch.Check(self.bg_player.fade_in_out)
+        self.Bind(wx.EVT_MENU, fade_switched, self.fade_switch)
+
         menu_bar.Append(bg_music_menu, "&Background Music")
 
         # --- Fire (Play) ---
@@ -170,11 +179,10 @@ class MainFrame(wx.Frame):
 
         # --- Table ---
         self.grid = wx.grid.Grid(self)
-        self.grid.CreateGrid(1, 1)
+        self.grid.CreateGrid(0, 0)
         self.grid.HideRowLabels()
         self.grid.DisableDragRowSize()
         self.grid.SetColLabelSize(20)
-        self.grid.SetCellValue(0, 0, "Hello World")
         self.grid.SetSelectionMode(wx.grid.Grid.wxGridSelectRows)
 
         def select_row(e):
@@ -207,8 +215,6 @@ class MainFrame(wx.Frame):
         self.vol_control.SetValue(self.player.audio_get_volume())
 
         self.player_status("VLC v.%s: %s" % (vlc.libvlc_get_version(), self.player_state_parse(self.player.get_state())))
-
-        self.bg_player = BackgroundMusicPlayer(self)
         self.bg_player_status("Background Player: %s" % self.player_state_parse(self.bg_player.player.get_state()))
 
         self.Show(True)
@@ -220,7 +226,8 @@ class MainFrame(wx.Frame):
 
     def grid_set_shape(self, new_rows, new_cols, readonly_cols=None):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
-        self.grid.DeleteRows(0, current_rows, False)
+        if current_rows > 0:
+            self.grid.DeleteRows(0, current_rows, False)
         self.grid.AppendRows(new_rows)
         if new_cols < current_cols:
             self.grid.DeleteCols(0, current_cols - new_cols, False)
@@ -612,6 +619,17 @@ class MainFrame(wx.Frame):
             self.timer.Stop()
             self.play_bar.SetValue(0)
             self.switch_to_zad()
+
+    # -------------------------------------------- Background Music Player --------------------------------------------
+
+    def background_play(self, e=None):
+        self.bg_player.play()
+        pass
+
+    def background_stop(self, e=None):
+        self.bg_player.stop()
+        pass
+
 
 
 if __name__ == "__main__":
