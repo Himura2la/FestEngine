@@ -624,11 +624,11 @@ class MainFrame(wx.Frame):
 
     def background_play(self, e=None):
         self.bg_player.play()
-        pass
 
-    def background_stop(self, e=None):
-        self.bg_player.stop()
-        pass
+    def background_pause(self, e=None, paused=None):
+        value = bool(e.Int) if e else paused
+        self.bg_player.pause(value)
+
 
     @property
     def background_volume(self):

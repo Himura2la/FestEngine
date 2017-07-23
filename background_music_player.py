@@ -55,15 +55,14 @@ class BackgroundMusicPlayer(object):
         self.window.Layout()
 
     def play(self):
-
         if self.fade_in_out:
             pass
 
-    def pause(self):
-
+    def pause(self, paused):
         if self.fade_in_out:
             pass
         pass
+
 
 class BackgroundMusicFrame(wx.Frame):
     def __init__(self, parent):
@@ -85,9 +84,9 @@ class BackgroundMusicFrame(wx.Frame):
         self.play_btn.Bind(wx.EVT_BUTTON, parent.background_play)
         # Forwarding events through the main window, because this frame is optional and may be absent.
 
-        self.stop_btn = wx.Button(self, label="Stop", size=(70, toolbar_base_height + 2))
-        self.toolbar.Add(self.stop_btn, 0)
-        self.stop_btn.Bind(wx.EVT_BUTTON, parent.background_stop)
+        self.pause_btn = wx.ToggleButton(self, label="Pause", size=(70, toolbar_base_height + 2))
+        self.toolbar.Add(self.pause_btn, 0)
+        self.pause_btn.Bind(wx.EVT_TOGGLEBUTTON, parent.background_pause)
 
         self.vol_slider = wx.Slider(self, value=0, minValue=0, maxValue=150)
         self.toolbar.Add(self.vol_slider, 1, wx.EXPAND)
