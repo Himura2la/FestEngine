@@ -48,9 +48,11 @@ class MainFrame(wx.Frame):
         # --- File ---
         menu_file = wx.Menu()
         self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(mp3_dir)),
-                  menu_file.Append(wx.ID_ANY, "Open &mp3 folder"))
+                  menu_file.Append(wx.ID_ANY, "Open &mp3 Folder"))
         self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(zad_dir)),
-                  menu_file.Append(wx.ID_ANY, "Open &zad folder"))
+                  menu_file.Append(wx.ID_ANY, "Open &zad Folder"))
+        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(background_mp3_dir)),
+                  menu_file.Append(wx.ID_ANY, "Open &Background Music Folder"))
 
         menu_file.AppendSeparator()
 
@@ -643,8 +645,8 @@ class MainFrame(wx.Frame):
         elif isinstance(e.EventObject, wx.Menu) and self.bg_player.window_exists():
             self.bg_player.window.fade_in_out_switch.SetValue(value)
 
-    def background_play(self, e=None):
-        self.bg_player.select_track()
+    def background_play(self, e=None, next_track=False):
+        self.bg_player.switch_track(not next_track)
         self.bg_player.play()
         self.bg_pause_menu_switch.Enable(True)
 
@@ -698,8 +700,7 @@ class MainFrame(wx.Frame):
             if self.bg_player.window_exists():
                 self.bg_player.window.time_slider.SetValue(0)
 
-            self.bg_player.select_track(True)
-            self.background_play()
+            self.background_play(next_track=True)
 
 if __name__ == "__main__":
     app = wx.App(False)

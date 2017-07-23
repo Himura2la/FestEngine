@@ -8,7 +8,6 @@ import wx.grid
 from constants import Colors
 
 
-
 class BackgroundMusicPlayer(object):
     def __init__(self, parent):
         self.parent = parent
@@ -60,23 +59,23 @@ class BackgroundMusicPlayer(object):
         if player_state in range(5):  # If playing
             self.window.pause_btn.SetValue(player_state == vlc.State.Paused)
 
-    def select_track(self, select_next=False):
+    def switch_track(self, from_grid=True):
         if not self.playlist:
             return
         if self.current_track_i >= 0:
             if self.player.get_state() in {vlc.State.Playing, vlc.State.Paused}:
                 self.playlist[self.current_track_i]['color'] = Colors.BG_SKIPPED
             else:
-                self.playlist[self.current_track_i]['color'] = Colors.BG_PLAYED_TO_END  # BUG: Paints current
-
+                self.playlist[self.current_track_i]['color'] = Colors.BG_PLAYED_TO_END
         if self.window_exists():
             self.window.grid.SetCellBackgroundColour(self.current_track_i, 0,
                                                      self.playlist[self.current_track_i]['color'])
             self.window.grid.ForceRefresh()  # Updates colors
+
+        if self.window_exists() and from_grid:
             self.current_track_i = self.window.grid.GetSelectedRows()[0]
-        if not self.window_exists() or select_next:
+        else:
             self.current_track_i = (self.current_track_i + 1) % len(self.playlist)
-        return self.current_track_i
 
     # TODO: Async!!!
     def _fade(self, vol_range, delay):
@@ -202,7 +201,6 @@ class BackgroundMusicFrame(wx.Frame):
         self.grid.DisableDragRowSize()
         self.grid.SetRowLabelSize(20)
         self.grid.SetSelectionMode(wx.grid.Grid.wxGridSelectRows)
-
 
         def select_row(e):
             row = e.Row if hasattr(e, 'Row') else e.TopRow
