@@ -81,9 +81,9 @@ class MainFrame(wx.Frame):
 
         menu_data.AppendSeparator()
 
-        self.del_dup_row = menu_data.Append(wx.ID_ANY, "&Delete row duplicate")
-        self.del_dup_row.Enable(False)
-        self.Bind(wx.EVT_MENU, self.del_active_row, self.del_dup_row)
+        self.del_dup_row_item = menu_data.Append(wx.ID_ANY, "&Delete row duplicate")
+        self.del_dup_row_item.Enable(False)
+        self.Bind(wx.EVT_MENU, self.del_dup_row, self.del_dup_row_item)
 
         menu_bar.Append(menu_data, "&Data")
 
@@ -97,44 +97,48 @@ class MainFrame(wx.Frame):
         menu_bar.Append(proj_win_menu, "&Projector Window")
 
         # --- Background Music ---
-
-        bg_music_menu = wx.Menu()
+        menu_bg_music = wx.Menu()
 
         def bg_load_files_handler(e):
             self.bg_player.load_files(background_mp3_dir)
-            self.bg_play_menu_item.Enable(True)
+            self.bg_play_item.Enable(True)
         self.Bind(wx.EVT_MENU, bg_load_files_handler,
-                  bg_music_menu.Append(wx.ID_ANY, "&Load Files"))
+                  menu_bg_music.Append(wx.ID_ANY, "&Load Files"))
         self.Bind(wx.EVT_MENU, lambda e: self.bg_player.show_window(),
-                  bg_music_menu.Append(wx.ID_ANY, "&Open Window"))
+                  menu_bg_music.Append(wx.ID_ANY, "&Open Window"))
 
-        bg_music_menu.AppendSeparator()
+        menu_bg_music.AppendSeparator()
 
-        self.bg_fade_menu_switch = bg_music_menu.Append(wx.ID_ANY, "&Fade In/Out Enabled", kind=wx.ITEM_CHECK)
-        self.bg_fade_menu_switch.Check(self.bg_player.fade_in_out)
-        self.Bind(wx.EVT_MENU, self.fade_switched, self.bg_fade_menu_switch)
+        self.bg_fade_switch = menu_bg_music.Append(wx.ID_ANY, "&Fade In/Out Enabled", kind=wx.ITEM_CHECK)
+        self.bg_fade_switch.Check(self.bg_player.fade_in_out)
+        self.Bind(wx.EVT_MENU, self.fade_switched, self.bg_fade_switch)
 
-        self.bg_play_menu_item = bg_music_menu.Append(wx.ID_ANY, "&Play Next")
-        self.Bind(wx.EVT_MENU, self.background_play, self.bg_play_menu_item)
-        self.bg_play_menu_item.Enable(False)
+        self.bg_play_item = menu_bg_music.Append(wx.ID_ANY, "&Play Next")
+        self.Bind(wx.EVT_MENU, self.background_play, self.bg_play_item)
+        self.bg_play_item.Enable(False)
 
-        self.bg_pause_menu_switch = bg_music_menu.Append(wx.ID_ANY, "&Pause", kind=wx.ITEM_CHECK)
-        self.bg_pause_menu_switch.Enable(False)
-        self.Bind(wx.EVT_MENU, self.background_pause, self.bg_pause_menu_switch)
+        self.bg_pause_switch = menu_bg_music.Append(wx.ID_ANY, "&Pause", kind=wx.ITEM_CHECK)
+        self.bg_pause_switch.Enable(False)
+        self.Bind(wx.EVT_MENU, self.background_pause, self.bg_pause_switch)
 
-        menu_bar.Append(bg_music_menu, "&Background Music")
+        menu_bar.Append(menu_bg_music, "&Background Music")
 
         # --- Fire (Play) ---
         menu_play = wx.Menu()
-        menu_no_show = menu_play.Append(wx.ID_ANY, "&No Show\tEsc")
-        menu_show_zad = menu_play.Append(wx.ID_ANY, "Show &ZAD\tF1")
-        menu_play_mp3 = menu_play.Append(wx.ID_ANY, "&Play Sound/Video\tF2")
-        self.Bind(wx.EVT_MENU, self.no_show, menu_no_show)
-        self.Bind(wx.EVT_MENU, self.show_zad, menu_show_zad)
-        self.Bind(wx.EVT_MENU, self.play, menu_play_mp3)
-        accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, menu_no_show.GetId()))
-        accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F1, menu_show_zad.GetId()))
-        accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F2, menu_play_mp3.GetId()))
+        no_show_item = menu_play.Append(wx.ID_ANY, "&No Show\tEsc")
+        show_zad_item = menu_play.Append(wx.ID_ANY, "Show &ZAD\tF1")
+        play_mp3_item = menu_play.Append(wx.ID_ANY, "&Play Sound/Video\tF2")
+        play_pause_bg_item = menu_play.Append(wx.ID_ANY, "&Play/Pause Background\tF3")
+
+        self.Bind(wx.EVT_MENU, self.no_show, no_show_item)
+        self.Bind(wx.EVT_MENU, self.show_zad, show_zad_item)
+        self.Bind(wx.EVT_MENU, self.play, play_mp3_item)
+        self.Bind(wx.EVT_MENU, self.play_pause_bg, play_pause_bg_item)
+
+        accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, no_show_item.GetId()))
+        accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F1, show_zad_item.GetId()))
+        accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F2, play_mp3_item.GetId()))
+        accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F3, play_pause_bg_item.GetId()))
 
         menu_bar.Append(menu_play, "&Fire")
 
@@ -205,7 +209,7 @@ class MainFrame(wx.Frame):
             self.grid.Unbind(wx.grid.EVT_GRID_RANGE_SELECT)
             self.grid.SelectRow(row)
             self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
-            self.del_dup_row.Enable(self.is_dup_row(row))
+            self.del_dup_row_item.Enable(self.is_dup_row(row))
 
         self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
         self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
@@ -439,7 +443,7 @@ class MainFrame(wx.Frame):
         else:
             return self.grid.GetCellValue(row, self.grid_rows.index(Columns.ID))
 
-    def del_active_row(self, e=None):
+    def del_dup_row(self, e=None):
         row = self.grid.GetSelectedRows()[0]
         if self.is_dup_row(row):  # Extra check, this method is very dangerous.
             self.grid.DeleteRows(row)
@@ -641,7 +645,7 @@ class MainFrame(wx.Frame):
         value = bool(e.Int)
         self.bg_player.fade_in_out = value
         if isinstance(e.EventObject, wx.CheckBox):
-            self.bg_fade_menu_switch.Check(value)
+            self.bg_fade_switch.Check(value)
         elif isinstance(e.EventObject, wx.Menu) and self.bg_player.window_exists():
             self.bg_player.window.fade_in_out_switch.SetValue(value)
 
@@ -651,13 +655,13 @@ class MainFrame(wx.Frame):
         else:
             self.bg_player.switch_track(from_grid)
         self.bg_player.play()
-        self.bg_pause_menu_switch.Enable(True)
+        self.bg_pause_switch.Enable(True)
 
     def background_pause(self, e=None, paused=None):
         value = bool(e.Int) if e else paused
         self.bg_player.pause(value)
         if isinstance(e.EventObject, wx.ToggleButton):
-            self.bg_pause_menu_switch.Check(value)
+            self.bg_pause_switch.Check(value)
         elif isinstance(e.EventObject, wx.Menu) and self.bg_player.window_exists():
             self.bg_player.window.pause_btn.SetValue(value)
 
@@ -715,6 +719,9 @@ class MainFrame(wx.Frame):
         self.bg_player.player.set_time(e.Int)
         self.timer_start(self.bg_player.timer_update_ms)
 
+    def play_pause_bg(self, e=None):
+        # TODO: Make logic!
+        pass
 
 if __name__ == "__main__":
     app = wx.App(False)
