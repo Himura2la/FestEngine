@@ -110,11 +110,11 @@ class MainFrame(wx.Frame):
 
         bg_music_menu.AppendSeparator()
 
-        self.bg_fade_menu_switch = bg_music_menu.Append(wx.ID_ANY, "&Fade In/Out", kind=wx.ITEM_CHECK)
+        self.bg_fade_menu_switch = bg_music_menu.Append(wx.ID_ANY, "&Fade In/Out Enabled", kind=wx.ITEM_CHECK)
         self.bg_fade_menu_switch.Check(self.bg_player.fade_in_out)
         self.Bind(wx.EVT_MENU, self.fade_switched, self.bg_fade_menu_switch)
 
-        self.bg_play_menu_item = bg_music_menu.Append(wx.ID_ANY, "&Play/Skip")
+        self.bg_play_menu_item = bg_music_menu.Append(wx.ID_ANY, "&Play Next")
         self.Bind(wx.EVT_MENU, self.background_play, self.bg_play_menu_item)
         self.bg_play_menu_item.Enable(False)
 
@@ -645,8 +645,11 @@ class MainFrame(wx.Frame):
         elif isinstance(e.EventObject, wx.Menu) and self.bg_player.window_exists():
             self.bg_player.window.fade_in_out_switch.SetValue(value)
 
-    def background_play(self, e=None, next_track=False):
-        self.bg_player.switch_track(not next_track)
+    def background_play(self, e=None, from_grid=True):
+        if e and isinstance(e.EventObject, wx.Menu):  # From menu - always play next
+            self.bg_player.switch_track(False)
+        else:
+            self.bg_player.switch_track(from_grid)
         self.bg_player.play()
         self.bg_pause_menu_switch.Enable(True)
 
@@ -675,20 +678,26 @@ class MainFrame(wx.Frame):
         else:
             self.bg_player_timer.Stop()
 
-    def on_background_timer(self, e):
-        player = self.bg_player.player
-        length, time = player.get_length(), player.get_time()
-
-        time_remaining = '-%02d:%02d' % divmod(length / 1000 - time / 1000, 60)
+    def on_background_timer(self, e=None, seeking_time=None):
+        length = self.bg_player.player.get_length()
+        pos = seeking_time if seeking_time else self.bg_player.player.get_time()
+        time_remaining = '-%02d:%02d' % divmod(length / 1000 - pos / 1000, 60)
 
         if self.bg_player.window_exists():
             self.bg_player.window.time_slider.SetRange(0, length)
-            self.bg_player.window.time_slider.SetValue(time)
+            self.bg_player.window.time_slider.SetValue(pos)
             self.bg_player.window.time_label.SetLabel(time_remaining)
+            if seeking_time:
+                self.bg_player.window.time_label.SetBackgroundColour((255, 200, 255, 255))
+            else:
+                self.bg_player.window.time_label.SetBackgroundColour(
+                    wx.SystemSettings_GetColour(wx.SYS_COLOUR_FRAMEBK))
+                pass
 
-        player_state = player.get_state()
-        status = '%s Vol:%d Time:%s' % (self.player_state_parse(player_state),
-                                        player.audio_get_volume(), time_remaining)
+        player_state = self.bg_player.player.get_state()
+        status = '%s Vol:%d Time:%s' % ('Seeking' if seeking_time else self.player_state_parse(player_state),
+                                        self.bg_player.player.audio_get_volume(),
+                                        time_remaining)
 
         self.bg_player_status(status)
 
@@ -700,7 +709,12 @@ class MainFrame(wx.Frame):
             if self.bg_player.window_exists():
                 self.bg_player.window.time_slider.SetValue(0)
 
-            self.background_play(next_track=True)
+            self.background_play(from_grid=False)
+
+    def on_bg_seek(self, e):
+        self.bg_player.player.set_time(e.Int)
+        self.timer_start(self.bg_player.timer_update_ms)
+
 
 if __name__ == "__main__":
     app = wx.App(False)

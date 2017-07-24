@@ -18,10 +18,12 @@ class BackgroundMusicPlayer(object):
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(self.volume)
         self.player.audio_set_mute(False)
-        self.window = BackgroundMusicFrame(self.parent)  # None
+        self.window = None
         self.playlist = None
         self.current_track_i = -1
         self.fade_in_out = True
+        self.stop_fade_speed = 0.05
+        self.pause_fade_speed = 0.01
 
     def window_exists(self):
         return isinstance(self.window, BackgroundMusicFrame)
@@ -65,6 +67,8 @@ class BackgroundMusicPlayer(object):
         if self.current_track_i >= 0:
             if self.player.get_state() in {vlc.State.Playing, vlc.State.Paused}:
                 self.playlist[self.current_track_i]['color'] = Colors.BG_SKIPPED
+                if self.fade_in_out:
+                    self.fade_out(self.stop_fade_speed)
             else:
                 self.playlist[self.current_track_i]['color'] = Colors.BG_PLAYED_TO_END
         if self.window_exists():
@@ -97,6 +101,7 @@ class BackgroundMusicPlayer(object):
 
         self.player.set_media(self.vlc_instance.media_new(self.playlist[self.current_track_i]['path']))
         if self.player.play() != 0:  # [Play] button is pushed here!
+            self.parent.bg_player_status("Playback FAILED !!!")
             return
 
         state = self.player.get_state()
@@ -123,10 +128,10 @@ class BackgroundMusicPlayer(object):
             self.player.audio_set_volume(volume)
             status = "Trying to unmute... [%fs]" % (time.time() - start)
             self.parent.bg_player_status(status)
-            time.sleep(0.002)
+            time.sleep(0.005)
 
         if self.fade_in_out:
-            self.fade_in(0.05)
+            self.fade_in(self.stop_fade_speed)
 
         self.parent.bg_player_status("%s Vol:%d" %
                                      (self.parent.player_state_parse(self.player.get_state()),
@@ -135,15 +140,11 @@ class BackgroundMusicPlayer(object):
     def pause(self, paused):
         if not self.playlist:
             return
-
         if self.fade_in_out and paused:
-            self.fade_out(0.01)
-
+            self.fade_out(self.pause_fade_speed)
         self.player.set_pause(paused)
-
         if self.fade_in_out and not paused:
-            self.fade_in(0.01)
-
+            self.fade_in(self.pause_fade_speed)
         if not paused:
             self.parent.timer_start(self.timer_update_ms)
 
@@ -223,6 +224,8 @@ class BackgroundMusicFrame(wx.Frame):
         self.time_slider = wx.Slider(self, value=0, minValue=0, maxValue=1)
         self.bottom_toolbar.Add(self.time_slider, 1, wx.EXPAND)
         self.time_slider.Enable(False)
+        self.time_slider.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.parent.on_bg_seek)
+        self.time_slider.Bind(wx.EVT_COMMAND_SCROLL_THUMBTRACK, self.on_seeking)
 
         self.time_label = wx.StaticText(self, label='Stopped', size=(50, -1), style=wx.ALIGN_CENTER)
         self.bottom_toolbar.Add(self.time_label, 0, wx.ALIGN_CENTER_VERTICAL)
@@ -238,3 +241,6 @@ class BackgroundMusicFrame(wx.Frame):
         self.parent.background_volume = self.vol_slider.GetValue()  # Forwards to player
         self.vol_label.SetLabel('VOL: %d' % self.parent.background_volume)  # Gets from player
 
+    def on_seeking(self, e):
+        self.parent.timer_start(False)
+        self.parent.on_background_timer(seeking_time=e.Int)
