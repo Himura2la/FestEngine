@@ -39,10 +39,10 @@ class BackgroundMusicPlayer(object):
         if self.playlist:
             self.load_playlist_to_grid()
 
-    def load_files(self, dir):
-        file_names = sorted(os.listdir(dir))
+    def load_files(self, bg_music_dir):
+        file_names = sorted(os.listdir(bg_music_dir))
         self.playlist = [{'title': f.rsplit('.', 1)[0],
-                          'path': os.path.join(dir, f),
+                          'path': os.path.join(bg_music_dir, f),
                           'color': Colors.BG_NEVER_PLAYED} for f in file_names]
         if self.window_exists():
             self.load_playlist_to_grid()
@@ -103,7 +103,7 @@ class BackgroundMusicPlayer(object):
         self._fade(range(0, self.volume + 1, 1), delay)
 
     def fade_out(self, delay):
-        self._fade(range(self.volume, 0, -1), delay)
+        self._fade(range(self.volume, -1, -1), delay)
 
     def play_sync(self):
         self.player.set_media(self.vlc_instance.media_new(self.playlist[self.current_track_i]['path']))
@@ -142,16 +142,19 @@ class BackgroundMusicPlayer(object):
         self.parent.bg_player_status = "%s Vol:%d" % (self.parent.player_state_parse(self.player.get_state()),
                                                       self.player.audio_get_volume())
 
-    def pause(self, paused):
+    def pause_async(self, paused):
         if not self.playlist:
             return
+        threading.Thread(target=self.pause_sync, args=(paused,)).start()
+        if not paused:
+            self.parent.timer_start(self.timer_update_ms)
+
+    def pause_sync(self, paused):
         if self.fade_in_out and paused:
             self.fade_out(self.pause_fade_speed)
         self.player.set_pause(paused)
         if self.fade_in_out and not paused:
             self.fade_in(self.pause_fade_speed)
-        if not paused:
-            self.parent.timer_start(self.timer_update_ms)
 
 
 # |  ^

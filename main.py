@@ -676,7 +676,7 @@ class MainFrame(wx.Frame):
 
     def background_pause(self, e=None, paused=None):
         value = bool(e.Int) if e else paused
-        self.bg_player.pause(value)
+        self.bg_player.pause_async(value)
         if not e or isinstance(e.EventObject, wx.ToggleButton):
             self.bg_pause_switch.Check(value)
         if self.bg_player.window_exists():
@@ -725,7 +725,7 @@ class MainFrame(wx.Frame):
 
         if player_state in range(4, 7):
             self.bg_player_timer.Stop()
-            if player_state == vlc.State.Paused and self.bg_player.window_exists():
+            if player_state != vlc.State.Paused and self.bg_player.window_exists():
                 self.bg_player.window.time_slider.SetValue(0)
             if player_state == vlc.State.Ended:
                 self.background_play(from_grid=False)
