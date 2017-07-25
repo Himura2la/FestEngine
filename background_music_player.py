@@ -1,4 +1,5 @@
 import os
+import threading
 import time
 
 import vlc
@@ -61,14 +62,18 @@ class BackgroundMusicPlayer(object):
         if player_state in range(5):  # If playing
             self.window.pause_btn.SetValue(player_state == vlc.State.Paused)
 
-    def switch_track(self, from_grid=True):
+    def switch_track_async(self, from_grid=True):
+        threading.Thread(target=self.switch_track_sync, args=(from_grid,)).start()
+        self.parent.timer_start(self.timer_update_ms)
+
+    def switch_track_sync(self, from_grid=True):
         if not self.playlist:
             return
         if self.current_track_i >= 0:
             if self.player.get_state() in {vlc.State.Playing, vlc.State.Paused}:
                 self.playlist[self.current_track_i]['color'] = Colors.BG_SKIPPED
                 if self.fade_in_out:
-                    self.fade_out(self.stop_fade_speed)
+                    self.fade_out(self.stop_fade_speed)  # Blocks thread
             else:
                 self.playlist[self.current_track_i]['color'] = Colors.BG_PLAYED_TO_END
         if self.window_exists():
@@ -81,13 +86,18 @@ class BackgroundMusicPlayer(object):
         else:
             self.current_track_i = (self.current_track_i + 1) % len(self.playlist)
 
-    # TODO: Async!!!
+        self.parent.bg_player.play_sync()
+        self.parent.bg_pause_switch.Enable(True)
+
     def _fade(self, vol_range, delay):
+        vol_msg = ''
         for i in vol_range:
             self.player.audio_set_volume(i)
             vol_msg = 'Vol: %d' % self.player.audio_get_volume()
-            self.parent.bg_player_status('Fading in... ' + vol_msg)
+            self.parent.bg_player_status = 'Fading %s... %s' % \
+                                           ('in' if vol_range[0] < vol_range[-1] else 'out', vol_msg)
             time.sleep(delay)
+        self.parent.bg_player_status = vol_msg
 
     def fade_in(self, delay):
         self._fade(range(0, self.volume + 1, 1), delay)
@@ -95,25 +105,20 @@ class BackgroundMusicPlayer(object):
     def fade_out(self, delay):
         self._fade(range(self.volume, 0, -1), delay)
 
-    def play(self):
-        if not self.playlist:
-            self.parent.bg_player_status("No playlist loaded !!!")
-            return
-
+    def play_sync(self):
         self.player.set_media(self.vlc_instance.media_new(self.playlist[self.current_track_i]['path']))
         if self.player.play() != 0:  # [Play] button is pushed here!
-            self.parent.bg_player_status("Playback FAILED !!!")
+            self.parent.bg_player_status = "Playback FAILED !!!"
             return
 
         state = self.player.get_state()
         start = time.time()
-        while state != vlc.State.Playing:  # TODO: Async!!!
+        while state != vlc.State.Playing:
             state = self.player.get_state()
             status = "%s [%fs]" % (self.parent.player_state_parse(state), (time.time() - start))
-            self.parent.bg_player_status(status)
+            self.parent.bg_player_status = status
             time.sleep(0.005)
 
-        self.parent.timer_start(self.timer_update_ms)
         self.playlist[self.current_track_i]['color'] = Colors.BG_PLAYING_NOW
 
         if self.window_exists():
@@ -124,19 +129,18 @@ class BackgroundMusicPlayer(object):
 
         volume = 0 if self.fade_in_out else self.volume
         start = time.time()
-        while self.player.audio_get_volume() != volume:  # TODO: Async!!!
+        while self.player.audio_get_volume() != volume:
             self.player.audio_set_mute(False)
             self.player.audio_set_volume(volume)
             status = "Trying to unmute... [%fs]" % (time.time() - start)
-            self.parent.bg_player_status(status)
+            self.parent.bg_player_status = status
             time.sleep(0.005)
 
         if self.fade_in_out:
             self.fade_in(self.stop_fade_speed)
 
-        self.parent.bg_player_status("%s Vol:%d" %
-                                     (self.parent.player_state_parse(self.player.get_state()),
-                                      self.player.audio_get_volume()))
+        self.parent.bg_player_status = "%s Vol:%d" % (self.parent.player_state_parse(self.player.get_state()),
+                                                      self.player.audio_get_volume())
 
     def pause(self, paused):
         if not self.playlist:
@@ -150,7 +154,7 @@ class BackgroundMusicPlayer(object):
             self.parent.timer_start(self.timer_update_ms)
 
 
-#    |  ^
+# |  ^
 #    |  |
 # [MainFrame]
 #    |  |

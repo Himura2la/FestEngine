@@ -122,7 +122,7 @@ class MainFrame(wx.Frame):
 
         # --- Fire (Play) ---
         menu_play = wx.Menu()
-        no_show_item = menu_play.Append(wx.ID_ANY, "&No Show\tEsc")
+        no_show_item = menu_play.Append(wx.ID_ANY, "&Emergency No Show\tEsc")
         show_zad_item = menu_play.Append(wx.ID_ANY, "Show &ZAD\tF1")
         play_mp3_item = menu_play.Append(wx.ID_ANY, "&Play Sound/Video\tF2")
         play_pause_bg_item = menu_play.Append(wx.ID_ANY, "&Play/Pause Background\tF3")
@@ -231,7 +231,7 @@ class MainFrame(wx.Frame):
         self.vol_control.SetValue(self.player.audio_get_volume())
 
         self.player_status("VLC v.%s: %s" % (vlc.libvlc_get_version(), self.player_state_parse(self.player.get_state())))
-        self.bg_player_status("Background Player: %s" % self.player_state_parse(self.bg_player.player.get_state()))
+        self.bg_player_status = "Background Player: %s" % self.player_state_parse(self.bg_player.player.get_state())
 
         self.Show(True)
         self.grid.SetFocus()
@@ -263,6 +263,11 @@ class MainFrame(wx.Frame):
     def player_status(self, text):
         self.status_bar.SetStatusText(text, 2)
 
+    @property
+    def bg_player_status(self):
+        return self.status_bar.GetStatusText(3)
+
+    @bg_player_status.setter
     def bg_player_status(self, text):
         self.status_bar.SetStatusText(text, 3)
 
@@ -298,6 +303,7 @@ class MainFrame(wx.Frame):
         self.zad_btn.SetValue(False)
         self.zad_btn.Enable(False)
         self.destroy_proj_win_item.Enable(False)
+        self.image_status("Projector Window Destroyed")
 
     def switch_to_vid(self, e=None):
         if not self.proj_win_exists():
@@ -344,7 +350,7 @@ class MainFrame(wx.Frame):
         self.background_pause(paused=True)
         self.bg_player.fade_in_out = bg_fade_state
 
-        self.status("FULL STOP!")
+        self.status("EMERGENCY STOP !!!")
 
     # -------------------------------------------------- Data --------------------------------------------------
 
@@ -660,15 +666,13 @@ class MainFrame(wx.Frame):
 
     def background_play(self, e=None, from_grid=True):
         if not self.bg_player.playlist:
-            self.bg_player_status("Forced playlist loading...")
+            self.bg_player_status = "Forced playlist loading..."
             self.on_bg_load_files()
 
         if e and isinstance(e.EventObject, wx.Menu):  # From menu - always play next
-            self.bg_player.switch_track(False)
+            self.bg_player.switch_track_async(False)
         else:
-            self.bg_player.switch_track(from_grid)
-        self.bg_player.play()
-        self.bg_pause_switch.Enable(True)
+            self.bg_player.switch_track_async(from_grid)
 
     def background_pause(self, e=None, paused=None):
         value = bool(e.Int) if e else paused
@@ -716,17 +720,15 @@ class MainFrame(wx.Frame):
                                         self.bg_player.player.audio_get_volume(),
                                         time_remaining)
 
-        self.bg_player_status(status)
+        if 'Fading' not in self.bg_player_status:
+            self.bg_player_status = status
 
-        if player_state == vlc.State.Paused:
+        if player_state in range(4, 7):
             self.bg_player_timer.Stop()
-
-        if player_state not in range(5):
-            self.bg_player_timer.Stop()
-            if self.bg_player.window_exists():
+            if player_state == vlc.State.Paused and self.bg_player.window_exists():
                 self.bg_player.window.time_slider.SetValue(0)
-
-            self.background_play(from_grid=False)
+            if player_state == vlc.State.Ended:
+                self.background_play(from_grid=False)
 
     def on_bg_seek(self, e):
         self.bg_player.player.set_time(e.Int)
