@@ -97,6 +97,7 @@ class BackgroundMusicPlayer(object):
 
     def play(self):
         if not self.playlist:
+            self.parent.bg_player_status("No playlist loaded !!!")
             return
 
         self.player.set_media(self.vlc_instance.media_new(self.playlist[self.current_track_i]['path']))

@@ -99,10 +99,7 @@ class MainFrame(wx.Frame):
         # --- Background Music ---
         menu_bg_music = wx.Menu()
 
-        def bg_load_files_handler(e):
-            self.bg_player.load_files(background_mp3_dir)
-            self.bg_play_item.Enable(True)
-        self.Bind(wx.EVT_MENU, bg_load_files_handler,
+        self.Bind(wx.EVT_MENU, self.on_bg_load_files,
                   menu_bg_music.Append(wx.ID_ANY, "&Load Files"))
         self.Bind(wx.EVT_MENU, lambda e: self.bg_player.show_window(),
                   menu_bg_music.Append(wx.ID_ANY, "&Open Window"))
@@ -341,6 +338,12 @@ class MainFrame(wx.Frame):
         if self.proj_win_exists():
             self.clear_zad()
         self.stop(fade_out=False)
+
+        bg_fade_state = self.bg_player.fade_in_out
+        self.bg_player.fade_in_out = False
+        self.background_pause(paused=True)
+        self.bg_player.fade_in_out = bg_fade_state
+
         self.status("FULL STOP!")
 
     # -------------------------------------------------- Data --------------------------------------------------
@@ -542,6 +545,8 @@ class MainFrame(wx.Frame):
             self.player_status("Nothing to play for '%s'" % self.items[id]['name'])
             return
 
+        self.play_pause_bg(play=False)
+
         self.player.set_media(self.vlc_instance.media_new(file_path))
 
         if self.player.play() != 0:                     # [Play] button is pushed here!
@@ -641,6 +646,10 @@ class MainFrame(wx.Frame):
 
     # -------------------------------------------- Background Music Player --------------------------------------------
 
+    def on_bg_load_files(self, e=None):
+        self.bg_player.load_files(background_mp3_dir)
+        self.bg_play_item.Enable(True)
+
     def fade_switched(self, e):
         value = bool(e.Int)
         self.bg_player.fade_in_out = value
@@ -650,6 +659,10 @@ class MainFrame(wx.Frame):
             self.bg_player.window.fade_in_out_switch.SetValue(value)
 
     def background_play(self, e=None, from_grid=True):
+        if not self.bg_player.playlist:
+            self.bg_player_status("Forced playlist loading...")
+            self.on_bg_load_files()
+
         if e and isinstance(e.EventObject, wx.Menu):  # From menu - always play next
             self.bg_player.switch_track(False)
         else:
@@ -660,9 +673,9 @@ class MainFrame(wx.Frame):
     def background_pause(self, e=None, paused=None):
         value = bool(e.Int) if e else paused
         self.bg_player.pause(value)
-        if isinstance(e.EventObject, wx.ToggleButton):
+        if not e or isinstance(e.EventObject, wx.ToggleButton):
             self.bg_pause_switch.Check(value)
-        elif isinstance(e.EventObject, wx.Menu) and self.bg_player.window_exists():
+        if self.bg_player.window_exists():
             self.bg_player.window.pause_btn.SetValue(value)
 
     @property
@@ -719,9 +732,20 @@ class MainFrame(wx.Frame):
         self.bg_player.player.set_time(e.Int)
         self.timer_start(self.bg_player.timer_update_ms)
 
-    def play_pause_bg(self, e=None):
-        # TODO: Make logic!
-        pass
+    def play_pause_bg(self, e=None, play=None):
+        state = self.bg_player.player.get_state()
+        playing = state == vlc.State.Playing
+        if play is None:
+            play = not playing
+        if playing == play:
+            return
+        if play:
+            if state == vlc.State.Paused:
+                self.background_pause(paused=False)
+            else:
+                self.background_play(from_grid=False)
+        else:
+            self.background_pause(paused=True)
 
 if __name__ == "__main__":
     app = wx.App(False)
