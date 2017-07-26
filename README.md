@@ -65,3 +65,22 @@
 [Подробности](https://github.com/Himura2la/FestEngine/issues)
 
 Если ты чувствуешь в себе силу что-нибудь из этого запилить, будешь няшкой...
+
+
+# Установка на Debian-based системы
+
+[Официальный гайдъ по установке wxPython](https://github.com/wxWidgets/Phoenix/blob/master/README.rst)
+
+
+```sh
+sudo apt install git python2.7-dev python-pip vlc build-essential libgtk2.0-dev libgstreamer-plugins-base1.0-dev
+sudo apt install libsdl1.2-dev libjpeg-dev libtiff-dev libwebkitgtk-dev libnotify-dev freeglut3 freeglut3-dev dpkg-dev  # Seem optional
+pip install --upgrade pip
+sudo pip install -U wxPython  # Takes very long, seems like it compiles wxPython from sources
+git clone --recursive https://github.com/Himura2la/FestEngine.git
+cd python-vlc
+sudo python setup.py install
+cd ..
+vi main.py  # Check for static paths and remove autoload at the end of __init__()
+python main.py
+```
