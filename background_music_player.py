@@ -39,6 +39,9 @@ class BackgroundMusicPlayer(object):
         if self.playlist:
             self.load_playlist_to_grid()
 
+        if self.player.get_state() in {vlc.State.Playing, vlc.State.Paused}:
+            self.window.lock_btn.Enable(True)
+
     def load_files(self, bg_music_dir):
         file_names = sorted(os.listdir(bg_music_dir))
         self.playlist = [{'title': f.rsplit('.', 1)[0],
@@ -90,14 +93,25 @@ class BackgroundMusicPlayer(object):
         self.parent.bg_pause_switch.Enable(True)
 
     def _fade(self, vol_range, delay):
+        window_exists = self.window_exists()
+        if window_exists:
+            self.window.vol_slider.Enable(False)
+
         vol_msg = ''
         for i in vol_range:
             self.player.audio_set_volume(i)
             vol_msg = 'Vol: %d' % self.player.audio_get_volume()
             self.parent.bg_player_status = 'Fading %s... %s' % \
                                            ('in' if vol_range[0] < vol_range[-1] else 'out', vol_msg)
+            if window_exists:
+                self.window.vol_slider.SetValue(i)
+                self.window.vol_label.SetLabel("FAD: %d" % i)
             time.sleep(delay)
         self.parent.bg_player_status = vol_msg
+
+        if window_exists:
+            self.window.vol_slider.Enable(True)
+            self.window.vol_label.SetLabel("VOL: %d" % i)
 
     def fade_in(self, delay):
         self._fade(range(0, self.volume + 1, 1), delay)
@@ -123,6 +137,7 @@ class BackgroundMusicPlayer(object):
 
         if self.window_exists():
             self.window.pause_btn.Enable(True)
+            self.window.lock_btn.Enable(True)
             self.window.grid.SetCellBackgroundColour(self.current_track_i, 0, Colors.BG_PLAYING_NOW)
             self.window.grid.ForceRefresh()  # Updates colors
             self.window.pause_btn.SetValue(False)
@@ -228,6 +243,7 @@ class BackgroundMusicFrame(wx.Frame):
         self.bottom_toolbar.Add(self.lock_btn, 0, wx.ALIGN_CENTER_VERTICAL)
         self.lock_btn.Bind(wx.EVT_TOGGLEBUTTON, lambda e: self.time_slider.Enable(not e.Int))
         self.lock_btn.SetValue(True)
+        self.lock_btn.Enable(False)
 
         self.time_slider = wx.Slider(self, value=0, minValue=0, maxValue=1)
         self.bottom_toolbar.Add(self.time_slider, 1, wx.EXPAND)
