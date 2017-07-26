@@ -3,6 +3,7 @@
 
 import os
 import re
+import threading
 import time
 import webbrowser
 import bisect
@@ -17,12 +18,15 @@ from constants import Config, Colors, Columns
 from background_music_player import BackgroundMusicPlayer
 
 # TODO: Move this to settings
+video_extensions = {'mp4', 'avi'}
+sound_extensions = {'mp3', 'wav'}
 zad_dir = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered"
 mp3_dir = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered"
 background_zad_path = None
 background_mp3_dir = u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\\background"
 filename_re = "^(?P<nom>\w{1,2})( \[(?P<start>[GW]{1})\])?\. (?P<name>.*?)(\(.(?P<num>\d{1,3})\))?$"
 debug_output = True
+
 
 
 class MainFrame(wx.Frame):
@@ -37,6 +41,8 @@ class MainFrame(wx.Frame):
         self.in_search = False
         self.grid_default_bg_color = None
         self.full_grid_data = None
+
+        self.track_time_update_ms = 500
 
         self.bg_player = BackgroundMusicPlayer(self)
         self.bg_player_timer = wx.Timer(self)
@@ -129,7 +135,7 @@ class MainFrame(wx.Frame):
 
         self.Bind(wx.EVT_MENU, self.no_show, no_show_item)
         self.Bind(wx.EVT_MENU, self.show_zad, show_zad_item)
-        self.Bind(wx.EVT_MENU, self.play, play_mp3_item)
+        self.Bind(wx.EVT_MENU, self.play_async, play_mp3_item)
         self.Bind(wx.EVT_MENU, self.play_pause_bg, play_pause_bg_item)
 
         accelerator_table.append(wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, no_show_item.GetId()))
@@ -161,7 +167,7 @@ class MainFrame(wx.Frame):
         self.fade_out_btn = wx.Button(self, label="Fade out", size=(70, toolbar_base_height + 2))
         self.fade_out_btn.Enable(False)
         self.toolbar.Add(self.fade_out_btn, 0)
-        self.fade_out_btn.Bind(wx.EVT_BUTTON, self.stop)
+        self.fade_out_btn.Bind(wx.EVT_BUTTON, self.stop_async)
 
         self.time_bar = wx.Gauge(self, range=1, size=(-1, toolbar_base_height))
         self.toolbar.Add(self.time_bar, 1, wx.ALIGN_CENTER_VERTICAL)
@@ -343,7 +349,7 @@ class MainFrame(wx.Frame):
     def no_show(self, e=None):
         if self.proj_win_exists():
             self.clear_zad()
-        self.stop(fade_out=False)
+        self.stop_async(fade_out=False)
 
         bg_fade_state = self.bg_player.fade_in_out
         self.bg_player.fade_in_out = False
@@ -542,19 +548,26 @@ class MainFrame(wx.Frame):
 
     # -------------------------------------------------- Player --------------------------------------------------
 
-    def play(self, e=None):
+    def play_async(self, e=None):
         id = self.get_id(self.grid.GetGridCursorRow())
         try:
-            file_path = filter(lambda a: a.rsplit('.', 1)[1] in {'mp3', 'wav', 'mp4', 'avi'},
+            file_path = filter(lambda a: a.rsplit('.', 1)[1] in sound_extensions | video_extensions,
                                self.items[id]['files'])[0]
         except IndexError:
             self.player_status("Nothing to play for '%s'" % self.items[id]['name'])
             return
-
         self.play_pause_bg(play=False)
-
         self.player.set_media(self.vlc_instance.media_new(file_path))
 
+        threading.Thread(target=self.play_sync).start()
+
+        if file_path.rsplit('.', 1)[1] in video_extensions:
+            self.ensure_proj_win()
+            self.switch_to_vid()
+
+        self.timer.Start(self.track_time_update_ms)
+
+    def play_sync(self):
         if self.player.play() != 0:                     # [Play] button is pushed here!
             self.player_status("Playback FAILED !!!")
             return
@@ -563,31 +576,26 @@ class MainFrame(wx.Frame):
         start = time.time()
         while state != vlc.State.Playing:
             state = self.player.get_state()
-            status = "%s [%fs]" % (self.player_state_parse(state), (time.time() - start))
+            status = "%s [%.3fs]" % (self.player_state_parse(state), (time.time() - start))
             self.player_status(status)
             if debug_output:
                 print status
-            time.sleep(0.005)
+            time.sleep(0.007)
         if debug_output:
             print "Started playback in %.0fms" % ((time.time() - start) * 1000)
 
-        self.timer.Start(500)
         self.fade_out_btn.Enable(True)
-
-        if file_path.rsplit('.', 1)[1] not in {'mp3', 'wav'}:
-            self.ensure_proj_win()
-            self.switch_to_vid()
 
         start = time.time()
         status = '#'
         while self.player.audio_get_volume() != self.vol_control.GetValue():
             self.player.audio_set_mute(False)
             self.player.audio_set_volume(self.vol_control.GetValue())
-            status = "Trying to unmute... [%fs]" % (time.time() - start)
+            status = "Trying to unmute... [%.3fs]" % (time.time() - start)
             self.player_status(status)
             if debug_output:
                 print status
-            time.sleep(0.005)
+            time.sleep(0.001)
         if debug_output and status[0] == 'T':
             print "Unmuted in %.0fms" % ((time.time() - start) * 1000)
 
@@ -595,22 +603,30 @@ class MainFrame(wx.Frame):
                            (self.player_state_parse(self.player.get_state()), self.player.audio_get_volume()))
         self.status("SOUND Fired!")
 
-    def stop(self, e=None, fade_out=True):
+    def stop_async(self, e=None, fade_out=True):
         self.fade_out_btn.Enable(False)
         self.timer.Stop()
         if fade_out:
-            label = self.fade_out_btn.GetLabel()
-            for i in range(self.player.audio_get_volume(), 0, -1):
-                self.set_vol(vol=i)
-                vol_msg = 'Vol: %d' % self.player.audio_get_volume()
-                self.fade_out_btn.SetLabel(vol_msg)
-                self.player_status('Fading out... ' + vol_msg)
-                time.sleep(0.01)
-            self.fade_out_btn.SetLabel(label)
+            threading.Thread(target=self.fade_out_stop_sync).start()
+        else:
+            self.stop()
+
+    def stop(self):
         self.player.stop()
         self.time_bar.SetValue(0)
         self.player_status(self.player_state_parse(self.player.get_state()))
         self.time_label.SetLabel('Stopped')
+
+    def fade_out_stop_sync(self,):
+        label = self.fade_out_btn.GetLabel()
+        for i in range(self.player.audio_get_volume(), 0, -1):
+            self.set_vol(vol=i)
+            vol_msg = 'Vol: %d' % self.player.audio_get_volume()
+            self.fade_out_btn.SetLabel(vol_msg)
+            self.player_status('Fading out... ' + vol_msg)
+            time.sleep(0.01)
+        self.fade_out_btn.SetLabel(label)
+        self.stop()
 
     def set_vol(self, e=None, vol=100):
         value = e.Int if e else vol
@@ -645,7 +661,7 @@ class MainFrame(wx.Frame):
 
         self.player_status(status)
 
-        if player_state not in range(5):
+        if player_state in range(4, 8):  # Not playing
             self.timer.Stop()
             self.time_bar.SetValue(0)
             self.switch_to_zad()
@@ -723,7 +739,7 @@ class MainFrame(wx.Frame):
         if 'Fading' not in self.bg_player_status:
             self.bg_player_status = status
 
-        if player_state in range(4, 7):
+        if player_state in range(4, 8):
             self.bg_player_timer.Stop()
             if player_state != vlc.State.Paused and self.bg_player.window_exists():
                 self.bg_player.window.time_slider.SetValue(0)
