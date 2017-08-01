@@ -630,7 +630,7 @@ class MainFrame(wx.Frame):
         if debug_output:
             print "Started playback in %.0fms" % ((time.time() - start) * 1000)
 
-        self.fade_out_btn.Enable(True)
+        self.ui_update_queue.put({'self.fade_out_btn.Enable': True})
 
         start = time.time()
         status = '#'
@@ -661,13 +661,12 @@ class MainFrame(wx.Frame):
             self.time_label.SetLabel('Stopped')
 
     def fade_out_stop_sync(self, fade_out_btn_label):
-        update_moment = time.time()
+        update_moment = time.time() - 1
         for i in range(self.player.audio_get_volume(), 0, -1):
             self.set_vol(vol=i)
             vol_msg = 'Vol: %d' % self.player.audio_get_volume()
 
             time_since_last_update = (time.time() - update_moment) * 1000
-
             if time_since_last_update > self.ui_update_interval_ms + 5:
                 update_moment = time.time()
                 self.ui_update_queue.put({'self.fade_out_btn.SetLabel': vol_msg,
