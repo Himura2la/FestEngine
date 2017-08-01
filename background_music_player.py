@@ -67,7 +67,7 @@ class BackgroundMusicPlayer(object):
 
     def switch_track_async(self, from_grid=True):
         threading.Thread(target=self.switch_track_sync, args=(from_grid,)).start()
-        self.parent.timer_start(self.timer_update_ms)
+        self.parent.bg_player_timer_start(self.timer_update_ms)
 
     def switch_track_sync(self, from_grid=True):
         if not self.playlist:
@@ -162,7 +162,7 @@ class BackgroundMusicPlayer(object):
             return
         threading.Thread(target=self.pause_sync, args=(paused,)).start()
         if not paused:
-            self.parent.timer_start(self.timer_update_ms)
+            self.parent.bg_player_timer_start(self.timer_update_ms)
 
     def pause_sync(self, paused):
         if self.fade_in_out and paused:
@@ -266,5 +266,5 @@ class BackgroundMusicFrame(wx.Frame):
         self.vol_label.SetLabel('VOL: %d' % self.parent.background_volume)  # Gets from player
 
     def on_seeking(self, e):
-        self.parent.timer_start(False)
+        self.parent.bg_player_timer_start(False)
         self.parent.on_background_timer(seeking_time=e.Int)
