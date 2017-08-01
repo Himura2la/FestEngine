@@ -29,7 +29,8 @@ parser.add_argument("--mp3_dir", dest="mp3_dir", default=u"H:\ownCloud\DATA\Yuki
 parser.add_argument("--background_zad_path", dest="background_zad_path", default=None)
 parser.add_argument("--background_mp3_dir", dest="background_mp3_dir", default=u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\\background")
 parser.add_argument("--debug_output", dest="debug_output", action='store_true')
-parser.add_argument("--auto_load_files", dest="auto_load_files", default='False')
+parser.add_argument("--auto_load_files", dest="auto_load_files", action='store_true')
+parser.add_argument("--auto_load_bg", dest="auto_load_bg", action='store_true')
 args = parser.parse_args()
 zad_dir = args.zad_dir
 mp3_dir = args.mp3_dir
@@ -37,6 +38,8 @@ background_zad_path = args.background_zad_path
 background_mp3_dir = args.background_mp3_dir
 debug_output = args.debug_output
 auto_load_files = args.auto_load_files
+auto_load_bg = args.auto_load_bg
+
 
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
@@ -253,6 +256,8 @@ class MainFrame(wx.Frame):
 
         if auto_load_files: 
             self.load_files()
+        if auto_load_bg:
+            self.on_bg_load_files()
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -675,6 +680,9 @@ class MainFrame(wx.Frame):
             self.timer.Stop()
             self.time_bar.SetValue(0)
             self.switch_to_zad()
+            row = self.grid.GetSelectedRows()[0]
+            if row < self.grid.GetNumberRows():
+                self.grid.SelectRow(row + 1)
 
     # -------------------------------------------- Background Music Player --------------------------------------------
 
