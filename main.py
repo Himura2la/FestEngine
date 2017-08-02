@@ -6,7 +6,6 @@ import sys
 import re
 import argparse
 import threading
-import Queue
 import time
 import webbrowser
 import bisect
@@ -48,9 +47,7 @@ class MainFrame(wx.Frame):
         wx.Frame.__init__(self, parent, title=title, size=(700, 500))
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
 
-        self.ui_update_interval_ms = 30
-        self.player_time_update_skips = 10  # Each 300ms
-        self.player_time_update_i = self.player_time_update_skips  # Counter
+        self.player_time_update_interval_ms = 300
         self.fade_out_delays_ms = 10
         self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1}  # The last one
 
@@ -61,9 +58,8 @@ class MainFrame(wx.Frame):
         self.grid_default_bg_color = None
         self.full_grid_data = None
 
-        self.ui_update_queue = Queue.Queue()
-        self.ui_update_timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.ui_update_handler, self.ui_update_timer)
+        self.player_time_update_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.player_time_update, self.player_time_update_timer)
 
         self.bg_player = BackgroundMusicPlayer(self)
         self.bg_player_timer = wx.Timer(self)
@@ -312,22 +308,6 @@ class MainFrame(wx.Frame):
     def on_exit(self, e):
         self.destroy_proj_win()
         self.Close(True)
-
-    def ui_update_handler(self, e=None):
-        if not self.ui_update_queue.empty():
-            data = self.ui_update_queue.get()
-            if debug_output:
-                print data
-            for k, v in data.items():
-                if callable(eval(k)):
-                    eval(k)(v)
-                else:
-                    print "Can't execute ", k, ":", v
-        if self.player_time_update_i > 0:
-            self.player_time_update_i -= 1
-        else:
-            self.player_time_update()
-            self.player_time_update_i = self.player_time_update_skips
 
     # -------------------------------------------------- Actions --------------------------------------------------
 
@@ -608,17 +588,17 @@ class MainFrame(wx.Frame):
         self.play_pause_bg(play=False)
         self.player.set_media(self.vlc_instance.media_new(file_path))
 
-        threading.Thread(target=self.play_sync).start()
+        threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(),)).start()
 
         if file_path.rsplit('.', 1)[1] in video_extensions:
             self.ensure_proj_win()
             self.switch_to_vid()
 
-        self.ui_update_timer.Start(self.ui_update_interval_ms)
+        self.player_time_update_timer.Start(self.player_time_update_interval_ms)
 
-    def play_sync(self):
+    def play_sync(self, target_vol):
         if self.player.play() != 0:              # [Play] button is pushed here!
-            self.ui_update_queue.put({'self.set_player_status': 'Playback FAILED !!!'})
+            wx.CallAfter(lambda: self.set_player_status('Playback FAILED !!!'))
             return
 
         state = self.player.get_state()
@@ -626,31 +606,33 @@ class MainFrame(wx.Frame):
         while state != vlc.State.Playing:
             state = self.player.get_state()
             status = "%s [%.3fs]" % (self.player_state_parse(state), (time.time() - start))
-            self.ui_update_queue.put({'self.set_player_status': status})
+            wx.CallAfter(lambda: self.set_player_status(status))
             if debug_output:
                 print status
             time.sleep(0.007)
         if debug_output:
             print "Started playback in %.0fms" % ((time.time() - start) * 1000)
 
-        self.ui_update_queue.put({'self.fade_out_btn.Enable': True})
+        wx.CallAfter(lambda: self.fade_out_btn.Enable(True))
 
         start = time.time()
         status = '#'
-        while self.player.audio_get_volume() != self.vol_control.GetValue():
+        while self.player.audio_get_volume() != target_vol:
             self.player.audio_set_mute(False)
-            self.player.audio_set_volume(self.vol_control.GetValue())
+            self.player.audio_set_volume(target_vol)
             status = "Trying to unmute... [%.3fs]" % (time.time() - start)
-            self.player_status = status
+            wx.CallAfter(lambda: self.set_player_status(status))
             if debug_output:
                 print status
             time.sleep(0.001)
         if debug_output and status[0] == 'T':
             print "Unmuted in %.0fms" % ((time.time() - start) * 1000)
 
-        self.ui_update_queue.put({'self.set_player_status': '%s Vol:%d' %
-                                 (self.player_state_parse(self.player.get_state()), self.player.audio_get_volume()),
-                                  'self.status': 'SOUND Fired!'})
+        def upd():
+            self.player_status = '%s Vol:%d' % (self.player_state_parse(self.player.get_state()),
+                                                self.player.audio_get_volume())
+            self.status('SOUND Fired!')
+        wx.CallAfter(upd)
 
     def stop_async(self, e=None, fade_out=True):
         self.fade_out_btn.Enable(False)
@@ -664,27 +646,30 @@ class MainFrame(wx.Frame):
             self.time_label.SetLabel('Stopped')
 
     def fade_out_stop_sync(self, fade_out_btn_label):
-        update_moment = time.time() - 1
         for i in range(self.player.audio_get_volume(), 0, -1):
             self.set_vol(vol=i)
             vol_msg = 'Vol: %d' % self.player.audio_get_volume()
 
-            time_since_last_update = (time.time() - update_moment) * 1000
-            if time_since_last_update > self.ui_update_interval_ms + 5:
-                update_moment = time.time()
-                self.ui_update_queue.put({'self.fade_out_btn.SetLabel': vol_msg,
-                                          'self.set_player_status': 'Fading out... ' + vol_msg})
+            def upd():
+                self.fade_out_btn.SetLabel(vol_msg)
+                self.player_status = 'Fading out... ' + vol_msg
+            wx.CallAfter(upd)
+
             time.sleep(self.fade_out_delays_ms / float(1000))
         self.player.stop()
-        self.ui_update_queue.put({'self.fade_out_btn.SetLabel': fade_out_btn_label,
-                                  'self.time_bar.SetValue': 0,
-                                  'self.set_player_status': self.player_state_parse(self.player.get_state()),
-                                  'self.time_label.SetLabel': 'Stopped'})
+
+        def upd():
+            self.fade_out_btn.SetLabel(fade_out_btn_label)
+            self.time_bar.SetValue(0)
+            self.player_status = self.player_state_parse(self.player.get_state())
+            self.time_label.SetLabel('Stopped')
+
+        wx.CallAfter(upd)
 
     def set_vol(self, e=None, vol=100):
         value = e.Int if e else vol
         if self.player.audio_set_volume(value) == -1:
-            self.ui_update_queue.put({'self.set_player_status': 'Failed to set volume'})
+            wx.CallAfter(lambda: self.set_player_status('Failed to set volume'))
         real_vol = self.player.audio_get_volume()
         if real_vol < 0:
             self.player.audio_set_mute(False)
@@ -700,7 +685,7 @@ class MainFrame(wx.Frame):
                 6: 'Ended',
                 7: 'Error'}[state_int]
 
-    def player_time_update(self):
+    def player_time_update(self, e=None):
         player_state = self.player.get_state()
         if player_state in range(4):  # Playing or going to play
             length, time = self.player.get_length(), self.player.get_time()
@@ -724,8 +709,7 @@ class MainFrame(wx.Frame):
                 self.grid.SelectRow(row + 1)
 
             self.grid.SetFocus()
-            if self.ui_update_queue.empty():
-                self.ui_update_timer.Stop()
+            self.player_time_update_timer.Stop()
 
     # -------------------------------------------- Background Music Player --------------------------------------------
 
