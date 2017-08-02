@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import re
 import argparse
 import threading
@@ -25,10 +26,10 @@ sound_extensions = {'mp3', 'wav'}
 filename_re = "^(?P<nom>\w{1,2})( \[(?P<start>[GW]{1})\])?\. (?P<name>.*?)(\(.(?P<num>\d{1,3})\))?$"
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--zad_dir", dest="zad_dir", default=u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\zad_numbered")
-parser.add_argument("--mp3_dir", dest="mp3_dir", default=u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\mp3_numbered")
+parser.add_argument("--zad_dir", dest="zad_dir", default=u"H:\ownCloud\DATA\Прошлые Фесты\Yuki no Odori 2016\Fest\zad_numbered")
+parser.add_argument("--mp3_dir", dest="mp3_dir", default=u"H:\ownCloud\DATA\Прошлые Фесты\Yuki no Odori 2016\Fest\mp3_numbered")
 parser.add_argument("--background_zad_path", dest="background_zad_path", default=None)
-parser.add_argument("--background_mp3_dir", dest="background_mp3_dir", default=u"H:\ownCloud\DATA\Yuki no Odori 2016\Fest\\background")
+parser.add_argument("--background_mp3_dir", dest="background_mp3_dir", default=u"H:\ownCloud\DATA\Прошлые Фесты\Yuki no Odori 2016\Fest\\background")
 parser.add_argument("--debug_output", dest="debug_output", action='store_true')
 parser.add_argument("--auto_load_files", dest="auto_load_files", action='store_true')
 parser.add_argument("--auto_load_bg", dest="auto_load_bg", action='store_true')
@@ -172,7 +173,9 @@ class MainFrame(wx.Frame):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.toolbar = wx.BoxSizer(wx.HORIZONTAL)
-        toolbar_base_height = 25
+        toolbar_base_height = 20
+        if sys.platform.startswith('linux'):
+            toolbar_base_height += 5
 
         # self.status_color_box = wx.Panel(self, size=(toolbar_base_height, toolbar_base_height))
         # self.toolbar.Add(self.status_color_box, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=1)
