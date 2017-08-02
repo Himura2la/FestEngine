@@ -701,7 +701,7 @@ class MainFrame(wx.Frame):
         player_state = self.player.get_state()
         if player_state in range(4):  # Playing or going to play
             length, time = self.player.get_length(), self.player.get_time()
-            self.time_bar.SetRange(length - 1000)  # FIXME: Don't know why it does not reach the end
+            self.time_bar.SetRange(length - 1000 if length else 0)  # FIXME: Don't know why it does not reach the end
             self.time_bar.SetValue(time)
 
             time_remaining = '-%02d:%02d' % divmod(length / 1000 - time / 1000, 60)
