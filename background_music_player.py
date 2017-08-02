@@ -106,7 +106,7 @@ class BackgroundMusicPlayer(object):
                                                                   ('in' if vol_range[0] < vol_range[-1] else 'out',
                                                                    vol_msg)))
             if window_exists:
-                def ui_upd():  # FIXME: Does not update frequently enough
+                def ui_upd():
                     self.window.vol_slider.SetValue(i)
                     self.window.vol_label.SetLabel("FAD: %d" % i)
                 wx.CallAfter(ui_upd)
