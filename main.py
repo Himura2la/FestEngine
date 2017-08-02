@@ -172,7 +172,7 @@ class MainFrame(wx.Frame):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.toolbar = wx.BoxSizer(wx.HORIZONTAL)
-        toolbar_base_height = 20
+        toolbar_base_height = 25
 
         # self.status_color_box = wx.Panel(self, size=(toolbar_base_height, toolbar_base_height))
         # self.toolbar.Add(self.status_color_box, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=1)
