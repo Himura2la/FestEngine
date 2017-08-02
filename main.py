@@ -588,11 +588,11 @@ class MainFrame(wx.Frame):
         self.play_pause_bg(play=False)
         self.player.set_media(self.vlc_instance.media_new(file_path))
 
-        threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(),)).start()
-
         if file_path.rsplit('.', 1)[1] in video_extensions:
             self.ensure_proj_win()
             self.switch_to_vid()
+
+        threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(),)).start()
 
         self.player_time_update_timer.Start(self.player_time_update_interval_ms)
 
@@ -628,11 +628,11 @@ class MainFrame(wx.Frame):
         if debug_output and status[0] == 'T':
             print "Unmuted in %.0fms" % ((time.time() - start) * 1000)
 
-        def upd():
+        def ui_upd():
             self.player_status = '%s Vol:%d' % (self.player_state_parse(self.player.get_state()),
                                                 self.player.audio_get_volume())
             self.status('SOUND Fired!')
-        wx.CallAfter(upd)
+        wx.CallAfter(ui_upd)
 
     def stop_async(self, e=None, fade_out=True):
         self.fade_out_btn.Enable(False)
@@ -650,21 +650,20 @@ class MainFrame(wx.Frame):
             self.set_vol(vol=i)
             vol_msg = 'Vol: %d' % self.player.audio_get_volume()
 
-            def upd():
+            def ui_upd():
                 self.fade_out_btn.SetLabel(vol_msg)
                 self.player_status = 'Fading out... ' + vol_msg
-            wx.CallAfter(upd)
+            wx.CallAfter(ui_upd)
 
             time.sleep(self.fade_out_delays_ms / float(1000))
         self.player.stop()
 
-        def upd():
+        def ui_upd():
             self.fade_out_btn.SetLabel(fade_out_btn_label)
             self.time_bar.SetValue(0)
             self.player_status = self.player_state_parse(self.player.get_state())
             self.time_label.SetLabel('Stopped')
-
-        wx.CallAfter(upd)
+        wx.CallAfter(ui_upd)
 
     def set_vol(self, e=None, vol=100):
         value = e.Int if e else vol
@@ -689,9 +688,8 @@ class MainFrame(wx.Frame):
         player_state = self.player.get_state()
         if player_state in range(4):  # Playing or going to play
             length, time = self.player.get_length(), self.player.get_time()
-            gauge_length = length - 1000 if length > 1000 else length  # FIXME: Don't know why it does not reach the end
-            self.time_bar.SetRange(gauge_length) 
-            self.time_bar.SetValue(time if time <= gauge_length else gauge_length)
+            self.time_bar.SetRange(length - 1000 if length else 0)  # FIXME: Don't know why it does not reach the end
+            self.time_bar.SetValue(time)
 
             time_remaining = '-%02d:%02d' % divmod(length / 1000 - time / 1000, 60)
             self.time_label.SetLabel(time_remaining)
@@ -705,7 +703,7 @@ class MainFrame(wx.Frame):
             self.switch_to_zad()
 
             row = self.grid.GetSelectedRows()[0]
-            if row < self.grid.GetNumberRows()-1:
+            if row < self.grid.GetNumberRows() - 1:
                 self.grid.SetGridCursor(row + 1, 0)
                 self.grid.SelectRow(row + 1)
 
