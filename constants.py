@@ -21,3 +21,9 @@ class Colors:
     BG_PLAYING_NOW = DUP_ROW
     BG_PLAYED_TO_END = FILTERED_GRID
     BG_SKIPPED = (255, 128, 128, 255)
+
+
+class FileTypes:
+    # TODO: Move this to settings
+    video_extensions = {'mp4', 'avi'}
+    sound_extensions = {'mp3', 'wav'}

@@ -16,12 +16,10 @@ import vlc
 
 from projector import ProjectorWindow
 from settings import SettingsDialog
-from constants import Config, Colors, Columns
+from constants import Config, Colors, Columns, FileTypes
 from background_music_player import BackgroundMusicPlayer
 
-# TODO: Move this to settings
-video_extensions = {'mp4', 'avi'}
-sound_extensions = {'mp3', 'wav'}
+
 filename_re = "^(?P<nom>\w{1,2})( \[(?P<start>[GW]{1})\])?\. (?P<name>.*?)(\(.(?P<num>\d{1,3})\))?$"
 
 parser = argparse.ArgumentParser()
@@ -294,7 +292,7 @@ class MainFrame(wx.Frame):
     def player_status(self, text):
         self.status_bar.SetStatusText(text, 2)
 
-    def set_player_status(self, text):
+    def set_player_status(self, text):  # For lambdas
         self.status_bar.SetStatusText(text, 2)
 
     @property
@@ -303,6 +301,9 @@ class MainFrame(wx.Frame):
 
     @bg_player_status.setter
     def bg_player_status(self, text):
+        self.status_bar.SetStatusText(text, 3)
+
+    def set_bg_player_status(self, text):  # For lambdas
         self.status_bar.SetStatusText(text, 3)
 
     def on_exit(self, e):
@@ -580,7 +581,7 @@ class MainFrame(wx.Frame):
     def play_async(self, e=None):
         id = self.get_id(self.grid.GetGridCursorRow())
         try:
-            file_path = filter(lambda a: a.rsplit('.', 1)[1] in sound_extensions | video_extensions,
+            file_path = filter(lambda a: a.rsplit('.', 1)[1] in FileTypes.sound_extensions | FileTypes.video_extensions,
                                self.items[id]['files'])[0]
         except IndexError:
             self.player_status = "Nothing to play for '%s'" % self.items[id]['name']
@@ -588,7 +589,7 @@ class MainFrame(wx.Frame):
         self.play_pause_bg(play=False)
         self.player.set_media(self.vlc_instance.media_new(file_path))
 
-        if file_path.rsplit('.', 1)[1] in video_extensions:
+        if file_path.rsplit('.', 1)[1] in FileTypes.video_extensions:
             self.ensure_proj_win()
             self.switch_to_vid()
 

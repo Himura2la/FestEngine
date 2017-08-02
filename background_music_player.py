@@ -6,7 +6,7 @@ import vlc
 import wx
 import wx.grid
 
-from constants import Colors
+from constants import Colors, FileTypes
 
 
 class BackgroundMusicPlayer(object):
@@ -46,7 +46,8 @@ class BackgroundMusicPlayer(object):
         file_names = sorted(os.listdir(bg_music_dir))
         self.playlist = [{'title': f.rsplit('.', 1)[0],
                           'path': os.path.join(bg_music_dir, f),
-                          'color': Colors.BG_NEVER_PLAYED} for f in file_names]
+                          'color': Colors.BG_NEVER_PLAYED}
+                         for f in file_names if f.rsplit('.', 1)[1] in FileTypes.sound_extensions]
         if self.window_exists():
             self.load_playlist_to_grid()
 
@@ -95,23 +96,28 @@ class BackgroundMusicPlayer(object):
     def _fade(self, vol_range, delay):
         window_exists = self.window_exists()
         if window_exists:
-            self.window.vol_slider.Enable(False)
+            wx.CallAfter(lambda: self.window.vol_slider.Enable(False))
 
         vol_msg = ''
         for i in vol_range:
             self.player.audio_set_volume(i)
             vol_msg = 'Vol: %d' % self.player.audio_get_volume()
-            self.parent.bg_player_status = 'Fading %s... %s' % \
-                                           ('in' if vol_range[0] < vol_range[-1] else 'out', vol_msg)
+            wx.CallAfter(lambda: self.parent.set_bg_player_status('Fading %s... %s' %
+                                                                  ('in' if vol_range[0] < vol_range[-1] else 'out',
+                                                                   vol_msg)))
             if window_exists:
-                self.window.vol_slider.SetValue(i)
-                self.window.vol_label.SetLabel("FAD: %d" % i)
+                def ui_upd():
+                    self.window.vol_slider.SetValue(i)
+                    self.window.vol_label.SetLabel("FAD: %d" % i)
+                wx.CallAfter(ui_upd)
             time.sleep(delay)
         self.parent.bg_player_status = vol_msg
 
         if window_exists:
-            self.window.vol_slider.Enable(True)
-            self.window.vol_label.SetLabel("VOL: %d" % i)
+            def ui_upd():
+                self.window.vol_slider.Enable(True)
+                self.window.vol_label.SetLabel("VOL: %d" % i)
+            wx.CallAfter(ui_upd)
 
     def fade_in(self, delay):
         self._fade(range(0, self.volume + 1, 1), delay)
@@ -122,7 +128,7 @@ class BackgroundMusicPlayer(object):
     def play_sync(self):
         self.player.set_media(self.vlc_instance.media_new(self.playlist[self.current_track_i]['path']))
         if self.player.play() != 0:  # [Play] button is pushed here!
-            self.parent.bg_player_status = "Playback FAILED !!!"
+            wx.CallAfter(lambda: self.parent.set_bg_player_status("Playback FAILED !!!"))
             return
 
         state = self.player.get_state()
@@ -130,17 +136,20 @@ class BackgroundMusicPlayer(object):
         while state != vlc.State.Playing:
             state = self.player.get_state()
             status = "%s [%fs]" % (self.parent.player_state_parse(state), (time.time() - start))
-            self.parent.bg_player_status = status
+            wx.CallAfter(lambda: self.parent.set_bg_player_status(status))
             time.sleep(0.005)
 
         self.playlist[self.current_track_i]['color'] = Colors.BG_PLAYING_NOW
 
         if self.window_exists():
-            self.window.pause_btn.Enable(True)
-            self.window.lock_btn.Enable(True)
-            self.window.grid.SetCellBackgroundColour(self.current_track_i, 0, Colors.BG_PLAYING_NOW)
-            self.window.grid.ForceRefresh()  # Updates colors
-            self.window.pause_btn.SetValue(False)
+            def ui_upd():
+                self.window.pause_btn.Enable(True)
+                self.window.lock_btn.Enable(True)
+                self.window.grid.SetCellBackgroundColour(self.current_track_i, 0, Colors.BG_PLAYING_NOW)
+                self.window.grid.ForceRefresh()  # Updates colors
+                self.window.pause_btn.SetValue(False)
+
+            wx.CallAfter(ui_upd)
 
         volume = 0 if self.fade_in_out else self.volume
         start = time.time()
@@ -148,14 +157,15 @@ class BackgroundMusicPlayer(object):
             self.player.audio_set_mute(False)
             self.player.audio_set_volume(volume)
             status = "Trying to unmute... [%fs]" % (time.time() - start)
-            self.parent.bg_player_status = status
+            wx.CallAfter(lambda: self.parent.set_bg_player_status(status))
             time.sleep(0.005)
 
         if self.fade_in_out:
             self.fade_in(self.stop_fade_speed)
 
-        self.parent.bg_player_status = "%s Vol:%d" % (self.parent.player_state_parse(self.player.get_state()),
-                                                      self.player.audio_get_volume())
+        wx.CallAfter(lambda: self.parent.set_bg_player_status("%s Vol:%d" %
+                                                              (self.parent.player_state_parse(self.player.get_state()),
+                                                               self.player.audio_get_volume())))
 
     def pause_async(self, paused):
         if not self.playlist:
