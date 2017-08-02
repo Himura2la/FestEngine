@@ -77,7 +77,7 @@ class BackgroundMusicPlayer(object):
             if self.player.get_state() in {vlc.State.Playing, vlc.State.Paused}:
                 self.playlist[self.current_track_i]['color'] = Colors.BG_SKIPPED
                 if self.fade_in_out:
-                    self.fade_out(self.stop_fade_speed)  # Blocks thread
+                    self.fade_out_sync(self.stop_fade_speed)  # Blocks thread
             else:
                 self.playlist[self.current_track_i]['color'] = Colors.BG_PLAYED_TO_END
         if self.window_exists():
@@ -93,7 +93,7 @@ class BackgroundMusicPlayer(object):
         self.parent.bg_player.play_sync()
         self.parent.bg_pause_switch.Enable(True)
 
-    def _fade(self, vol_range, delay):
+    def _fade_sync(self, vol_range, delay):
         window_exists = self.window_exists()
         if window_exists:
             wx.CallAfter(lambda: self.window.vol_slider.Enable(False))
@@ -106,13 +106,13 @@ class BackgroundMusicPlayer(object):
                                                                   ('in' if vol_range[0] < vol_range[-1] else 'out',
                                                                    vol_msg)))
             if window_exists:
-                def ui_upd():
+                def ui_upd():  # FIXME: Does not update frequently enough
                     self.window.vol_slider.SetValue(i)
                     self.window.vol_label.SetLabel("FAD: %d" % i)
                 wx.CallAfter(ui_upd)
             time.sleep(delay)
 
-            wx.CallAfter(lambda: self.parent.set_bg_player_status(vol_msg))
+        wx.CallAfter(lambda: self.parent.set_bg_player_status(vol_msg))
 
         if window_exists:
             def ui_upd():
@@ -120,11 +120,11 @@ class BackgroundMusicPlayer(object):
                 self.window.vol_label.SetLabel("VOL: %d" % i)
             wx.CallAfter(ui_upd)
 
-    def fade_in(self, delay):
-        self._fade(range(0, self.volume + 1, 1), delay)
+    def fade_in_sync(self, delay):
+        self._fade_sync(range(0, self.volume + 1, 1), delay)
 
-    def fade_out(self, delay):
-        self._fade(range(self.volume, -1, -1), delay)
+    def fade_out_sync(self, delay):
+        self._fade_sync(range(self.volume, -1, -1), delay)
 
     def play_sync(self):
         self.player.set_media(self.vlc_instance.media_new(self.playlist[self.current_track_i]['path']))
@@ -162,7 +162,7 @@ class BackgroundMusicPlayer(object):
             time.sleep(0.005)
 
         if self.fade_in_out:
-            self.fade_in(self.stop_fade_speed)
+            self.fade_in_sync(self.stop_fade_speed)
 
         wx.CallAfter(lambda: self.parent.set_bg_player_status("%s Vol:%d" %
                                                               (self.parent.player_state_parse(self.player.get_state()),
@@ -177,10 +177,10 @@ class BackgroundMusicPlayer(object):
 
     def pause_sync(self, paused):
         if self.fade_in_out and paused:
-            self.fade_out(self.pause_fade_speed)
+            self.fade_out_sync(self.pause_fade_speed)
         self.player.set_pause(paused)
         if self.fade_in_out and not paused:
-            self.fade_in(self.pause_fade_speed)
+            self.fade_in_sync(self.pause_fade_speed)
 
 
 # |  ^
