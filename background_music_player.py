@@ -111,7 +111,8 @@ class BackgroundMusicPlayer(object):
                     self.window.vol_label.SetLabel("FAD: %d" % i)
                 wx.CallAfter(ui_upd)
             time.sleep(delay)
-        self.parent.bg_player_status = vol_msg
+
+            wx.CallAfter(lambda: self.parent.set_bg_player_status(vol_msg))
 
         if window_exists:
             def ui_upd():
