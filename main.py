@@ -689,8 +689,9 @@ class MainFrame(wx.Frame):
         player_state = self.player.get_state()
         if player_state in range(4):  # Playing or going to play
             length, time = self.player.get_length(), self.player.get_time()
-            self.time_bar.SetRange(length - 1000 if length else 0)  # FIXME: Don't know why it does not reach the end
-            self.time_bar.SetValue(time)
+            gauge_length = length - 1000 if length > 1000 else length  # FIXME: Don't know why it does not reach the end
+            self.time_bar.SetRange(gauge_length) 
+            self.time_bar.SetValue(time if time <= gauge_length else gauge_length)
 
             time_remaining = '-%02d:%02d' % divmod(length / 1000 - time / 1000, 60)
             self.time_label.SetLabel(time_remaining)
@@ -704,7 +705,7 @@ class MainFrame(wx.Frame):
             self.switch_to_zad()
 
             row = self.grid.GetSelectedRows()[0]
-            if row < self.grid.GetNumberRows():
+            if row < self.grid.GetNumberRows()-1:
                 self.grid.SetGridCursor(row + 1, 0)
                 self.grid.SelectRow(row + 1)
 
