@@ -79,6 +79,5 @@ git clone --recursive https://github.com/Himura2la/FestEngine.git
 cd python-vlc
 sudo python setup.py install
 cd ..
-vi main.py  # pass arguments to configure your paths
-python main.py
+python main.py # pass arguments to configure your paths
 ```
