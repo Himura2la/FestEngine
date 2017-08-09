@@ -79,6 +79,6 @@ git clone --recursive https://github.com/Himura2la/FestEngine.git
 cd python-vlc
 sudo python setup.py install
 cd ..
-vi main.py  # Check for static paths and remove autoload at the end of __init__()
+vi main.py  # pass arguments to configure your paths
 python main.py
 ```
