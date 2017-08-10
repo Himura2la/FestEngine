@@ -25,6 +25,7 @@ parser.add_argument("--zad_dir", dest="zad_dir")
 parser.add_argument("--mp3_dir", dest="mp3_dir")
 parser.add_argument("--background_zad_path", dest="background_zad_path")
 parser.add_argument("--background_mp3_dir", dest="background_mp3_dir")
+
 parser.add_argument("--debug_output", dest="debug_output", action='store_true')
 parser.add_argument("--auto_load_files", dest="auto_load_files", action='store_true')
 parser.add_argument("--auto_load_bg", dest="auto_load_bg", action='store_true')
@@ -395,6 +396,18 @@ class MainFrame(wx.Frame):
     # -------------------------------------------------- Data --------------------------------------------------
 
     def load_files(self, e=None):
+        if not zad_dir or not mp3_dir or not os.path.isdir(zad_dir) or not os.path.isdir(mp3_dir) or not filename_re:
+            msg = "No filename regular expression or ZAD path is invalid or MP3 path is invalid.\n" \
+                  "Please specify valid paths in '--zad_dir' and '--mp3_dir' command line arguments,\n" \
+                  "and regular expression that parses your filenames in '--filename_re' command line argument.\n\n" \
+                  "ZAD Path: %s\n" \
+                  "MP3 Path: %s\n" \
+                  "Filename regexp: %s" % (zad_dir, mp3_dir, filename_re)
+            d = wx.MessageDialog(self, msg, "Path Error", wx.OK | wx.ICON_ERROR)
+            d.ShowModal()
+            d.Destroy()
+            return
+
         zad_file_names = os.listdir(zad_dir)
         mp3_file_names = os.listdir(mp3_dir)
 
@@ -406,12 +419,6 @@ class MainFrame(wx.Frame):
                 self.items[id].add(path)
             else:
                 self.items[id] = {path}
-
-        # if len(items_all) != len(mp3_file_names):
-        #     msg = "ZAD files: %d\nmp3 files: %d" % (len(zad_file_names), len(mp3_file_names))
-        #     d = wx.MessageDialog(self, msg, "Files integrity error", wx.OK | wx.ICON_WARNING)
-        #     d.ShowModal()
-        #     d.Destroy()
 
         self.grid_rows = [Columns.ID, Columns.NOM, Columns.START, Columns.NAME,
                           Columns.FILES, Columns.NUM, Columns.NOTES]
@@ -719,6 +726,16 @@ class MainFrame(wx.Frame):
     # -------------------------------------------- Background Music Player --------------------------------------------
 
     def on_bg_load_files(self, e=None):
+        if not background_mp3_dir or not os.path.isdir(background_mp3_dir):
+            msg = "Background MP3 path is invalid.\n" \
+                  "Please specify valid path with your background tracks\n" \
+                  "in '--background_mp3_dir' command line argument.\n\n" \
+                  "Found path: %s" % background_mp3_dir
+            d = wx.MessageDialog(self, msg, "Path Error", wx.OK | wx.ICON_ERROR)
+            d.ShowModal()
+            d.Destroy()
+            return
+
         self.bg_player.load_files(background_mp3_dir)
         self.bg_play_item.Enable(True)
 
