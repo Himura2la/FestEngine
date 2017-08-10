@@ -1,43 +1,48 @@
-#!python
+#!python2
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-import re
 import argparse
+import bisect
+import os
+import re
+import sys
 import threading
 import time
 import webbrowser
-import bisect
 
+import vlc
 import wx
 import wx.grid
-import vlc
 
+from background_music_player import BackgroundMusicPlayer
+from constants import Config, Colors, Columns, FileTypes
 from projector import ProjectorWindow
 from settings import SettingsDialog
-from constants import Config, Colors, Columns, FileTypes
-from background_music_player import BackgroundMusicPlayer
-
-
-filename_re = "^(?P<nom>\w{1,2})( \[(?P<start>[GW]{1})\])?\. (?P<name>.*?)(\(.(?P<num>\d{1,3})\))?$"
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--zad_dir", dest="zad_dir", default=u"H:\ownCloud\DATA\Прошлые Фесты\Yuki no Odori 2016\Fest\zad_numbered")
-parser.add_argument("--mp3_dir", dest="mp3_dir", default=u"H:\ownCloud\DATA\Прошлые Фесты\Yuki no Odori 2016\Fest\mp3_numbered")
-parser.add_argument("--background_zad_path", dest="background_zad_path", default=None)
-parser.add_argument("--background_mp3_dir", dest="background_mp3_dir", default=u"H:\ownCloud\DATA\Прошлые Фесты\Yuki no Odori 2016\Fest\\background")
+parser.add_argument("--filename_re", dest="filename_re")
+parser.add_argument("--zad_dir", dest="zad_dir")
+parser.add_argument("--mp3_dir", dest="mp3_dir")
+parser.add_argument("--background_zad_path", dest="background_zad_path")
+parser.add_argument("--background_mp3_dir", dest="background_mp3_dir")
 parser.add_argument("--debug_output", dest="debug_output", action='store_true')
 parser.add_argument("--auto_load_files", dest="auto_load_files", action='store_true')
 parser.add_argument("--auto_load_bg", dest="auto_load_bg", action='store_true')
+
 args = parser.parse_args()
-zad_dir = args.zad_dir
-mp3_dir = args.mp3_dir
-background_zad_path = args.background_zad_path
-background_mp3_dir = args.background_mp3_dir
-debug_output = args.debug_output
-auto_load_files = args.auto_load_files
-auto_load_bg = args.auto_load_bg
+
+
+def fix_encoding(path):
+    return path.decode(sys.getfilesystemencoding()) if path and isinstance(path, str) else path
+
+filename_re = fix_encoding(args.filename_re)
+zad_dir = fix_encoding(args.zad_dir)
+mp3_dir = fix_encoding(args.mp3_dir)
+background_zad_path = fix_encoding(args.background_zad_path)
+background_mp3_dir = fix_encoding(args.background_mp3_dir)
+debug_output = fix_encoding(args.debug_output)
+auto_load_files = fix_encoding(args.auto_load_files)
+auto_load_bg = fix_encoding(args.auto_load_bg)
 
 
 class MainFrame(wx.Frame):
