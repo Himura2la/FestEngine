@@ -20,11 +20,16 @@ from projector import ProjectorWindow
 from settings import SettingsDialog
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--filename_re", dest="filename_re")
-parser.add_argument("--zad_dir", dest="zad_dir")
-parser.add_argument("--mp3_dir", dest="mp3_dir")
-parser.add_argument("--background_zad_path", dest="background_zad_path")
-parser.add_argument("--background_mp3_dir", dest="background_mp3_dir")
+parser.add_argument("--filename_re", dest="filename_re", help='Regular expression that parses your '
+                                                              'filenames (without ID and extension)')
+parser.add_argument("--zad_dir", dest="zad_dir", help='Path to a directory with images that will '
+                                                      'be shown on a second screen on F1 (ZAD)')
+parser.add_argument("--mp3_dir", dest="mp3_dir", help='Path to a directory with tracks that will '
+                                                      'be fired on F2 (music or video)')
+parser.add_argument("--background_zad_path", dest="background_zad_path", help='Path to a base image that will be shown '
+                                                                              'when nothing else is showing (optional)')
+parser.add_argument("--background_mp3_dir", dest="background_mp3_dir", help='Path to a directory with '
+                                                                            'background tracks, that will sound on F3')
 
 parser.add_argument("--debug_output", dest="debug_output", action='store_true')
 parser.add_argument("--auto_load_files", dest="auto_load_files", action='store_true')
