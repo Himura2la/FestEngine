@@ -608,15 +608,16 @@ class MainFrame(wx.Frame):
         self.play_pause_bg(play=False)
         self.player.set_media(self.vlc_instance.media_new(file_path))
 
-        if file_path.rsplit('.', 1)[1] in FileTypes.video_extensions:
+        sound_only = file_path.rsplit('.', 1)[1] in FileTypes.sound_extensions
+        if not sound_only:
             self.ensure_proj_win()
             self.switch_to_vid()
 
-        threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(),)).start()
+        threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(), sound_only)).start()
 
         self.player_time_update_timer.Start(self.player_time_update_interval_ms)
 
-    def play_sync(self, target_vol):
+    def play_sync(self, target_vol, sound_only):
         if self.player.play() != 0:              # [Play] button is pushed here!
             wx.CallAfter(lambda: self.set_player_status('Playback FAILED !!!'))
             return
@@ -632,6 +633,9 @@ class MainFrame(wx.Frame):
             time.sleep(0.007)
         if debug_output:
             print "Started playback in %.0fms" % ((time.time() - start) * 1000)
+
+        if not sound_only:
+            wx.CallAfter(lambda: self.proj_win.Layout())
 
         wx.CallAfter(lambda: self.fade_out_btn.Enable(True))
 

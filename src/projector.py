@@ -2,50 +2,45 @@ import wx
 import sys
 
 
-class ImagesPanel(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-
-        self.SetBackgroundColour(wx.BLACK)
-        self.main_sizer = wx.BoxSizer()
-        self.image_ctrl = wx.StaticBitmap(self, wx.ID_ANY,
-                                          wx.BitmapFromImage(wx.EmptyImage(parent.w, parent.h)))
-        self.main_sizer.Add(self.image_ctrl, 1, wx.EXPAND)
-        self.SetSizerAndFit(self.main_sizer)
-        self.main_sizer.Layout()
-
-
-class VLCPanel(wx.Panel):
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-
-        self.SetBackgroundColour(wx.BLACK)
-        self.main_sizer = wx.BoxSizer()
-        self.image_ctrl = wx.StaticBitmap(self, wx.ID_ANY,
-                                          wx.BitmapFromImage(wx.EmptyImage(parent.w, parent.h)))
-        self.main_sizer.Add(self.image_ctrl, 1, wx.EXPAND)
-        self.SetSizerAndFit(self.main_sizer)
-        self.main_sizer.Layout()
-
-
 class ProjectorWindow(wx.Frame):
     def __init__(self, parent, screen=None):
         if screen is None:
             screen = wx.Display.GetCount() - 1
         origin_x, origin_y, self.w, self.h = wx.Display(screen).GetGeometry().Get()
-        wx.Frame.__init__(self, parent, pos=(origin_x + 60, origin_y + 60), size=(self.w - 120, self.h - 120),
-                          title='Projector Window', style=wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP)
+        single_screen = wx.Display.GetCount() < 2
 
-        self.images_panel = ImagesPanel(self)
-        self.video_panel = VLCPanel(self)
-        self.video_panel.Hide()
+        wx.Frame.__init__(self, parent, pos=(origin_x + 60, origin_y + 60), size=(self.w - 120, self.h - 120),
+                          title='Projector Window',
+                          style=wx.DEFAULT_FRAME_STYLE | (0 if single_screen else wx.STAY_ON_TOP))
+        #self.SetBackgroundColour(wx.BLACK)
 
         self.sizer = wx.BoxSizer()
+
+        self.video_panel = wx.Panel(self)
+        self.video_panel.SetBackgroundColour(wx.BLACK)
+        self.video_panel.Hide()
+
+        class ImagesPanel(wx.Panel):
+            def __init__(self, parent):
+                wx.Panel.__init__(self, parent)
+
+                self.SetBackgroundColour(wx.BLACK)
+                self.main_sizer = wx.BoxSizer()
+                self.image_ctrl = wx.StaticBitmap(self, wx.ID_ANY,
+                                                  wx.BitmapFromImage(wx.EmptyImage(parent.w, parent.h)))
+                self.main_sizer.Add(self.image_ctrl, 1, wx.EXPAND)
+                self.SetSizerAndFit(self.main_sizer)
+                self.main_sizer.Layout()
+
+        self.images_panel = ImagesPanel(self)
         self.sizer.Add(self.images_panel, 1, wx.EXPAND)
         self.sizer.Add(self.video_panel, 1, wx.EXPAND)
-        self.SetSizer(self.sizer)
 
-        self.ShowFullScreen(True, wx.FULLSCREEN_ALL)
+        self.SetSizer(self.sizer)
+        self.Layout()
+
+        if not single_screen:
+            self.ShowFullScreen(True, wx.FULLSCREEN_ALL)
 
         handle = self.video_panel.GetHandle()
         if sys.platform.startswith('linux'):  # for Linux using the X Server
