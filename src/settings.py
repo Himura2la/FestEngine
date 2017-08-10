@@ -1,5 +1,6 @@
 import wx
-from constants import Config
+
+from src.constants import Config
 
 
 class SettingsDialog(wx.Dialog):
