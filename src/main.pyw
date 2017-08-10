@@ -61,7 +61,7 @@ class MainFrame(wx.Frame):
         self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1}  # The last one
 
         self.proj_win = None
-        self.items = None
+        self.files = None
         self.grid_rows = None
         self.in_search = False
         self.grid_default_bg_color = None
@@ -372,7 +372,7 @@ class MainFrame(wx.Frame):
         self.proj_win.switch_to_images()
         id = self.get_id(self.grid.GetGridCursorRow())
         try:
-            file_path = filter(lambda a: a.rsplit('.', 1)[1] in {'jpg', 'png'}, self.items[id]['files'])[0]
+            file_path = filter(lambda a: a.rsplit('.', 1)[1] in {'jpg', 'png'}, self.files[id])[0]
             self.proj_win.load_zad(file_path, True)
             self.image_status("Showing ID %s" % id)
             self.status("ZAD Fired!")
@@ -418,39 +418,39 @@ class MainFrame(wx.Frame):
         zad_file_names = os.listdir(zad_dir)
         mp3_file_names = os.listdir(mp3_dir)
 
-        self.items = {a.split(' ', 1)[0]: {os.path.join(zad_dir, a)} for a in zad_file_names}
+        self.files = {a.split(' ', 1)[0]: {os.path.join(zad_dir, a)} for a in zad_file_names}
         for file_name in mp3_file_names:
             id = file_name.split(' ', 1)[0]
             path = os.path.join(mp3_dir, file_name)
-            if id in self.items:
-                self.items[id].add(path)
+            if id in self.files:
+                self.files[id].add(path)
             else:
-                self.items[id] = {path}
+                self.files[id] = {path}
 
-        self.grid_rows = [Columns.ID, Columns.NOM, Columns.START, Columns.NAME,
-                          Columns.FILES, Columns.NUM, Columns.NOTES]
+        # Extracting groups from regular expression (yes, your filename_re must contain groups wigh good names)
+        group_names, group_positions = zip(*sorted(re.compile(filename_re).groupindex.items(), key=lambda a: a[1]))
+        # Because they becomes rows
+        self.grid_rows = [Columns.ID] + list(group_names) + [Columns.FILES, Columns.NOTES]
 
-        self.grid_set_shape(len(self.items), len(self.grid_rows))
+        self.grid_set_shape(len(self.files), len(self.grid_rows))
         for i in range(len(self.grid_rows)):
             self.grid.SetColLabelValue(i, self.grid_rows[i])
 
         i = 0
-        for id, files in sorted(self.items.items()):
-            name = max([os.path.splitext(os.path.basename(a).split(' ', 1)[1])[0] for a in files], key=len)
-            exts = ", ".join(sorted([a.rsplit('.', 1)[1] for a in files]))
-            match = re.search(filename_re, name)
-            start = {'W': 'point', 'G': 'instant'}[match.group('start')] if match.group('start') else 'unknown'
-            self.items[id] = {'name': name,
-                              'files': files,
-                              'start': start}
-            self.grid.SetCellValue(i, 0, id)
-            self.grid.SetCellValue(i, 1, match.group('nom'))
-            self.grid.SetCellValue(i, 2, start)
-            self.grid.SetCellValue(i, 3, match.group('name'))
-            self.grid.SetCellValue(i, 4, exts)
+        for id, files in sorted(self.files.items()):
+            j = 0
+            self.grid.SetCellValue(i, j, id)
 
-            if match.group('num'):
-                self.grid.SetCellValue(i, 5, match.group('num'))
+            name = max([os.path.splitext(os.path.basename(a).split(' ', 1)[1])[0] for a in files], key=len)
+            match = re.search(filename_re, name)
+            j += 1
+            for pos in group_positions:
+                if match.group(pos):
+                    self.grid.SetCellValue(i, j, match.group(pos))
+                j += 1
+
+            exts = ", ".join(sorted([a.rsplit('.', 1)[1] for a in files]))
+            self.grid.SetCellValue(i, j, exts)
             [self.grid.SetReadOnly(i, a) for a in range(6)]
             i += 1
 
@@ -601,9 +601,9 @@ class MainFrame(wx.Frame):
         id = self.get_id(self.grid.GetGridCursorRow())
         try:
             file_path = filter(lambda a: a.rsplit('.', 1)[1] in FileTypes.sound_extensions | FileTypes.video_extensions,
-                               self.items[id]['files'])[0]
+                               self.files[id])[0]
         except IndexError:
-            self.player_status = "Nothing to play for '%s'" % self.items[id]['name']
+            self.player_status = "Nothing to play for ID%s" % id
             return
         self.play_pause_bg(play=False)
         self.player.set_media(self.vlc_instance.media_new(file_path))

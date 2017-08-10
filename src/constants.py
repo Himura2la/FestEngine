@@ -5,12 +5,8 @@ class Config:
 
 class Columns:
     ID = 'ID'
-    NOTES = 'notes'
-    NOM = 'nom'
-    START = 'start'
-    NAME = 'name'
     FILES = 'files'
-    NUM = 'num'
+    NOTES = 'notes'
 
 
 class Colors:
