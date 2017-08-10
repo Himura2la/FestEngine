@@ -79,10 +79,16 @@ class MainFrame(wx.Frame):
 
         # --- File ---
         menu_file = wx.Menu()
+
+        self.load_data_item = menu_file.Append(wx.ID_ANY, "&Load ZAD and MP3")
+        self.Bind(wx.EVT_MENU, self.load_files, self.load_data_item)
+
+        menu_file.AppendSeparator()
+
         self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(mp3_dir)),
-                  menu_file.Append(wx.ID_ANY, "Open &mp3 Folder"))
+                  menu_file.Append(wx.ID_ANY, "Open &MP3 Folder"))
         self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(zad_dir)),
-                  menu_file.Append(wx.ID_ANY, "Open &zad Folder"))
+                  menu_file.Append(wx.ID_ANY, "Open &ZAD Folder"))
         self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(background_mp3_dir)),
                   menu_file.Append(wx.ID_ANY, "Open &Background Music Folder"))
 
@@ -107,17 +113,13 @@ class MainFrame(wx.Frame):
         menu_bar.Append(menu_file, "Fil&e")
 
         # --- Data ---
-        menu_data = wx.Menu()
-        self.load_data_item = menu_data.Append(wx.ID_ANY, "&Load Files")
-        self.Bind(wx.EVT_MENU, self.load_files, self.load_data_item)
+        menu_grid = wx.Menu()
 
-        menu_data.AppendSeparator()
-
-        self.del_dup_row_item = menu_data.Append(wx.ID_ANY, "&Delete row duplicate")
+        self.del_dup_row_item = menu_grid.Append(wx.ID_ANY, "&Delete duplicate")
         self.del_dup_row_item.Enable(False)
         self.Bind(wx.EVT_MENU, self.del_dup_row, self.del_dup_row_item)
 
-        menu_bar.Append(menu_data, "&Data")
+        menu_bar.Append(menu_grid, "&Item")
 
         # --- Projector Window ---
         proj_win_menu = wx.Menu()
@@ -454,7 +456,7 @@ class MainFrame(wx.Frame):
 
         self.grid.AutoSizeColumns()
         self.status("Loaded %d items" % i)
-        self.load_data_item.Enable(False)
+        self.load_data_item.Enable(False)  # Safety is everything!
 
     # --- Duplication from notes ---
 
