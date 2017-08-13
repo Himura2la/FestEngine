@@ -261,6 +261,11 @@ class MainFrame(wx.Frame):
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(100)
         self.player.audio_set_mute(False)
+
+        # https://github.com/maddox/vlc/blob/master/src/control/video.c#L626
+        # https://wiki.videolan.org/deinterlacing
+        self.player.video_set_deinterlace("x")
+
         self.vol_control.SetValue(self.player.audio_get_volume())
 
         self.player_status = "VLC v.%s: %s" % \
