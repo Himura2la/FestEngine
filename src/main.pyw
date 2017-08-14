@@ -104,6 +104,9 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, on_settings,
                   menu_file.Append(wx.ID_ANY, "&Setings"))
 
+        self.prefer_audio = menu_file.Append(wx.ID_ANY, "&Prefer No Video (fallback)", kind=wx.ITEM_CHECK)
+        self.prefer_audio.Check(False)
+
         menu_file.AppendSeparator()
 
         self.Bind(wx.EVT_MENU, lambda _: webbrowser.open('https://github.com/Himura2la/FestEngine'),
@@ -605,8 +608,12 @@ class MainFrame(wx.Frame):
     def play_async(self, e=None):
         id = self.get_id(self.grid.GetGridCursorRow())
         try:
-            file_path = filter(lambda a: a.rsplit('.', 1)[1] in FileTypes.sound_extensions | FileTypes.video_extensions,
-                               self.files[id])[0]
+            video_files = filter(lambda a: a.rsplit('.', 1)[1] in FileTypes.video_extensions, self.files[id])
+            if video_files and not self.prefer_audio.IsChecked():
+                file_path = video_files[0]
+            else:
+                audio_files = filter(lambda a: a.rsplit('.', 1)[1] in FileTypes.sound_extensions, self.files[id])
+                file_path = audio_files[0] if audio_files else video_files[0]
         except IndexError:
             self.player_status = "Nothing to play for ID%s" % id
             return
