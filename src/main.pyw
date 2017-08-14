@@ -267,7 +267,7 @@ class MainFrame(wx.Frame):
 
         # https://github.com/maddox/vlc/blob/master/src/control/video.c#L626
         # https://wiki.videolan.org/deinterlacing
-        self.player.video_set_deinterlace("linear")
+        self.player.video_set_deinterlace("blend")
 
         self.vol_control.SetValue(self.player.audio_get_volume())
 
