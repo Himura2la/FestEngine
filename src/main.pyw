@@ -159,21 +159,24 @@ class MainFrame(wx.Frame):
 
         # --- Fire (Play) ---
         menu_play = wx.Menu()
-        no_show_item = menu_play.Append(wx.ID_ANY, "&Emergency No Show\tEsc")
+        emergency_stop_item = menu_play.Append(wx.ID_ANY, "&Emergency Stop All\tEsc")
         show_zad_item = menu_play.Append(wx.ID_ANY, "Show &ZAD\tF1")
         play_mp3_item = menu_play.Append(wx.ID_ANY, "&Play Sound/Video\tF2")
-        play_pause_bg_item = menu_play.Append(wx.ID_ANY, "&Play/Pause Background\tF3")
+        clear_zad_item = menu_play.Append(wx.ID_ANY, "&Clear ZAD\tF3")
+        play_pause_bg_item = menu_play.Append(wx.ID_ANY, "&Play/Pause Background\tF4")
 
-        self.Bind(wx.EVT_MENU, self.no_show, no_show_item)
+        self.Bind(wx.EVT_MENU, self.emergency_stop, emergency_stop_item)
         self.Bind(wx.EVT_MENU, self.show_zad, show_zad_item)
         self.Bind(wx.EVT_MENU, self.play_async, play_mp3_item)
+        self.Bind(wx.EVT_MENU, self.clear_zad, clear_zad_item)
         self.Bind(wx.EVT_MENU, self.play_pause_bg, play_pause_bg_item)
 
         self.SetAcceleratorTable(wx.AcceleratorTable([
-            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, no_show_item.GetId()),
+            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, emergency_stop_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F1, show_zad_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F2, play_mp3_item.GetId()),
-            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F3, play_pause_bg_item.GetId())]))
+            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F3, clear_zad_item.GetId()),
+            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F4, play_pause_bg_item.GetId())]))
 
         menu_bar.Append(menu_play, "&Fire")
 
@@ -377,7 +380,7 @@ class MainFrame(wx.Frame):
 
     def show_zad(self, e):
         self.ensure_proj_win()
-        self.proj_win.switch_to_images()
+        self.switch_to_zad()
         id = self.get_id(self.grid.GetGridCursorRow())
         try:
             file_path = filter(lambda a: a.rsplit('.', 1)[1] in {'jpg', 'png'}, self.files[id])[0]
@@ -388,15 +391,16 @@ class MainFrame(wx.Frame):
             self.status("No zad for ID %s" % id)
             self.clear_zad()
 
-    def clear_zad(self):
+    def clear_zad(self, e=None):
         if background_zad_path:
             self.proj_win.load_zad(background_zad_path, True)
             self.image_status("Background")
         else:
             self.proj_win.no_show()
             self.image_status("No show")
+        self.status("ZAD Cleared")
 
-    def no_show(self, e=None):
+    def emergency_stop(self, e=None):
         if self.proj_win_exists():
             self.clear_zad()
         self.stop_async(fade_out=False)
