@@ -262,7 +262,7 @@ class MainFrame(wx.Frame):
         self.status("Ready")
 
         # ----------------------- VLC ---------------------
-
+        
         self.vlc_instance = vlc.Instance()
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(100)

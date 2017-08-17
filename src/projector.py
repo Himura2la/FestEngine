@@ -57,7 +57,7 @@ class ProjectorWindow(wx.Frame):
             max_w, max_h = self.images_panel.image_ctrl.GetSize()
             target_ratio = min(max_w / float(w), max_h / float(h))
             new_w, new_h = [int(x * target_ratio) for x in (w, h)]
-            img = img.Scale(new_w, new_h)
+            img = img.Scale(new_w, new_h, wx.IMAGE_QUALITY_HIGH)
         self.images_panel.image_ctrl.SetBitmap(wx.BitmapFromImage(img))
         self.images_panel.main_sizer.Layout()
 
