@@ -383,7 +383,7 @@ class MainFrame(wx.Frame):
         self.switch_to_zad()
         id = self.get_id(self.grid.GetGridCursorRow())
         try:
-            file_path = filter(lambda a: a.rsplit('.', 1)[1] in {'jpg', 'png'}, self.files[id])[0]
+            file_path = filter(lambda a: a.rsplit('.', 1)[1].lower() in {'jpg', 'png'}, self.files[id])[0]
             self.proj_win.load_zad(file_path, True)
             self.image_status("Showing ID %s" % id)
             self.status("ZAD Fired!")
@@ -461,7 +461,7 @@ class MainFrame(wx.Frame):
                     self.grid.SetCellValue(i, j, match.group(pos))
                 j += 1
 
-            exts = ", ".join(sorted([a.rsplit('.', 1)[1] for a in files]))
+            exts = ", ".join(sorted([a.rsplit('.', 1)[1].lower() for a in files]))
             self.grid.SetCellValue(i, j, exts)
             [self.grid.SetReadOnly(i, a) for a in range(6)]
             i += 1
@@ -612,11 +612,11 @@ class MainFrame(wx.Frame):
     def play_async(self, e=None):
         id = self.get_id(self.grid.GetGridCursorRow())
         try:
-            video_files = filter(lambda a: a.rsplit('.', 1)[1] in FileTypes.video_extensions, self.files[id])
+            video_files = filter(lambda a: a.rsplit('.', 1)[1].lower() in FileTypes.video_extensions, self.files[id])
             if video_files and not self.prefer_audio.IsChecked():
                 file_path = video_files[0]
             else:
-                audio_files = filter(lambda a: a.rsplit('.', 1)[1] in FileTypes.sound_extensions, self.files[id])
+                audio_files = filter(lambda a: a.rsplit('.', 1)[1].lower() in FileTypes.sound_extensions, self.files[id])
                 file_path = audio_files[0] if audio_files else video_files[0]
         except IndexError:
             self.player_status = "Nothing to play for ID%s" % id
@@ -624,7 +624,7 @@ class MainFrame(wx.Frame):
         self.play_pause_bg(play=False)
         self.player.set_media(self.vlc_instance.media_new(file_path))
 
-        sound_only = file_path.rsplit('.', 1)[1] in FileTypes.sound_extensions
+        sound_only = file_path.rsplit('.', 1)[1].lower() in FileTypes.sound_extensions
         if not sound_only:
             self.ensure_proj_win()
             self.switch_to_vid()
@@ -657,8 +657,9 @@ class MainFrame(wx.Frame):
 
         start = time.time()
         status = '#'
+        self.player.audio_set_mute(False)
+        self.player.audio_set_volume(target_vol)
         while self.player.audio_get_volume() != target_vol:
-            self.player.audio_set_mute(False)
             self.player.audio_set_volume(target_vol)
             status = "Trying to unmute... [%.3fs]" % (time.time() - start)
             wx.CallAfter(lambda: self.set_player_status(status))
@@ -730,8 +731,15 @@ class MainFrame(wx.Frame):
             length, time = self.player.get_length(), self.player.get_time()
 
             gauge_length = length - 1000 if length > 1000 else length  # FIXME: Don't know why it does not reach the end
+            gauge_time = time if time <= gauge_length else gauge_length
+            
+            if gauge_length < 0 or gauge_length < gauge_time:
+                print 'incorrect gauge:', 'time', gauge_time, 'len', gauge_length
+                gauge_length, gauge_time = 1, 0
+            
             self.time_bar.SetRange(gauge_length) 
-            self.time_bar.SetValue(time if time <= gauge_length else gauge_length)
+            self.time_bar.SetValue(gauge_time)
+
 
             time_remaining = '-%02d:%02d' % divmod(length / 1000 - time / 1000, 60)
             self.time_label.SetLabel(time_remaining)
@@ -742,6 +750,7 @@ class MainFrame(wx.Frame):
                 self.player_status = status
         else:  # Not playing
             self.time_bar.SetValue(0)
+            self.time_label.SetLabel('End')
             self.switch_to_zad()
 
             row = self.grid.GetSelectedRows()[0]
@@ -749,6 +758,7 @@ class MainFrame(wx.Frame):
                 self.grid.SetGridCursor(row + 1, 0)
                 self.grid.SelectRow(row + 1)
 
+            self.grid.MakeCellVisible(row, 0)
             self.grid.SetFocus()
             self.player_time_update_timer.Stop()
 
