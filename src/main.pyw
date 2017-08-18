@@ -66,6 +66,7 @@ class MainFrame(wx.Frame):
         self.in_search = False
         self.grid_default_bg_color = None
         self.full_grid_data = None
+        self.id_in_player = None
 
         self.player_time_update_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.player_time_update, self.player_time_update_timer)
@@ -630,6 +631,8 @@ class MainFrame(wx.Frame):
             self.switch_to_vid()
 
         threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(), sound_only)).start()
+        
+        self.id_in_player = id
 
         self.player_time_update_timer.Start(self.player_time_update_interval_ms)
 
@@ -753,8 +756,8 @@ class MainFrame(wx.Frame):
             self.time_label.SetLabel('End')
             self.switch_to_zad()
 
-            row = self.grid.GetSelectedRows()[0]
-            if row < self.grid.GetNumberRows() - 1:
+            row = self.grid.GetGridCursorRow()
+            if row < self.grid.GetNumberRows() - 1 and self.get_id(row) == self.id_in_player:
                 self.grid.SetGridCursor(row + 1, 0)
                 self.grid.SelectRow(row + 1)
 
