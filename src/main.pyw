@@ -396,6 +396,8 @@ class MainFrame(wx.Frame):
             self.clear_zad()
 
     def clear_zad(self, e=None):
+        if not self.proj_win_exists():
+            return
         if background_zad_path:
             self.proj_win.load_zad(background_zad_path, True)
             self.image_status("Background")

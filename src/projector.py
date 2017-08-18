@@ -12,7 +12,7 @@ class ProjectorWindow(wx.Frame):
         wx.Frame.__init__(self, parent, pos=(origin_x + 60, origin_y + 60), size=(self.w - 120, self.h - 120),
                           title='Projector Window',
                           style=wx.DEFAULT_FRAME_STYLE | (0 if single_screen else wx.STAY_ON_TOP))
-        #self.SetBackgroundColour(wx.BLACK)
+        self.SetBackgroundColour(wx.BLACK)
 
         self.sizer = wx.BoxSizer()
 
@@ -34,7 +34,7 @@ class ProjectorWindow(wx.Frame):
 
         self.images_panel = ImagesPanel(self)
         self.sizer.Add(self.images_panel, 1, wx.EXPAND)
-        self.sizer.Add(self.video_panel, 1, wx.EXPAND)
+        self.sizer.Add(self.video_panel, 1, wx.EXPAND)  # TODO: Align top
 
         self.SetSizer(self.sizer)
         self.Layout()
