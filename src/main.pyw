@@ -212,7 +212,7 @@ class MainFrame(wx.Frame):
         self.time_label = wx.StaticText(self, label='Stopped', size=(50, -1), style=wx.ALIGN_CENTER)
         self.toolbar.Add(self.time_label, 0, wx.ALIGN_CENTER_VERTICAL)
 
-        self.search_box = wx.TextCtrl(self, size=(35, toolbar_base_height), value='Find')
+        self.search_box = wx.TextCtrl(self, size=(35, toolbar_base_height), value='Find', style=wx.TE_PROCESS_ENTER)
         self.search_box.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_GRAYTEXT))
         self.toolbar.Add(self.search_box, 0, wx.ALIGN_CENTER_VERTICAL)
 
@@ -226,6 +226,9 @@ class MainFrame(wx.Frame):
         self.search_box.Bind(wx.EVT_TEXT, self.search)
         self.search_box.Bind(wx.EVT_RIGHT_DOWN, self.quit_search)
         self.search_box.SetToolTipString('Right-click to quit search')
+        self.search_box.Bind(wx.EVT_TEXT_ENTER, self.quit_search)
+        
+        
 
         self.vid_btn = wx.ToggleButton(self, label='VID', size=(35, toolbar_base_height + 2))
         self.zad_btn = wx.ToggleButton(self, label='ZAD', size=(35, toolbar_base_height + 2))
