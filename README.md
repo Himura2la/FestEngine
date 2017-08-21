@@ -55,10 +55,28 @@
 
 # [В планах](https://github.com/Himura2la/FestEngine/issues)
 
-Если ты чувствуешь в себе силу что-нибудь из этого запилить, будешь няшкой...
+Если ты чувствуешь в себе силу что-нибудь из этого запилить, будешь няшкой и сделаешь звук на фестах чуть лучше!
 
 
-# Установка на Debian-based системы
+
+
+# Как это поднять?
+
+## Windows
+
+- Выбрать разрядность (x32 или x64) и придерживаться этой разрядности во всех дальнейших установках
+- Установить последний [Python 2.7](https://www.python.org/downloads/windows/) выбранной разядности. При установке отметить чекбокс **Добавить python.exe в PATH** (если это единственный Python, который у вас будет).
+- Установить последний [wxPython 3 для Python 2.7](https://sourceforge.net/projects/wxpython/files/wxPython/) выбранной разядности (wxPython 4 Phoneix не пойдёт, нужна именно версия 3, они сломали обратную совместимость, запланирвоан перевод в [#37](https://github.com/Himura2la/FestEngine/issues/37))
+- Установить последний [VLC](https://www.videolan.org/vlc/index.ru.html) выбранной разядности
+- Установить [Git](https://git-scm.com/), [SourceTree](https://www.sourcetreeapp.com/) или [GitHub](https://desktop.github.com/) и научиться клонировать репозитории
+- Если вы установили чистый git, то клонируйте следующей командой: `git clone --recursive https://github.com/Himura2la/FestEngine.git`
+- Обновить **setuptools**: `pip install --upgrade setuptools`
+- Установить [VLC Python Bindings](https://wiki.videolan.org/python_bindings) (библиотека для управления плеером VLC): Из папки **python-vlc** выполнить `python setup.py install`
+- Можно запускать Fest Engine: из папки **src** выполнить `python main.py`
+- Качнуть [тестовые данные](https://drive.google.com/file/d/0B4v9WFUhaeVvRmdXcXNaRHB0THc/view), отредактировать пути в [Start-Sample-Fest.bat](https://github.com/Himura2la/FestEngine/blob/master/Start-Sample-Fest.bat) и запуустить Fest Endine с данными.
+- Писать код в [PyCharm](https://www.jetbrains.com/pycharm/) и отправлять Pull-Request'ы
+
+## Debian-based
 
 ```sh
 sudo apt install git python2.7-dev python-wxgtk3.0-dev vlc -y
@@ -68,7 +86,3 @@ sudo python setup.py install
 cd ..
 python main.py # pass arguments to configure your paths
 ```
-
-[Официальный гайдъ по установке wxPython](https://github.com/wxWidgets/Phoenix/blob/master/README.rst)
-
-Возможно не стоит ставить из pip, он у меня билдился 3.5 часа а потом вылетел с ошибкой.
