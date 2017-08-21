@@ -72,7 +72,7 @@
 - Обновить **setuptools**: `pip install --upgrade setuptools`
 - Установить [VLC Python Bindings](https://wiki.videolan.org/python_bindings) (библиотека для управления плеером VLC): Из папки **python-vlc** выполнить `python setup.py install`
 - Можно запускать Fest Engine: из папки **src** выполнить `python main.py`
-- Качнуть [тестовые данные](https://drive.google.com/file/d/0B4v9WFUhaeVvRmdXcXNaRHB0THc/view), отредактировать пути в [Start-Sample-Fest.bat](https://github.com/Himura2la/FestEngine/blob/master/Start-Sample-Fest.bat) и запуустить Fest Endine с данными.
+- Качнуть [тестовые данные](https://drive.google.com/file/d/0B4v9WFUhaeVvRmdXcXNaRHB0THc/view), отредактировать пути в [Debug-tulafest16.bat](https://github.com/Himura2la/FestEngine/blob/master/Debug-tulafest16.bat) и запустить Fest Endine с данными.
 - Писать код в [PyCharm](https://www.jetbrains.com/pycharm/) и отправлять Pull-Request'ы
 
 ## Debian-based
