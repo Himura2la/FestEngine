@@ -231,7 +231,6 @@ class MainFrame(wx.Frame):
         self.search_box.Bind(wx.EVT_RIGHT_DOWN, self.quit_search)
         self.search_box.SetToolTipString('Right-click to quit search')
         self.search_box.Bind(wx.EVT_TEXT_ENTER, self.quit_search)
-        
 
         self.vid_btn = wx.ToggleButton(self, label='VID', size=(35, toolbar_base_height + 2))
         self.zad_btn = wx.ToggleButton(self, label='ZAD', size=(35, toolbar_base_height + 2))
@@ -492,37 +491,35 @@ class MainFrame(wx.Frame):
     def on_grid_cell_changed(self, e):
         self.grid.Unbind(wx.grid.EVT_GRID_CELL_CHANGED)
 
-        if not self.grid.GetColLabelValue(e.Col) == Columns.NOTES:
-            return
-        note = self.grid.GetCellValue(e.Row, e.Col)
-        match = re.search('>(\d{3}(\w)?)([^\w].*)?', note)  # ">234" or ">305a" or ">152a maybe"
-        if not match:
-            return
-        new_id, _, note = match.groups()
+        if self.grid.GetColLabelValue(e.Col) == Columns.NOTES:
+            note = self.grid.GetCellValue(e.Row, e.Col)
+            match = re.search('>(\d{3}(\w)?)([^\w].*)?', note)  # ">234" or ">305a" or ">152a maybe"
+            if match:
+                new_id, _, note = match.groups()
 
-        row = {self.grid.GetColLabelValue(i): {'col': i, 'val': self.grid.GetCellValue(e.Row, i)}
-               for i in range(self.grid.GetNumberCols())}
+                row = {self.grid.GetColLabelValue(i): {'col': i, 'val': self.grid.GetCellValue(e.Row, i)}
+                       for i in range(self.grid.GetNumberCols())}
 
-        old_id = row[Columns.NUM]['val']
-        row[Columns.NUM]['val'] = new_id
-        row[Columns.NOTES]['val'] = '<%s %s' % (old_id, note) if note else '<%s' % old_id
+                old_id = row[Columns.NUM]['val']
+                row[Columns.NUM]['val'] = new_id
+                row[Columns.NOTES]['val'] = '<%s %s' % (old_id, note) if note else '<%s' % old_id
 
-        ids = [self.grid.GetCellValue(i, row[Columns.NUM]['col']) for i in range(self.grid.GetNumberRows())]
+                ids = [self.grid.GetCellValue(i, row[Columns.NUM]['col']) for i in range(self.grid.GetNumberRows())]
 
-        if new_id not in ids or not self.is_dup_row(ids.index(new_id)):
-            i = ord('a')
-            while row[Columns.NUM]['val'] in ids:  # If num already exists, append a letter
-                row[Columns.NUM]['val'] = new_id + chr(i)
-                i += 1
-            new_row = bisect.bisect(ids, row[Columns.NUM]['val'])  # determining row insertion point
-            self.grid.InsertRows(new_row, 1)
-        else:
-            new_row = ids.index(new_id)
+                if new_id not in ids or not self.is_dup_row(ids.index(new_id)):
+                    i = ord('a')
+                    while row[Columns.NUM]['val'] in ids:  # If num already exists, append a letter
+                        row[Columns.NUM]['val'] = new_id + chr(i)
+                        i += 1
+                    new_row = bisect.bisect(ids, row[Columns.NUM]['val'])  # determining row insertion point
+                    self.grid.InsertRows(new_row, 1)
+                else:
+                    new_row = ids.index(new_id)
 
-        for cell in row.values():
-            self.grid.SetCellValue(new_row, cell['col'], cell['val'])
-            self.grid.SetCellBackgroundColour(new_row, cell['col'], Colors.DUP_ROW)
-            self.grid.SetReadOnly(new_row, cell['col'])
+                for cell in row.values():
+                    self.grid.SetCellValue(new_row, cell['col'], cell['val'])
+                    self.grid.SetCellBackgroundColour(new_row, cell['col'], Colors.DUP_ROW)
+                    self.grid.SetReadOnly(new_row, cell['col'])
 
         self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
 
@@ -749,16 +746,13 @@ class MainFrame(wx.Frame):
         if player_state in range(4):  # Playing or going to play
             length, time = self.player.get_length(), self.player.get_time()
 
-            gauge_length = length - 1000 if length > 1000 else length  # FIXME: Don't know why it does not reach the end
-            gauge_time = time if time <= gauge_length else gauge_length
-            
-            if gauge_length < 0 or gauge_length < gauge_time:
-                print 'incorrect gauge:', 'time', gauge_time, 'len', gauge_length
-                gauge_length, gauge_time = 1, 0
-            
-            self.time_bar.SetRange(gauge_length) 
-            self.time_bar.SetValue(gauge_time)
-
+            if sys.platform == "win32":  # FIXME: Don't know why it does not reach the end on win32
+                gauge_length = length - 1000 if length > 1000 else length
+                self.time_bar.SetRange(gauge_length)
+                self.time_bar.SetValue(time if time <= gauge_length else gauge_length)
+            else:
+                self.time_bar.SetRange(length)
+                self.time_bar.SetValue(time)
 
             time_remaining = '-%02d:%02d' % divmod(length / 1000 - time / 1000, 60)
             self.time_label.SetLabel(time_remaining)

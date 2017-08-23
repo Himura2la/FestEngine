@@ -6,7 +6,7 @@ class Config:
 
 
 class Columns:
-    NUM = '№'
+    NUM = u'№'
     FILES = 'files'
     NOTES = 'notes'
 
