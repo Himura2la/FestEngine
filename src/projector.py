@@ -18,6 +18,7 @@ class ProjectorWindow(wx.Frame):
 
         self.video_panel = wx.Panel(self)
         self.video_panel.SetBackgroundColour(wx.BLACK)
+
         self.video_panel.Hide()
 
         class ImagesPanel(wx.Panel):
@@ -57,14 +58,6 @@ class ProjectorWindow(wx.Frame):
 
         if not single_screen:
             self.ShowFullScreen(True, wx.FULLSCREEN_ALL)
-
-        handle = self.video_panel.GetHandle()
-        if sys.platform.startswith('linux'):  # for Linux using the X Server
-            parent.player.set_xwindow(handle)
-        elif sys.platform == "win32":  # for Windows
-            parent.player.set_hwnd(handle)
-        elif sys.platform == "darwin":  # for MacOS
-            parent.player.set_nsobject(handle)
 
     def load_zad(self, file_path, fit=True):
         img = wx.Image(file_path, wx.BITMAP_TYPE_ANY)

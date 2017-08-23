@@ -379,6 +379,14 @@ class MainFrame(wx.Frame):
         self.zad_btn.SetValue(False)
         self.proj_win.switch_to_video()
 
+        handle = self.proj_win.video_panel.GetHandle()
+        if sys.platform.startswith('linux'):  # for Linux using the X Server
+            self.player.set_xwindow(handle)
+        elif sys.platform == "win32":  # for Windows
+            self.player.set_hwnd(handle)
+        elif sys.platform == "darwin":  # for MacOS
+            self.player.set_nsobject(handle)
+
     def switch_to_zad(self, e=None):
         if not self.proj_win_exists():
             return
