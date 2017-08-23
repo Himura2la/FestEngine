@@ -232,7 +232,6 @@ class MainFrame(wx.Frame):
         self.search_box.SetToolTipString('Right-click to quit search')
         self.search_box.Bind(wx.EVT_TEXT_ENTER, self.quit_search)
         
-        
 
         self.vid_btn = wx.ToggleButton(self, label='VID', size=(35, toolbar_base_height + 2))
         self.zad_btn = wx.ToggleButton(self, label='ZAD', size=(35, toolbar_base_height + 2))
@@ -270,8 +269,8 @@ class MainFrame(wx.Frame):
         self.status("Ready")
 
         # ----------------------- VLC ---------------------
-        
-        self.vlc_instance = vlc.Instance()
+
+        self.vlc_instance = vlc.Instance("--no-xlib")  # Xlib is required for VDPAU, but I can't call XInitThreads()
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(100)
         self.player.audio_set_mute(False)
