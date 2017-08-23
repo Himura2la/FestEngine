@@ -21,7 +21,7 @@ from settings import SettingsDialog
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--filename_re", dest="filename_re", help='Regular expression that parses your '
-                                                              'filenames (without ID and extension)')
+                                                              'filenames (without № and extension)')
 parser.add_argument("--zad_dir", dest="zad_dir", help='Path to a directory with images that will '
                                                       'be shown on a second screen on F1 (ZAD)')
 parser.add_argument("--mp3_dir", dest="mp3_dir", help='Path to a directory with tracks that will '
@@ -389,10 +389,10 @@ class MainFrame(wx.Frame):
         try:
             file_path = filter(lambda a: a.rsplit('.', 1)[1].lower() in {'jpg', 'png'}, self.files[id])[0]
             self.proj_win.load_zad(file_path, True)
-            self.image_status("Showing ID %s" % id)
+            self.image_status("Showing №%s" % id)
             self.status("ZAD Fired!")
         except IndexError:
-            self.status("No zad for ID %s" % id)
+            self.status("No zad for №%s" % id)
             self.clear_zad()
 
     def clear_zad(self, e=None):
@@ -448,7 +448,7 @@ class MainFrame(wx.Frame):
         # Extracting groups from regular expression (yes, your filename_re must contain groups wigh good names)
         group_names, group_positions = zip(*sorted(re.compile(filename_re).groupindex.items(), key=lambda a: a[1]))
         # Because they becomes rows
-        self.grid_rows = [Columns.ID] + list(group_names) + [Columns.FILES, Columns.NOTES]
+        self.grid_rows = [Columns.NUM] + list(group_names) + [Columns.FILES, Columns.NOTES]
 
         self.grid_set_shape(len(self.files), len(self.grid_rows))
         for i in range(len(self.grid_rows)):
@@ -492,18 +492,18 @@ class MainFrame(wx.Frame):
         row = {self.grid.GetColLabelValue(i): {'col': i, 'val': self.grid.GetCellValue(e.Row, i)}
                for i in range(self.grid.GetNumberCols())}
 
-        old_id = row[Columns.ID]['val']
-        row[Columns.ID]['val'] = new_id
+        old_id = row[Columns.NUM]['val']
+        row[Columns.NUM]['val'] = new_id
         row[Columns.NOTES]['val'] = '<%s %s' % (old_id, note) if note else '<%s' % old_id
 
-        ids = [self.grid.GetCellValue(i, row[Columns.ID]['col']) for i in range(self.grid.GetNumberRows())]
+        ids = [self.grid.GetCellValue(i, row[Columns.NUM]['col']) for i in range(self.grid.GetNumberRows())]
 
         if new_id not in ids or not self.is_dup_row(ids.index(new_id)):
             i = ord('a')
-            while row[Columns.ID]['val'] in ids:  # If ID already exists, append a letter
-                row[Columns.ID]['val'] = new_id + chr(i)
+            while row[Columns.NUM]['val'] in ids:  # If num already exists, append a letter
+                row[Columns.NUM]['val'] = new_id + chr(i)
                 i += 1
-            new_row = bisect.bisect(ids, row[Columns.ID]['val'])  # determining row insertion point
+            new_row = bisect.bisect(ids, row[Columns.NUM]['val'])  # determining row insertion point
             self.grid.InsertRows(new_row, 1)
         else:
             new_row = ids.index(new_id)
@@ -522,7 +522,7 @@ class MainFrame(wx.Frame):
         if self.is_dup_row(row):
             return self.grid.GetCellValue(row, self.grid_rows.index(Columns.NOTES))[1:4]
         else:
-            return self.grid.GetCellValue(row, self.grid_rows.index(Columns.ID))
+            return self.grid.GetCellValue(row, self.grid_rows.index(Columns.NUM))
 
     def del_dup_row(self, e=None):
         row = self.grid.GetSelectedRows()[0]
@@ -625,7 +625,7 @@ class MainFrame(wx.Frame):
                 audio_files = filter(lambda a: a.rsplit('.', 1)[1].lower() in FileTypes.sound_extensions, self.files[id])
                 file_path = audio_files[0] if audio_files else video_files[0]
         except IndexError:
-            self.player_status = "Nothing to play for ID%s" % id
+            self.player_status = "Nothing to play for №%s" % id
             return
         self.play_pause_bg(play=False)
         self.player.set_media(self.vlc_instance.media_new(file_path))

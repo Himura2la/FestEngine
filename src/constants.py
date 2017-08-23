@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+
 
 class Config:
     PROJECTOR_SCREEN = "Projector Screen"
 
 
 class Columns:
-    ID = 'ID'
+    NUM = '№'
     FILES = 'files'
     NOTES = 'notes'
 
