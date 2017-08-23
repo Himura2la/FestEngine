@@ -21,7 +21,7 @@ from settings import SettingsDialog
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--filename_re", dest="filename_re", help='Regular expression that parses your '
-                                                              'filenames (without № and extension)')
+                                                              'filenames (without leading number and extension)')
 parser.add_argument("--zad_dir", dest="zad_dir", help='Path to a directory with images that will '
                                                       'be shown on a second screen on F1 (ZAD)')
 parser.add_argument("--mp3_dir", dest="mp3_dir", help='Path to a directory with tracks that will '
@@ -163,21 +163,25 @@ class MainFrame(wx.Frame):
         emergency_stop_item = menu_play.Append(wx.ID_ANY, "&Emergency Stop All\tEsc")
         show_zad_item = menu_play.Append(wx.ID_ANY, "Show &ZAD\tF1")
         play_mp3_item = menu_play.Append(wx.ID_ANY, "&Play Sound/Video\tF2")
-        clear_zad_item = menu_play.Append(wx.ID_ANY, "&Clear ZAD\tF3")
-        play_pause_bg_item = menu_play.Append(wx.ID_ANY, "&Play/Pause Background\tF4")
+        clear_zad_item = menu_play.Append(wx.ID_ANY, "&Clear ZAD\tShift+F1")
+        no_show_item = menu_play.Append(wx.ID_ANY, "&No Show")
+        menu_play.AppendSeparator()
+        play_pause_bg_item = menu_play.Append(wx.ID_ANY, "&Play/Pause Background\tF3")
 
         self.Bind(wx.EVT_MENU, self.emergency_stop, emergency_stop_item)
         self.Bind(wx.EVT_MENU, self.show_zad, show_zad_item)
         self.Bind(wx.EVT_MENU, self.play_async, play_mp3_item)
         self.Bind(wx.EVT_MENU, self.clear_zad, clear_zad_item)
+        self.Bind(wx.EVT_MENU, lambda e: self.clear_zad(e, True), no_show_item)
         self.Bind(wx.EVT_MENU, self.play_pause_bg, play_pause_bg_item)
 
         self.SetAcceleratorTable(wx.AcceleratorTable([
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, emergency_stop_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F1, show_zad_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F2, play_mp3_item.GetId()),
-            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F3, clear_zad_item.GetId()),
-            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F4, play_pause_bg_item.GetId())]))
+            wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_F1, clear_zad_item.GetId()),
+            # wx.AcceleratorEntry(wx.ACCEL_CRTL, wx.WXK_F1, no_show_item.GetId()),  # OS captures them
+            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F3, play_pause_bg_item.GetId())]))
 
         menu_bar.Append(menu_play, "&Fire")
 
@@ -389,16 +393,16 @@ class MainFrame(wx.Frame):
         try:
             file_path = filter(lambda a: a.rsplit('.', 1)[1].lower() in {'jpg', 'png'}, self.files[id])[0]
             self.proj_win.load_zad(file_path, True)
-            self.image_status("Showing №%s" % id)
+            self.image_status(u"Showing №%s" % id)
             self.status("ZAD Fired!")
         except IndexError:
-            self.status("No zad for №%s" % id)
+            self.status(u"No zad for №%s" % id)
             self.clear_zad()
 
-    def clear_zad(self, e=None):
+    def clear_zad(self, e=None, no_show=False):
         if not self.proj_win_exists():
             return
-        if background_zad_path:
+        if background_zad_path and not no_show:
             self.proj_win.load_zad(background_zad_path, True)
             self.image_status("Background")
         else:
@@ -625,7 +629,7 @@ class MainFrame(wx.Frame):
                 audio_files = filter(lambda a: a.rsplit('.', 1)[1].lower() in FileTypes.sound_extensions, self.files[id])
                 file_path = audio_files[0] if audio_files else video_files[0]
         except IndexError:
-            self.player_status = "Nothing to play for №%s" % id
+            self.player_status = u"Nothing to play for №%s" % id
             return
         self.play_pause_bg(play=False)
         self.player.set_media(self.vlc_instance.media_new(file_path))

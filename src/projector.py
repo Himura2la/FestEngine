@@ -86,6 +86,6 @@ class ProjectorWindow(wx.Frame):
         self.images_panel.Show()
 
     def no_show(self):
-        self.images_panel.drawable_bitmap.SetBitmap(
-            wx.BitmapFromImage(wx.EmptyImage(*self.images_panel.drawable_bitmap.GetSize())))
-        self.images_panel.main_sizer.Layout()
+        self.images_panel.drawable_bitmap = \
+            wx.BitmapFromImage(wx.EmptyImage(*self.images_panel.drawable_bitmap.GetSize()))
+        self.images_panel.Refresh()
