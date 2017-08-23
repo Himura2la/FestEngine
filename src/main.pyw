@@ -66,7 +66,7 @@ class MainFrame(wx.Frame):
         self.in_search = False
         self.grid_default_bg_color = None
         self.full_grid_data = None
-        self.id_in_player = None
+        self.num_in_player = None
 
         self.player_time_update_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.player_time_update, self.player_time_update_timer)
@@ -395,14 +395,14 @@ class MainFrame(wx.Frame):
     def show_zad(self, e):
         self.ensure_proj_win()
         self.switch_to_zad()
-        id = self.get_id(self.grid.GetGridCursorRow())
+        num = self.get_num(self.grid.GetGridCursorRow())
         try:
-            file_path = filter(lambda a: a.rsplit('.', 1)[1].lower() in {'jpg', 'png'}, self.files[id])[0]
+            file_path = filter(lambda a: a.rsplit('.', 1)[1].lower() in {'jpg', 'png'}, self.files[num])[0]
             self.proj_win.load_zad(file_path, True)
-            self.image_status(u"Showing №%s" % id)
+            self.image_status(u"Showing №%s" % num)
             self.status("ZAD Fired!")
         except IndexError:
-            self.status(u"No zad for №%s" % id)
+            self.status(u"No zad for №%s" % num)
             self.clear_zad()
 
     def clear_zad(self, e=None, no_show=False):
@@ -448,12 +448,12 @@ class MainFrame(wx.Frame):
 
         self.files = {a.split(' ', 1)[0]: {os.path.join(zad_dir, a)} for a in zad_file_names}
         for file_name in mp3_file_names:
-            id = file_name.split(' ', 1)[0]
+            num = file_name.split(' ', 1)[0]
             path = os.path.join(mp3_dir, file_name)
-            if id in self.files:
-                self.files[id].add(path)
+            if num in self.files:
+                self.files[num].add(path)
             else:
-                self.files[id] = {path}
+                self.files[num] = {path}
 
         # Extracting groups from regular expression (yes, your filename_re must contain groups wigh good names)
         group_names, group_positions = zip(*sorted(re.compile(filename_re).groupindex.items(), key=lambda a: a[1]))
@@ -465,9 +465,9 @@ class MainFrame(wx.Frame):
             self.grid.SetColLabelValue(i, self.grid_rows[i])
 
         i = 0
-        for id, files in sorted(self.files.items()):
+        for num, files in sorted(self.files.items()):
             j = 0
-            self.grid.SetCellValue(i, j, id)
+            self.grid.SetCellValue(i, j, num)
 
             name = max([os.path.splitext(os.path.basename(a).split(' ', 1)[1])[0] for a in files], key=len)
             match = re.search(filename_re, name)
@@ -495,26 +495,26 @@ class MainFrame(wx.Frame):
             note = self.grid.GetCellValue(e.Row, e.Col)
             match = re.search('>(\d{3}(\w)?)([^\w].*)?', note)  # ">234" or ">305a" or ">152a maybe"
             if match:
-                new_id, _, note = match.groups()
+                new_num, _, note = match.groups()
 
                 row = {self.grid.GetColLabelValue(i): {'col': i, 'val': self.grid.GetCellValue(e.Row, i)}
                        for i in range(self.grid.GetNumberCols())}
 
-                old_id = row[Columns.NUM]['val']
-                row[Columns.NUM]['val'] = new_id
-                row[Columns.NOTES]['val'] = '<%s %s' % (old_id, note) if note else '<%s' % old_id
+                old_num = row[Columns.NUM]['val']
+                row[Columns.NUM]['val'] = new_num
+                row[Columns.NOTES]['val'] = '<%s %s' % (old_num, note) if note else '<%s' % old_num
 
-                ids = [self.grid.GetCellValue(i, row[Columns.NUM]['col']) for i in range(self.grid.GetNumberRows())]
+                nums = [self.grid.GetCellValue(i, row[Columns.NUM]['col']) for i in range(self.grid.GetNumberRows())]
 
-                if new_id not in ids or not self.is_dup_row(ids.index(new_id)):
+                if new_num not in nums or not self.is_dup_row(nums.index(new_num)):
                     i = ord('a')
-                    while row[Columns.NUM]['val'] in ids:  # If num already exists, append a letter
-                        row[Columns.NUM]['val'] = new_id + chr(i)
+                    while row[Columns.NUM]['val'] in nums:  # If num already exists, append a letter
+                        row[Columns.NUM]['val'] = new_num + chr(i)
                         i += 1
-                    new_row = bisect.bisect(ids, row[Columns.NUM]['val'])  # determining row insertion point
+                    new_row = bisect.bisect(nums, row[Columns.NUM]['val'])  # determining row insertion point
                     self.grid.InsertRows(new_row, 1)
                 else:
-                    new_row = ids.index(new_id)
+                    new_row = nums.index(new_num)
 
                 for cell in row.values():
                     self.grid.SetCellValue(new_row, cell['col'], cell['val'])
@@ -526,7 +526,7 @@ class MainFrame(wx.Frame):
     def is_dup_row(self, row):
         return self.grid.GetCellBackgroundColour(row, 0) == Colors.DUP_ROW
 
-    def get_id(self, row):
+    def get_num(self, row):
         if self.is_dup_row(row):
             return self.grid.GetCellValue(row, self.grid_rows.index(Columns.NOTES))[1:4]
         else:
@@ -624,16 +624,16 @@ class MainFrame(wx.Frame):
     # -------------------------------------------------- Player --------------------------------------------------
 
     def play_async(self, e=None):
-        id = self.get_id(self.grid.GetGridCursorRow())
+        num = self.get_num(self.grid.GetGridCursorRow())
         try:
-            video_files = filter(lambda a: a.rsplit('.', 1)[1].lower() in FileTypes.video_extensions, self.files[id])
+            video_files = filter(lambda a: a.rsplit('.', 1)[1].lower() in FileTypes.video_extensions, self.files[num])
             if video_files and not self.prefer_audio.IsChecked():
                 file_path = video_files[0]
             else:
-                audio_files = filter(lambda a: a.rsplit('.', 1)[1].lower() in FileTypes.sound_extensions, self.files[id])
+                audio_files = filter(lambda a: a.rsplit('.', 1)[1].lower() in FileTypes.sound_extensions, self.files[num])
                 file_path = audio_files[0] if audio_files else video_files[0]
         except IndexError:
-            self.player_status = u"Nothing to play for №%s" % id
+            self.player_status = u"Nothing to play for №%s" % num
             return
         self.play_pause_bg(play=False)
         self.player.set_media(self.vlc_instance.media_new(file_path))
@@ -645,8 +645,7 @@ class MainFrame(wx.Frame):
 
         threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(), sound_only)).start()
         
-        self.id_in_player = id
-
+        self.num_in_player = num
         self.player_time_update_timer.Start(self.player_time_update_interval_ms)
 
     def play_sync(self, target_vol, sound_only):
@@ -754,10 +753,11 @@ class MainFrame(wx.Frame):
                 self.time_bar.SetRange(length)
                 self.time_bar.SetValue(time)
 
+            time_elapsed = '%02d:%02d' % divmod(time / 1000, 60)
             time_remaining = '-%02d:%02d' % divmod(length / 1000 - time / 1000, 60)
-            self.time_label.SetLabel(time_remaining)
+            self.time_label.SetLabel(time_elapsed)
 
-            status = '%s Vol:%d Time:%s' % (self.player_state_parse(player_state),
+            status = u'%s №%s V:%d T:%s' % (self.player_state_parse(player_state), self.num_in_player,
                                             self.player.audio_get_volume(), time_remaining)
             if 'Fading' not in self.player_status:
                 self.player_status = status
@@ -767,7 +767,7 @@ class MainFrame(wx.Frame):
             self.switch_to_zad()
 
             row = self.grid.GetGridCursorRow()
-            if row < self.grid.GetNumberRows() - 1 and self.get_id(row) == self.id_in_player:
+            if row < self.grid.GetNumberRows() - 1 and self.get_num(row) == self.num_in_player:
                 self.grid.SetGridCursor(row + 1, 0)
                 self.grid.SelectRow(row + 1)
 
