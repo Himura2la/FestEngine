@@ -24,12 +24,12 @@ parser.add_argument("--filename_re", dest="filename_re", help='Regular expressio
                                                               'filenames (without leading number and extension)')
 parser.add_argument("--zad_dir", dest="zad_dir", help='Path to a directory with images that will '
                                                       'be shown on a second screen on F1 (ZAD)')
-parser.add_argument("--mp3_dir", dest="mp3_dir", help='Path to a directory with tracks that will '
-                                                      'be fired on F2 (music or video)')
+parser.add_argument("--tracks_dir", dest="tracks_dir", help='Path to a directory with tracks that will '
+                                                            'be fired on F2 (music or video)')
 parser.add_argument("--background_zad_path", dest="background_zad_path", help='Path to a base image that will be shown '
                                                                               'when nothing else is showing (optional)')
-parser.add_argument("--background_mp3_dir", dest="background_mp3_dir", help='Path to a directory with '
-                                                                            'background tracks, that will sound on F3')
+parser.add_argument("--background_tracks_dir", dest="background_tracks_dir", help='Path to a directory with '
+                                                                                  'background tracks, that will sound on F3')
 
 parser.add_argument("--debug_output", dest="debug_output", action='store_true')
 parser.add_argument("--auto_load_files", dest="auto_load_files", action='store_true')
@@ -43,9 +43,9 @@ def fix_encoding(path):
 
 filename_re = fix_encoding(args.filename_re)
 zad_dir = fix_encoding(args.zad_dir)
-mp3_dir = fix_encoding(args.mp3_dir)
+tracks_dir = fix_encoding(args.tracks_dir)
 background_zad_path = fix_encoding(args.background_zad_path)
-background_mp3_dir = fix_encoding(args.background_mp3_dir)
+background_tracks_dir = fix_encoding(args.background_tracks_dir)
 debug_output = fix_encoding(args.debug_output)
 auto_load_files = fix_encoding(args.auto_load_files)
 auto_load_bg = fix_encoding(args.auto_load_bg)
@@ -86,11 +86,11 @@ class MainFrame(wx.Frame):
 
         menu_file.AppendSeparator()
 
-        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(mp3_dir)),
+        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(tracks_dir)),
                   menu_file.Append(wx.ID_ANY, "Open &MP3 Folder"))
         self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(zad_dir)),
                   menu_file.Append(wx.ID_ANY, "Open &ZAD Folder"))
-        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(background_mp3_dir)),
+        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(background_tracks_dir)),
                   menu_file.Append(wx.ID_ANY, "Open &Background Music Folder"))
 
         menu_file.AppendSeparator()
@@ -162,7 +162,7 @@ class MainFrame(wx.Frame):
         menu_play = wx.Menu()
         emergency_stop_item = menu_play.Append(wx.ID_ANY, "&Emergency Stop All\tEsc")
         show_zad_item = menu_play.Append(wx.ID_ANY, "Show &ZAD\tF1")
-        play_mp3_item = menu_play.Append(wx.ID_ANY, "&Play Sound/Video\tF2")
+        play_track_item = menu_play.Append(wx.ID_ANY, "&Play Sound/Video\tF2")
         clear_zad_item = menu_play.Append(wx.ID_ANY, "&Clear ZAD\tShift+F1")
         no_show_item = menu_play.Append(wx.ID_ANY, "&No Show")
         menu_play.AppendSeparator()
@@ -170,7 +170,7 @@ class MainFrame(wx.Frame):
 
         self.Bind(wx.EVT_MENU, self.emergency_stop, emergency_stop_item)
         self.Bind(wx.EVT_MENU, self.show_zad, show_zad_item)
-        self.Bind(wx.EVT_MENU, self.play_async, play_mp3_item)
+        self.Bind(wx.EVT_MENU, self.play_async, play_track_item)
         self.Bind(wx.EVT_MENU, self.clear_zad, clear_zad_item)
         self.Bind(wx.EVT_MENU, lambda e: self.clear_zad(e, True), no_show_item)
         self.Bind(wx.EVT_MENU, self.play_pause_bg, play_pause_bg_item)
@@ -178,7 +178,7 @@ class MainFrame(wx.Frame):
         self.SetAcceleratorTable(wx.AcceleratorTable([
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, emergency_stop_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F1, show_zad_item.GetId()),
-            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F2, play_mp3_item.GetId()),
+            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F2, play_track_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_F1, clear_zad_item.GetId()),
             # wx.AcceleratorEntry(wx.ACCEL_CRTL, wx.WXK_F1, no_show_item.GetId()),  # OS captures them
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F3, play_pause_bg_item.GetId())]))
@@ -213,10 +213,10 @@ class MainFrame(wx.Frame):
 
         self.time_bar = wx.Gauge(self, range=1, size=(-1, toolbar_base_height))
         self.toolbar.Add(self.time_bar, 1, wx.ALIGN_CENTER_VERTICAL)
-        self.time_label = wx.StaticText(self, label='Stopped', size=(50, -1), style=wx.ALIGN_CENTER)
+        self.time_label = wx.StaticText(self, label='Stop', size=(50, -1), style=wx.ALIGN_CENTER)
         self.toolbar.Add(self.time_label, 0, wx.ALIGN_CENTER_VERTICAL)
 
-        self.search_box = wx.TextCtrl(self, size=(35, toolbar_base_height), value='Find', style=wx.TE_PROCESS_ENTER)
+        self.search_box = wx.TextCtrl(self, size=(40, toolbar_base_height), value='Find', style=wx.TE_PROCESS_ENTER)
         self.search_box.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_GRAYTEXT))
         self.toolbar.Add(self.search_box, 0, wx.ALIGN_CENTER_VERTICAL)
 
@@ -431,25 +431,25 @@ class MainFrame(wx.Frame):
     # -------------------------------------------------- Data --------------------------------------------------
 
     def load_files(self, e=None):
-        if not zad_dir or not mp3_dir or not os.path.isdir(zad_dir) or not os.path.isdir(mp3_dir) or not filename_re:
+        if not zad_dir or not tracks_dir or not os.path.isdir(zad_dir) or not os.path.isdir(tracks_dir) or not filename_re:
             msg = "No filename regular expression or ZAD path is invalid or MP3 path is invalid.\n" \
-                  "Please specify valid paths in '--zad_dir' and '--mp3_dir' command line arguments,\n" \
+                  "Please specify valid paths in '--zad_dir' and '--tracks_dir' command line arguments,\n" \
                   "and regular expression that parses your filenames in '--filename_re' command line argument.\n\n" \
                   "ZAD Path: %s\n" \
                   "MP3 Path: %s\n" \
-                  "Filename regexp: %s" % (zad_dir, mp3_dir, filename_re)
+                  "Filename regexp: %s" % (zad_dir, tracks_dir, filename_re)
             d = wx.MessageDialog(self, msg, "Path Error", wx.OK | wx.ICON_ERROR)
             d.ShowModal()
             d.Destroy()
             return
 
         zad_file_names = os.listdir(zad_dir)
-        mp3_file_names = os.listdir(mp3_dir)
+        tracks_file_names = os.listdir(tracks_dir)
 
         self.files = {a.split(' ', 1)[0]: {os.path.join(zad_dir, a)} for a in zad_file_names}
-        for file_name in mp3_file_names:
+        for file_name in tracks_file_names:
             num = file_name.split(' ', 1)[0]
-            path = os.path.join(mp3_dir, file_name)
+            path = os.path.join(tracks_dir, file_name)
             if num in self.files:
                 self.files[num].add(path)
             else:
@@ -778,17 +778,17 @@ class MainFrame(wx.Frame):
     # -------------------------------------------- Background Music Player --------------------------------------------
 
     def on_bg_load_files(self, e=None):
-        if not background_mp3_dir or not os.path.isdir(background_mp3_dir):
+        if not background_tracks_dir or not os.path.isdir(background_tracks_dir):
             msg = "Background MP3 path is invalid.\n" \
                   "Please specify valid path with your background tracks\n" \
-                  "in '--background_mp3_dir' command line argument.\n\n" \
-                  "Found path: %s" % background_mp3_dir
+                  "in '--background_tracks_dir' command line argument.\n\n" \
+                  "Found path: %s" % background_tracks_dir
             d = wx.MessageDialog(self, msg, "Path Error", wx.OK | wx.ICON_ERROR)
             d.ShowModal()
             d.Destroy()
             return
 
-        self.bg_player.load_files(background_mp3_dir)
+        self.bg_player.load_files(background_tracks_dir)
         self.bg_play_item.Enable(True)
 
     def fade_switched(self, e):
