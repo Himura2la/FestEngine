@@ -489,6 +489,7 @@ class MainFrame(wx.Frame):
         self.status("Loaded %d items" % i)
         self.load_data_item.Enable(False)  # Safety is everything!
         self.replace_file_item.Enable(True)
+        self.SetLabel("%s: %s" % (self.GetLabel(), tracks_dir))
 
     # --- Duplication from notes ---
 
@@ -619,7 +620,6 @@ class MainFrame(wx.Frame):
                 wx.MessageBox("Original file backed up as\n'%s';\n\n"
                               "File\n'%s'\n\n"
                               "copied in place of\n'%s'" % (dlg.bkp_path, dlg.tgt_file, dlg.src_file))
-
 
     # --- Search ---
 
