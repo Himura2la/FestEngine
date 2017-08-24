@@ -566,6 +566,7 @@ class MainFrame(wx.Frame):
                 top_sizer.Add(wx.StaticLine(self), 0, wx.ALL | wx.EXPAND, 5)
                 buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
                 self.ok_button = wx.Button(self, wx.ID_OK, "OK")
+                self.ok_button.Bind(wx.EVT_BUTTON, self.on_ok)
                 buttons_sizer.Add(self.ok_button, 1)
                 buttons_sizer.Add(wx.Button(self, wx.ID_CANCEL, "Cancel"), 1)
                 top_sizer.Add(buttons_sizer, 0, wx.EXPAND | wx.ALL, 5)
@@ -573,6 +574,7 @@ class MainFrame(wx.Frame):
                 self.SetSizerAndFit(top_sizer)
 
                 self.src_file = None
+                self.bkp_path = None
                 self.src_file_selected()
 
             @property
@@ -601,19 +603,22 @@ class MainFrame(wx.Frame):
                     return
                 self.ok_button.Enable(True)
 
-        with FileReplacer(self, num) as dlg:
-            if dlg.ShowModal() == wx.ID_OK:
-                path, src_name = os.path.split(dlg.src_file)
+            def on_ok(self, e):
+                path, src_name = os.path.split(self.src_file)
                 path, src_dir = os.path.split(path)
                 bkp_dir = os.path.join(path, src_dir + '_backup')
                 if not os.path.exists(bkp_dir):
                     os.mkdir(bkp_dir)
-                bkp_path = os.path.join(bkp_dir, time.strftime("%y%m%d-%H%M%S-") + src_name)
-                shutil.move(dlg.src_file, bkp_path)
-                shutil.copy(dlg.tgt_file, dlg.src_file)  # TODO: Async and progress bar
+                self.bkp_path = os.path.join(bkp_dir, time.strftime("%y%m%d-%H%M%S-") + src_name)
+                shutil.move(self.src_file, self.bkp_path)
+                shutil.copy(self.tgt_file, self.src_file)  # TODO: Async and progress bar
+                self.EndModal(wx.ID_OK)
+
+        with FileReplacer(self, num) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
                 wx.MessageBox("Original file backed up as\n'%s';\n\n"
                               "File\n'%s'\n\n"
-                              "copied in place of\n'%s'" % (bkp_path, dlg.tgt_file, dlg.src_file))
+                              "copied in place of\n'%s'" % (dlg.bkp_path, dlg.tgt_file, dlg.src_file))
 
 
     # --- Search ---
