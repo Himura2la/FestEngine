@@ -442,9 +442,7 @@ class MainFrame(wx.Frame):
                   "ZAD Path: %s\n" \
                   "MP3 Path: %s\n" \
                   "Filename regexp: %s" % (zad_dir, tracks_dir, filename_re)
-            d = wx.MessageDialog(self, msg, "Path Error", wx.OK | wx.ICON_ERROR)
-            d.ShowModal()
-            d.Destroy()
+            wx.MessageBox(msg, "Path Error", wx.OK | wx.ICON_ERROR, self)
             return
 
         zad_file_names = os.listdir(zad_dir)
@@ -544,7 +542,6 @@ class MainFrame(wx.Frame):
 
     def replace_file(self, e):
         num = self.get_num(self.grid.GetGridCursorRow())
-        # self.files[num]
 
         class FileReplacer(wx.Dialog):
             def __init__(self, parent, num):
@@ -555,7 +552,7 @@ class MainFrame(wx.Frame):
 
                 self.src_file_chooser = wx.RadioBox(self, label="Select which file to replace",
                                                     choices=files, majorDimension=1, style=wx.RA_SPECIFY_COLS)
-
+                self.Bind(wx.EVT_RADIOBOX, self.src_file_selected, self.src_file_chooser)
                 top_sizer.Add(self.src_file_chooser, 1, wx.ALL | wx.EXPAND, 5)
 
                 file_picker_box = wx.StaticBox(self, label="Select target file")
@@ -563,19 +560,45 @@ class MainFrame(wx.Frame):
                 self.file_picker = wx.FilePickerCtrl(self)
                 file_picker_box_sizer.Add(self.file_picker, 0, wx.EXPAND)
                 top_sizer.Add(file_picker_box_sizer, 0, wx.ALL | wx.EXPAND, 5)
+                self.Bind(wx.EVT_FILEPICKER_CHANGED, self.file_chosen, self.file_picker)
 
                 top_sizer.Add(wx.StaticLine(self), 0, wx.ALL | wx.EXPAND, 5)
                 buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
-                ok_button = wx.Button(self, wx.ID_OK, "OK")
-                cancel_button = wx.Button(self, wx.ID_CANCEL, "Cancel")
-                buttons_sizer.Add(ok_button, 1)
-                buttons_sizer.Add(cancel_button, 1)
+                self.ok_button = wx.Button(self, wx.ID_OK, "OK")
+                buttons_sizer.Add(self.ok_button, 1)
+                buttons_sizer.Add(wx.Button(self, wx.ID_CANCEL, "Cancel"), 1)
                 top_sizer.Add(buttons_sizer, 0, wx.EXPAND | wx.ALL, 5)
 
                 self.SetSizerAndFit(top_sizer)
 
-                self.src_file = "nya"
-                self.tgt_file = "mur"
+                self.src_file = None
+                self.src_file_selected()
+
+            @property
+            def tgt_file(self):
+                return self.file_picker.GetPath()
+
+            @tgt_file.setter
+            def tgt_file(self, val):
+                self.file_picker.SetPath(val)
+
+            def src_file_selected(self, e=None):
+                self.src_file = self.src_file_chooser.GetString(self.src_file_chooser.GetSelection())
+                self.ok_button.Enable(False)
+                self.tgt_file = self.src_file
+
+            def file_chosen(self, e):
+                tgt_file = self.file_picker.GetPath()
+                tgt_ext = tgt_file.rsplit('.', 1)[1].lower()
+                src_ext = self.src_file.rsplit('.', 1)[1].lower()
+                known_exts = [val for name, val in vars(FileTypes).items()
+                              if name[:2] + name[-2:] != '____' and isinstance(val, set)]
+                if not any({src_ext in ext_set and tgt_ext in ext_set for ext_set in known_exts}):
+                    wx.MessageBox("Do not replace .%s to .%s!" % (src_ext, tgt_ext),
+                                  "Different file types", wx.OK | wx.ICON_ERROR, self)
+                    self.tgt_file = self.src_file
+                    return
+                self.ok_button.Enable(True)
 
         with FileReplacer(self, num) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
@@ -831,9 +854,7 @@ class MainFrame(wx.Frame):
                   "Please specify valid path with your background tracks\n" \
                   "in '--background_tracks_dir' command line argument.\n\n" \
                   "Found path: %s" % background_tracks_dir
-            d = wx.MessageDialog(self, msg, "Path Error", wx.OK | wx.ICON_ERROR)
-            d.ShowModal()
-            d.Destroy()
+            d = wx.MessageBox(msg, "Path Error", wx.OK | wx.ICON_ERROR, self)
             return
 
         self.bg_player.load_files(background_tracks_dir)
