@@ -350,7 +350,8 @@ class MainFrame(wx.Frame):
         return isinstance(self.proj_win, ProjectorWindow)
 
     def ensure_proj_win(self, e=None):
-        if not self.proj_win_exists():
+        no_window = not self.proj_win_exists()
+        if no_window:
             self.proj_win = ProjectorWindow(self, self.settings[Config.PROJECTOR_SCREEN])
 
             self.vid_btn.Bind(wx.EVT_TOGGLEBUTTON, self.switch_to_vid)
@@ -360,8 +361,9 @@ class MainFrame(wx.Frame):
             self.switch_to_zad()
             self.image_status("Projector Window Created")
         self.proj_win.Show()
-        self.Raise()
         self.destroy_proj_win_item.Enable(True)
+        wx.CallAfter(self.Raise)
+        return no_window
 
     def destroy_proj_win(self, e=None):
         if not self.proj_win_exists():
@@ -400,17 +402,23 @@ class MainFrame(wx.Frame):
         self.proj_win.switch_to_images()
 
     def show_zad(self, e):
-        self.ensure_proj_win()
-        self.switch_to_zad()
-        num = self.get_num(self.grid.GetGridCursorRow())
-        try:
-            file_path = filter(lambda a: a.rsplit('.', 1)[1].lower() in {'jpg', 'png'}, self.files[num])[0]
-            self.proj_win.load_zad(file_path, True)
-            self.image_status(u"Showing №%s" % num)
-            self.status("ZAD Fired!")
-        except IndexError:
-            self.status(u"No zad for №%s" % num)
-            self.clear_zad()
+        def delayed_run():
+            self.switch_to_zad()
+            num = self.get_num(self.grid.GetGridCursorRow())
+            try:
+                file_path = filter(lambda a: a.rsplit('.', 1)[1].lower() in {'jpg', 'png'}, self.files[num])[0]
+                self.proj_win.load_zad(file_path, True)
+                self.image_status(u"Showing №%s" % num)
+                self.status("ZAD Fired!")
+            except IndexError:
+                self.status(u"No zad for №%s" % num)
+                self.clear_zad()
+
+        if self.ensure_proj_win():
+            wx.CallAfter(delayed_run)
+        else:
+            delayed_run()
+
 
     def clear_zad(self, e=None, no_show=False):
         if not self.proj_win_exists():
