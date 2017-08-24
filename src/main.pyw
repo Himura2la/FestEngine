@@ -79,7 +79,7 @@ class MainFrame(wx.Frame):
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
 
-        # --- File ---
+        # --- Main ---
         menu_file = wx.Menu()
 
         self.load_data_item = menu_file.Append(wx.ID_ANY, "&Load ZAD and MP3")
@@ -97,14 +97,12 @@ class MainFrame(wx.Frame):
         menu_file.AppendSeparator()
 
         def on_settings(e):
-            settings_dialog = SettingsDialog(self.settings, self)
-            res = settings_dialog.ShowModal()
-            if res == wx.ID_OK:
-                self.settings = settings_dialog.get_settings()
-            settings_dialog.Destroy()
+            with SettingsDialog(self.settings, self) as settings_dialog:
+                if settings_dialog.ShowModal() == wx.ID_OK:
+                    self.settings = settings_dialog.settings
 
         self.Bind(wx.EVT_MENU, on_settings,
-                  menu_file.Append(wx.ID_ANY, "&Setings"))
+                  menu_file.Append(wx.ID_ANY, "&Settings"))
 
         self.prefer_audio = menu_file.Append(wx.ID_ANY, "&Prefer No Video (fallback)", kind=wx.ITEM_CHECK)
         self.prefer_audio.Check(False)
@@ -115,16 +113,20 @@ class MainFrame(wx.Frame):
                   menu_file.Append(wx.ID_ABOUT, "&About"))
         self.Bind(wx.EVT_MENU, self.on_exit,
                   menu_file.Append(wx.ID_EXIT, "E&xit"))
-        menu_bar.Append(menu_file, "Fil&e")
+        menu_bar.Append(menu_file, "&Main")
 
-        # --- Data ---
-        menu_grid = wx.Menu()
+        # --- Item ---
+        menu_item = wx.Menu()
 
-        self.del_dup_row_item = menu_grid.Append(wx.ID_ANY, "&Delete duplicate")
+        self.replace_file_item = menu_item.Append(wx.ID_ANY, "&Replace File")
+        self.replace_file_item.Enable(False)
+        self.Bind(wx.EVT_MENU, self.replace_file, self.replace_file_item)
+
+        self.del_dup_row_item = menu_item.Append(wx.ID_ANY, "&Delete duplicate")
         self.del_dup_row_item.Enable(False)
         self.Bind(wx.EVT_MENU, self.del_dup_row, self.del_dup_row_item)
 
-        menu_bar.Append(menu_grid, "&Item")
+        menu_bar.Append(menu_item, "&Item")
 
         # --- Projector Window ---
         proj_win_menu = wx.Menu()
@@ -487,6 +489,7 @@ class MainFrame(wx.Frame):
         self.grid.AutoSizeColumns()
         self.status("Loaded %d items" % i)
         self.load_data_item.Enable(False)  # Safety is everything!
+        self.replace_file_item.Enable(True)
 
     # --- Duplication from notes ---
 
@@ -535,9 +538,48 @@ class MainFrame(wx.Frame):
             return self.grid.GetCellValue(row, self.grid_rows.index(Columns.NUM))
 
     def del_dup_row(self, e=None):
-        row = self.grid.GetSelectedRows()[0]
+        row = self.grid.GetGridCursorRow()
         if self.is_dup_row(row):  # Extra check, this method is very dangerous.
             self.grid.DeleteRows(row)
+
+    def replace_file(self, e):
+        num = self.get_num(self.grid.GetGridCursorRow())
+        # self.files[num]
+
+        class FileReplacer(wx.Dialog):
+            def __init__(self, parent, num):
+                wx.Dialog.__init__(self, parent, title=u"Replace File For №%s" % num)
+                top_sizer = wx.BoxSizer(wx.VERTICAL)
+
+                files = sorted(list(parent.files[num]), key=lambda p: p.rsplit('.', 1)[1].lower())
+
+                self.src_file_chooser = wx.RadioBox(self, label="Select which file to replace",
+                                                    choices=files, majorDimension=1, style=wx.RA_SPECIFY_COLS)
+
+                top_sizer.Add(self.src_file_chooser, 1, wx.ALL | wx.EXPAND, 5)
+
+                file_picker_box = wx.StaticBox(self, label="Select target file")
+                file_picker_box_sizer = wx.StaticBoxSizer(file_picker_box, wx.VERTICAL)
+                self.file_picker = wx.FilePickerCtrl(self)
+                file_picker_box_sizer.Add(self.file_picker, 0, wx.EXPAND)
+                top_sizer.Add(file_picker_box_sizer, 0, wx.ALL | wx.EXPAND, 5)
+
+                top_sizer.Add(wx.StaticLine(self), 0, wx.ALL | wx.EXPAND, 5)
+                buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
+                ok_button = wx.Button(self, wx.ID_OK, "OK")
+                cancel_button = wx.Button(self, wx.ID_CANCEL, "Cancel")
+                buttons_sizer.Add(ok_button, 1)
+                buttons_sizer.Add(cancel_button, 1)
+                top_sizer.Add(buttons_sizer, 0, wx.EXPAND | wx.ALL, 5)
+
+                self.SetSizerAndFit(top_sizer)
+
+                self.src_file = "nya"
+                self.tgt_file = "mur"
+
+        with FileReplacer(self, num) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                print dlg.src_file, dlg.tgt_file
 
     # --- Search ---
 

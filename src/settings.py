@@ -10,10 +10,9 @@ class SettingsDialog(wx.Dialog):
 
         panel = wx.Panel(self)
 
-        button_ok = wx.Button(panel, label="OK")
+        button_ok = wx.Button(panel, wx.ID_OK, "OK")
         button_ok.Bind(wx.EVT_BUTTON, self.on_ok)
-        button_cancel = wx.Button(panel, label="Cancel")
-        button_cancel.Bind(wx.EVT_BUTTON, lambda _: self.EndModal(wx.ID_CANCEL))
+        button_cancel = wx.Button(panel, wx.ID_CANCEL, "Cancel")
 
         self.screens_combobox = wx.Choice(panel)
         screen_names = ["%d: %s (%d,%d) %dx%d" % ((i, wx.Display(i).GetName()) + wx.Display(i).GetGeometry().Get())
@@ -46,7 +45,4 @@ class SettingsDialog(wx.Dialog):
         self.settings[Config.PROJECTOR_SCREEN] = self.screens_combobox.GetSelection()
 
         self.EndModal(wx.ID_OK)
-
-    def get_settings(self):
-        return self.settings
 
