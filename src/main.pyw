@@ -5,6 +5,7 @@ import argparse
 import bisect
 import os
 import re
+import shutil
 import sys
 import threading
 import time
@@ -602,7 +603,18 @@ class MainFrame(wx.Frame):
 
         with FileReplacer(self, num) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
-                print dlg.src_file, dlg.tgt_file
+                path, src_name = os.path.split(dlg.src_file)
+                path, src_dir = os.path.split(path)
+                bkp_dir = os.path.join(path, src_dir + '_backup')
+                if not os.path.exists(bkp_dir):
+                    os.mkdir(bkp_dir)
+                bkp_path = os.path.join(bkp_dir, time.strftime("%y%m%d-%H%M%S-") + src_name)
+                shutil.move(dlg.src_file, bkp_path)
+                shutil.copy(dlg.tgt_file, dlg.src_file)  # TODO: Async and progress bar
+                wx.MessageBox("Original file backed up as\n'%s';\n\n"
+                              "File\n'%s'\n\n"
+                              "copied in place of\n'%s'" % (bkp_path, dlg.tgt_file, dlg.src_file))
+
 
     # --- Search ---
 
