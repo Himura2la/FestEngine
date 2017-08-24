@@ -1,5 +1,4 @@
 import wx
-import sys
 
 
 class ProjectorWindow(wx.Frame):

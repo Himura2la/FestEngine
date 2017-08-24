@@ -749,18 +749,18 @@ class MainFrame(wx.Frame):
     def player_time_update(self, e=None):
         player_state = self.player.get_state()
         if player_state in range(4):  # Playing or going to play
-            length, time = self.player.get_length(), self.player.get_time()
+            track_length, track_time = self.player.get_length(), self.player.get_time()
 
             if sys.platform == "win32":  # FIXME: Don't know why it does not reach the end on win32
-                gauge_length = length - 1000 if length > 1000 else length
+                gauge_length = track_length - 1000 if track_length > 1000 else track_length
                 self.time_bar.SetRange(gauge_length)
-                self.time_bar.SetValue(time if time <= gauge_length else gauge_length)
+                self.time_bar.SetValue(track_time if track_time <= gauge_length else gauge_length)
             else:
-                self.time_bar.SetRange(length)
-                self.time_bar.SetValue(time)
+                self.time_bar.SetRange(track_length)
+                self.time_bar.SetValue(track_time)
 
-            time_elapsed = '%02d:%02d' % divmod(time / 1000, 60)
-            time_remaining = '-%02d:%02d' % divmod(length / 1000 - time / 1000, 60)
+            time_elapsed = '%02d:%02d' % divmod(track_time / 1000, 60)
+            time_remaining = '-%02d:%02d' % divmod(track_length / 1000 - track_time / 1000, 60)
             self.time_label.SetLabel(time_elapsed)
 
             status = u'%s №%s V:%d T:%s' % (self.player_state_parse(player_state), self.num_in_player,
