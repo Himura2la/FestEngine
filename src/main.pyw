@@ -28,8 +28,8 @@ parser.add_argument("--tracks_dir", dest="tracks_dir", help='Path to a directory
                                                             'be fired on F2 (music or video)')
 parser.add_argument("--background_zad_path", dest="background_zad_path", help='Path to a base image that will be shown '
                                                                               'when nothing else is showing (optional)')
-parser.add_argument("--background_tracks_dir", dest="background_tracks_dir", help='Path to a directory with '
-                                                                                  'background tracks, that will sound on F3')
+parser.add_argument("--background_tracks_dir", dest="background_tracks_dir", help='Path to a directory with background '
+                                                                                  'tracks, that will sound on F3')
 
 parser.add_argument("--debug_output", dest="debug_output", action='store_true')
 parser.add_argument("--auto_load_files", dest="auto_load_files", action='store_true')
@@ -40,6 +40,7 @@ args = parser.parse_args()
 
 def fix_encoding(path):
     return path.decode(sys.getfilesystemencoding()) if path and isinstance(path, str) else path
+
 
 filename_re = fix_encoding(args.filename_re)
 zad_dir = fix_encoding(args.zad_dir)
@@ -287,7 +288,7 @@ class MainFrame(wx.Frame):
         self.Show(True)
         self.grid.SetFocus()
 
-        if auto_load_files: 
+        if auto_load_files:
             self.load_files()
         if auto_load_bg:
             self.on_bg_load_files()
@@ -431,7 +432,8 @@ class MainFrame(wx.Frame):
     # -------------------------------------------------- Data --------------------------------------------------
 
     def load_files(self, e=None):
-        if not zad_dir or not tracks_dir or not os.path.isdir(zad_dir) or not os.path.isdir(tracks_dir) or not filename_re:
+        if not zad_dir or not tracks_dir or \
+                not os.path.isdir(zad_dir) or not os.path.isdir(tracks_dir) or not filename_re:
             msg = "No filename regular expression or ZAD path is invalid or MP3 path is invalid.\n" \
                   "Please specify valid paths in '--zad_dir' and '--tracks_dir' command line arguments,\n" \
                   "and regular expression that parses your filenames in '--filename_re' command line argument.\n\n" \
@@ -553,7 +555,7 @@ class MainFrame(wx.Frame):
     def grid_push(self):
         self.grid_default_bg_color = self.grid.GetDefaultCellBackgroundColour()
         self.full_grid_data = [{'cols': [self.grid.GetCellValue(row, col) for col in range(self.grid.GetNumberCols())],
-                                'color':self.grid.GetCellBackgroundColour(row, 0)}
+                                'color': self.grid.GetCellBackgroundColour(row, 0)}
                                for row in range(self.grid.GetNumberRows())]
 
     def grid_pop(self):
@@ -619,7 +621,7 @@ class MainFrame(wx.Frame):
             self.grid.MakeCellVisible(selected_row_i, 0)
 
             self.grid.SetFocus()
-        # if e: e.Skip() # Invokes default handler with context menu
+            # if e: e.Skip() # Invokes default handler with context menu
 
     # -------------------------------------------------- Player --------------------------------------------------
 
@@ -630,7 +632,8 @@ class MainFrame(wx.Frame):
             if video_files and not self.prefer_audio.IsChecked():
                 file_path = video_files[0]
             else:
-                audio_files = filter(lambda a: a.rsplit('.', 1)[1].lower() in FileTypes.sound_extensions, self.files[num])
+                audio_files = filter(lambda a: a.rsplit('.', 1)[1].lower() in FileTypes.sound_extensions,
+                                     self.files[num])
                 file_path = audio_files[0] if audio_files else video_files[0]
         except IndexError:
             self.player_status = u"Nothing to play for №%s" % num
@@ -644,12 +647,12 @@ class MainFrame(wx.Frame):
             self.switch_to_vid()
 
         threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(), sound_only)).start()
-        
+
         self.num_in_player = num
         self.player_time_update_timer.Start(self.player_time_update_interval_ms)
 
     def play_sync(self, target_vol, sound_only):
-        if self.player.play() != 0:              # [Play] button is pushed here!
+        if self.player.play() != 0:  # [Play] button is pushed here!
             wx.CallAfter(lambda: self.set_player_status('Playback FAILED !!!'))
             return
 
@@ -688,6 +691,7 @@ class MainFrame(wx.Frame):
             self.player_status = '%s Vol:%d' % (self.player_state_parse(self.player.get_state()),
                                                 self.player.audio_get_volume())
             self.status('SOUND Fired!')
+
         wx.CallAfter(ui_upd)
 
     def stop_async(self, e=None, fade_out=True):
@@ -709,6 +713,7 @@ class MainFrame(wx.Frame):
             def ui_upd():
                 self.fade_out_btn.SetLabel(vol_msg)
                 self.player_status = 'Fading out... ' + vol_msg
+
             wx.CallAfter(ui_upd)
 
             time.sleep(self.fade_out_delays_ms / float(1000))
@@ -719,6 +724,7 @@ class MainFrame(wx.Frame):
             self.time_bar.SetValue(0)
             self.player_status = self.player_state_parse(self.player.get_state())
             self.time_label.SetLabel('Stopped')
+
         wx.CallAfter(ui_upd)
 
     def set_vol(self, e=None, vol=100):
@@ -763,7 +769,7 @@ class MainFrame(wx.Frame):
                 self.player_status = status
         else:  # Not playing
             self.time_bar.SetValue(0)
-            self.time_label.SetLabel('End')
+            self.time_label.SetLabel('Stop')
             self.switch_to_zad()
 
             row = self.grid.GetGridCursorRow()
@@ -883,6 +889,7 @@ class MainFrame(wx.Frame):
                 self.background_play(from_grid=False)
         else:
             self.background_pause(paused=True)
+
 
 if __name__ == "__main__":
     app = wx.App(False)
