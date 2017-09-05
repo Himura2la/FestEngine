@@ -273,7 +273,7 @@ class MainFrame(wx.Frame):
 
         # ----------------------- VLC ---------------------
 
-        self.vlc_instance = vlc.Instance("--no-xlib --file-caching=5000 --no-drop-late-frames --no-skip-frames")  # Xlib is required for VDPAU, but I can't call XInitThreads()
+        self.vlc_instance = vlc.Instance("--no-xlib --file-caching=60000 --no-drop-late-frames --no-skip-frames")  # Xlib is required for VDPAU, but I can't call XInitThreads()
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(100)
         self.player.audio_set_mute(False)
