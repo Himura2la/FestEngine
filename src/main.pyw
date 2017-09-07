@@ -20,6 +20,14 @@ from constants import Config, Colors, Columns, FileTypes
 from projector import ProjectorWindow
 from settings import SettingsDialog
 
+if sys.platform.startswith('linux'):
+    try:
+        import ctypes
+        x11 = ctypes.cdll.LoadLibrary('libX11.so')
+        x11.XInitThreads()
+    except Exception as e:
+        print "XInitThreads() call failed:", e
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--filename_re", dest="filename_re", help='Regular expression that parses your '
                                                               'filenames (without leading number and extension)')
@@ -51,15 +59,6 @@ background_tracks_dir = fix_encoding(args.background_tracks_dir)
 debug_output = fix_encoding(args.debug_output)
 auto_load_files = fix_encoding(args.auto_load_files)
 auto_load_bg = fix_encoding(args.auto_load_bg)
-
-if sys.platform.startswith('linux'):
-    try:
-        import ctypes
-        x11 = ctypes.cdll.LoadLibrary('libX11.so')
-        x11.XInitThreads()
-    except Exception as e:
-        print "XInitThreads() call failed:", e
-
 
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
