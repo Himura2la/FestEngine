@@ -52,10 +52,19 @@ debug_output = fix_encoding(args.debug_output)
 auto_load_files = fix_encoding(args.auto_load_files)
 auto_load_bg = fix_encoding(args.auto_load_bg)
 
+if sys.platform.startswith('linux'):
+    try:
+        import ctypes
+        x11 = ctypes.cdll.LoadLibrary('libX11.so')
+        x11.XInitThreads()
+    except Exception as e:
+        print "XInitThreads() call failed:", e
+
 
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title, size=(700, 500))
+        self.Bind(wx.EVT_CLOSE, self.on_close, self)
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
 
         self.player_time_update_interval_ms = 300
@@ -273,7 +282,7 @@ class MainFrame(wx.Frame):
 
         # ----------------------- VLC ---------------------
 
-        self.vlc_instance = vlc.Instance("--no-xlib")  # Xlib is required for VDPAU, but I can't call XInitThreads()
+        self.vlc_instance = vlc.Instance()
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(100)
         self.player.audio_set_mute(False)
@@ -297,6 +306,11 @@ class MainFrame(wx.Frame):
             self.on_bg_load_files()
 
     # ------------------------------------------------------------------------------------------------------------------
+
+    def on_close(self, e):
+        self.player.stop()
+        self.vlc_instance.release()
+        self.Destroy()
 
     def grid_set_shape(self, new_rows, new_cols, readonly_cols=None):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
@@ -377,22 +391,24 @@ class MainFrame(wx.Frame):
         self.image_status("Projector Window Destroyed")
 
     def switch_to_vid(self, e=None):
+        """ Call set_vlc_video_panel() until it returns True after this"""
         if not self.proj_win_exists():
             return
         self.vid_btn.SetValue(True)
         self.zad_btn.SetValue(False)
         self.proj_win.switch_to_video()
 
-        def delayed_run():
-            handle = self.proj_win.video_panel.GetHandle()
-            if sys.platform.startswith('linux'):  # for Linux using the X Server
-                self.player.set_xwindow(handle)
-            elif sys.platform == "win32":  # for Windows
-                self.player.set_hwnd(handle)
-            elif sys.platform == "darwin":  # for MacOS
-                self.player.set_nsobject(handle)
-
-        wx.CallAfter(delayed_run)
+    def set_vlc_video_panel(self):
+        handle = self.proj_win.video_panel.GetHandle()
+        if not handle:
+            return False
+        if sys.platform.startswith('linux'):  # for Linux using the X Server
+            self.player.set_xwindow(handle)
+        elif sys.platform == "win32":  # for Windows
+            self.player.set_hwnd(handle)
+        elif sys.platform == "darwin":  # for MacOS
+            self.player.set_nsobject(handle)
+        return True
 
     def switch_to_zad(self, e=None):
         if not self.proj_win_exists():
@@ -418,7 +434,6 @@ class MainFrame(wx.Frame):
             wx.CallAfter(delayed_run)
         else:
             delayed_run()
-
 
     def clear_zad(self, e=None, no_show=False):
         if not self.proj_win_exists():
@@ -739,12 +754,18 @@ class MainFrame(wx.Frame):
             self.ensure_proj_win()
             self.switch_to_vid()
 
-        threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(), sound_only)).start()
-
         self.num_in_player = num
-        self.player_time_update_timer.Start(self.player_time_update_interval_ms)
+
+        def delayed_run():
+            threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(), sound_only)).start()
+            self.player_time_update_timer.Start(self.player_time_update_interval_ms)
+        wx.CallAfter(delayed_run)  # because set_vlc_video_panel() needs some time...
 
     def play_sync(self, target_vol, sound_only):
+        if not sound_only:
+            while not self.set_vlc_video_panel():
+                print "Trying to get video panel handler..."
+
         if self.player.play() != 0:  # [Play] button is pushed here!
             wx.CallAfter(lambda: self.set_player_status('Playback FAILED !!!'))
             return
