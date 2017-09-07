@@ -52,6 +52,13 @@ debug_output = fix_encoding(args.debug_output)
 auto_load_files = fix_encoding(args.auto_load_files)
 auto_load_bg = fix_encoding(args.auto_load_bg)
 
+import ctypes
+if sys.platform.startswith('linux'):
+    try:
+        x11 = ctypes.cdll.LoadLibrary('libX11.so')
+        x11.XInitThreads()
+    except Exception as e:
+        print e
 
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
@@ -73,9 +80,16 @@ class MainFrame(wx.Frame):
         self.player_time_update_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.player_time_update, self.player_time_update_timer)
 
+        self.wait_for_media_start_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.try_wait_for_media_start, self.wait_for_media_start_timer)
+        self.wait_for_target_volume_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.try_set_target_volume, self.wait_for_target_volume_timer)
+
         self.bg_player = BackgroundMusicPlayer(self)
         self.bg_player_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.on_background_timer, self.bg_player_timer)
+
+        self.Bind(wx.EVT_CLOSE, self.on_close, self)
 
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
@@ -273,7 +287,7 @@ class MainFrame(wx.Frame):
 
         # ----------------------- VLC ---------------------
 
-        self.vlc_instance = vlc.Instance("--no-xlib")  # Xlib is required for VDPAU, but I can't call XInitThreads()
+        self.vlc_instance = vlc.Instance()  # Xlib is required for VDPAU, but I can't call XInitThreads()
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(100)
         self.player.audio_set_mute(False)
@@ -297,6 +311,10 @@ class MainFrame(wx.Frame):
             self.on_bg_load_files()
 
     # ------------------------------------------------------------------------------------------------------------------
+    def on_close(self, event):
+        self.player.stop()
+        self.vlc_instance.release()
+        self.Destroy()
 
     def grid_set_shape(self, new_rows, new_cols, readonly_cols=None):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
@@ -739,10 +757,56 @@ class MainFrame(wx.Frame):
             self.ensure_proj_win()
             self.switch_to_vid()
 
-        threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(), sound_only)).start()
+        #threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(), sound_only)).start()
+
+        if self.player.play() != 0:  # [Play] button is pushed here!
+            wx.CallAfter(lambda: self.set_player_status('Playback FAILED !!!'))
+            return
+
+        # Stop all related timers before starting this one?
+        self.start_time = time.time()
+        self.sound_only = sound_only
+        self.wait_for_media_start_timer.Start(7) # ms
 
         self.num_in_player = num
         self.player_time_update_timer.Start(self.player_time_update_interval_ms)
+
+    def try_wait_for_media_start(self, event):
+        state = self.player.get_state()
+        if state != vlc.State.Playing:
+            status = "%s [%.3fs]" % (self.player_state_parse(state), (time.time() - self.start_time))
+            wx.CallAfter(lambda: self.set_player_status(status))
+            if debug_output:
+                print status
+        else:
+            event.GetTimer().Stop() # Stop myself
+            if debug_output:
+                print "Started playback in %.0fms" % ((time.time() - self.start_time) * 1000)
+            if not self.sound_only:
+                wx.CallAfter(lambda: self.proj_win.Layout())
+            wx.CallAfter(lambda: self.fade_out_btn.Enable(True))
+            self.start_time = time.time()
+            self.player.audio_set_mute(False)
+            self.player.audio_set_volume(self.vol_control.GetValue())
+            self.wait_for_target_volume_timer.Start(1)
+
+    def try_set_target_volume(self, event):
+        if self.player.audio_get_volume() != self.vol_control.GetValue():
+            self.player.audio_set_volume(self.vol_control.GetValue())
+            status = "Trying to unmute... [%.3fs]" % (time.time() - self.start_time)
+            wx.CallAfter(lambda: self.set_player_status(status))
+            if debug_output:
+                print status
+        else:
+            event.GetTimer().Stop() # Stop myself
+            if debug_output:
+                print "Unmuted in %.0fms" % ((time.time() - self.start_time) * 1000)
+            def ui_upd():
+                self.player_status = '%s Vol:%d' % (self.player_state_parse(self.player.get_state()),
+                                                    self.player.audio_get_volume())
+                self.status('SOUND Fired!')
+
+            wx.CallAfter(ui_upd)
 
     def play_sync(self, target_vol, sound_only):
         if self.player.play() != 0:  # [Play] button is pushed here!
