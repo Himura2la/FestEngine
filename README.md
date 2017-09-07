@@ -69,9 +69,9 @@
 - Выбрать разрядность (x32 или x64) и придерживаться этой разрядности во всех дальнейших установках
 - Установить последний [Python 2.7](https://www.python.org/downloads/windows/) выбранной разядности. При установке отметить чекбокс **Добавить python.exe в PATH** (если это единственный Python, который у вас будет).
 - Установить последний [wxPython 3 для Python 2.7](https://sourceforge.net/projects/wxpython/files/wxPython/) выбранной разядности (wxPython 4 Phoneix не пойдёт, нужна именно версия 3, они сломали обратную совместимость, запланирвоан перевод в [#37](https://github.com/Himura2la/FestEngine/issues/37))
-- Установить последний [VLC](https://www.videolan.org/vlc/index.ru.html) выбранной разядности
+- Установить последний [VLC](https://www.videolan.org/vlc/index.ru.html) **выбранной разядности** (если у вас ничего не запускается, проверьте разрядность VLC. Это common issue.)
 - Установить [Git](https://git-scm.com/), [SourceTree](https://www.sourcetreeapp.com/) или [GitHub](https://desktop.github.com/) и научиться клонировать репозитории
-- Если вы установили чистый git, то клонируйте следующей командой: `git clone --recursive https://github.com/Himura2la/FestEngine.git`
+- Если вы установили чистый git, то клонируйте рекурсивно, чтобы [python-vlc](https://github.com/oaubert/python-vlc/) тоже прилетел: `git clone --recursive https://github.com/Himura2la/FestEngine.git`
 - Обновить **setuptools**: `pip install --upgrade setuptools`
 - Установить [VLC Python Bindings](https://wiki.videolan.org/python_bindings) (библиотека для управления плеером VLC): Из папки **python-vlc** выполнить `python setup.py install`
 - Можно запускать Fest Engine: Из папки **src** выполнить `python main.py`
