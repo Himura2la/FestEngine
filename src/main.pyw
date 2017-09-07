@@ -748,10 +748,12 @@ class MainFrame(wx.Frame):
             self.ensure_proj_win()
             self.switch_to_vid()
 
-        threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(), sound_only)).start()
-
         self.num_in_player = num
-        self.player_time_update_timer.Start(self.player_time_update_interval_ms)
+
+        def delayed_run():
+            threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(), sound_only)).start()
+            self.player_time_update_timer.Start(self.player_time_update_interval_ms)
+        wx.CallAfter(delayed_run)  # because set_vlc_video_panel() needs some time...
 
     def play_sync(self, target_vol, sound_only):
         if not sound_only:
