@@ -25,8 +25,8 @@ if sys.platform.startswith('linux'):
         import ctypes
         x11 = ctypes.cdll.LoadLibrary('libX11.so')
         x11.XInitThreads()
-    except Exception as e:
-        print "XInitThreads() call failed:", e
+    except Exception as x_init_threads_ex:
+        print "XInitThreads() call failed:", x_init_threads_ex
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--filename_re", dest="filename_re", help='Regular expression that parses your '
@@ -59,6 +59,7 @@ background_tracks_dir = fix_encoding(args.background_tracks_dir)
 debug_output = fix_encoding(args.debug_output)
 auto_load_files = fix_encoding(args.auto_load_files)
 auto_load_bg = fix_encoding(args.auto_load_bg)
+
 
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
@@ -758,6 +759,7 @@ class MainFrame(wx.Frame):
         def delayed_run():
             threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(), sound_only)).start()
             self.player_time_update_timer.Start(self.player_time_update_interval_ms)
+
         wx.CallAfter(delayed_run)  # because set_vlc_video_panel() needs some time...
 
     def play_sync(self, target_vol, sound_only):
