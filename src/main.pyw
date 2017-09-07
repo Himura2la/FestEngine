@@ -64,6 +64,7 @@ if sys.platform.startswith('linux'):
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title, size=(700, 500))
+        self.Bind(wx.EVT_CLOSE, self.on_close, self)
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
 
         self.player_time_update_interval_ms = 300
@@ -305,6 +306,11 @@ class MainFrame(wx.Frame):
             self.on_bg_load_files()
 
     # ------------------------------------------------------------------------------------------------------------------
+
+    def on_close(self, e):
+        self.player.stop()
+        self.vlc_instance.release()
+        self.Destroy()
 
     def grid_set_shape(self, new_rows, new_cols, readonly_cols=None):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
