@@ -52,6 +52,13 @@ debug_output = fix_encoding(args.debug_output)
 auto_load_files = fix_encoding(args.auto_load_files)
 auto_load_bg = fix_encoding(args.auto_load_bg)
 
+if sys.platform.startswith('linux'):
+    try:
+        import ctypes
+        x11 = ctypes.cdll.LoadLibrary('libX11.so')
+        x11.XInitThreads()
+    except Exception as e:
+        print "XInitThreads() call failed:", e
 
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
@@ -273,7 +280,7 @@ class MainFrame(wx.Frame):
 
         # ----------------------- VLC ---------------------
 
-        self.vlc_instance = vlc.Instance("--no-xlib")  # Xlib is required for VDPAU, but I can't call XInitThreads()
+        self.vlc_instance = vlc.Instance()
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(100)
         self.player.audio_set_mute(False)
