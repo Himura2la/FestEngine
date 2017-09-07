@@ -282,7 +282,7 @@ class MainFrame(wx.Frame):
 
         # ----------------------- VLC ---------------------
 
-        self.vlc_instance = vlc.Instance()
+        self.vlc_instance = vlc.Instance("--file-caching=1000 --no-drop-late-frames --no-skip-frames")
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(100)
         self.player.audio_set_mute(False)
