@@ -88,3 +88,10 @@ sudo python setup.py install
 cd ..
 python main.py # pass arguments to configure your paths
 ```
+
+# Кто это использует?
+
+С помощью Fest Engine проводились следующие мероприятия:
+
+* [Hokori Tori 2017](https://vk.com/hokori_tori), Орёл
+* [СROSSxOVER - 2017](https://vk.com/crossover_42), Кемерово
