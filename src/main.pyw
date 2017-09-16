@@ -62,6 +62,7 @@ auto_load_bg = fix_encoding(args.auto_load_bg)
 
 dirs = [fix_encoding(d) for d in args.files_dir]
 
+
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title, size=(700, 500))
@@ -503,6 +504,9 @@ class MainFrame(wx.Frame):
             for group in group_names:
                 value = match.group(group)
                 if value and group != 'num':
+                    if group in self.data[num] and self.data[num][group] != value:
+                        print "[WARNING] Inconsistent value '%s': changing '%s' to '%s'.\n\t\tItem: %s" % \
+                              (group, self.data[num][group], value, str(self.data[num]))
                     self.data[num][group] = value
 
             if 'files' not in self.data[num]:
@@ -511,7 +515,9 @@ class MainFrame(wx.Frame):
             if ext not in self.data[num]['files']:
                 self.data[num]['files'][ext] = file_path
             else:
-                print "[!!! DANGER !!!] Duplicate files: \n%s\n%s" % (file_path, self.data[num])
+                msg = "Duplicate files were found:\n%s\nConflicts with: %s" % (file_path, self.data[num])
+                print '[!!! ALERT !!!] ' + msg
+                wx.MessageBox('ALERT !!!\n' + msg, "Duplicate files alert", wx.OK | wx.ICON_ERROR)
 
         self.grid_set_shape(len(self.data), len(self.grid_rows))
         for i in range(len(self.grid_rows)):
