@@ -30,7 +30,9 @@ if sys.platform.startswith('linux'):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--filename_re", dest="filename_re", help='Regular expression that parses your '
-                                                              'filenames (without leading number and extension)')
+                                                              'filenames. Named groups will be processed as rows. '
+                                                              "The one obligatory named group is 'num'. "
+                                                              'Example: ^(?P<num>\d{3})(?P<filename>.*)')
 parser.add_argument("--zad_dir", dest="zad_dir", help='Path to a directory with images that will '
                                                       'be shown on a second screen on F1 (ZAD)')
 parser.add_argument("--tracks_dir", dest="tracks_dir", help='Path to a directory with tracks that will '
@@ -72,8 +74,9 @@ class MainFrame(wx.Frame):
         self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1}  # The last one
 
         self.proj_win = None
-        self.files = None
+        self.filename_re = None
         self.grid_rows = None
+        self.data = {}
         self.in_search = False
         self.grid_default_bg_color = None
         self.full_grid_data = None
@@ -468,47 +471,70 @@ class MainFrame(wx.Frame):
                   "and regular expression that parses your filenames in '--filename_re' command line argument.\n\n" \
                   "ZAD Path: %s\n" \
                   "MP3 Path: %s\n" \
-                  "Filename regexp: %s" % (zad_dir, tracks_dir, filename_re)
+                  "Filename RegEx: %s" % (zad_dir, tracks_dir, filename_re)
             wx.MessageBox(msg, "Path Error", wx.OK | wx.ICON_ERROR, self)
             return
 
-        zad_file_names = os.listdir(zad_dir)
-        tracks_file_names = os.listdir(tracks_dir)
-
-        self.files = {a.split(' ', 1)[0]: {os.path.join(zad_dir, a)} for a in zad_file_names}
-        for file_name in tracks_file_names:
-            num = file_name.split(' ', 1)[0]
-            path = os.path.join(tracks_dir, file_name)
-            if num in self.files:
-                self.files[num].add(path)
-            else:
-                self.files[num] = {path}
-
+        self.filename_re = re.compile(filename_re)
         # Extracting groups from regular expression (yes, your filename_re must contain groups wigh good names)
-        group_names, group_positions = zip(*sorted(re.compile(filename_re).groupindex.items(), key=lambda a: a[1]))
-        # Because they becomes rows
-        self.grid_rows = [Columns.NUM] + list(group_names) + [Columns.FILES, Columns.NOTES]
+        group_names, group_positions = zip(*sorted(self.filename_re.groupindex.items(), key=lambda a: a[1]))
 
-        self.grid_set_shape(len(self.files), len(self.grid_rows))
+        if 'num' not in group_names:
+            msg = "No 'num group in filename RegEx. We recommend using a unique sorting-friendly three-digit\n" \
+                  "number at the beginning of all filenames. In this case the RegEx will look like this:\n\n" \
+                  "^(?P<num>\d{3})(?P<filename>.*)\n\n" \
+                  "Your filename RegEx: %s" % filename_re
+            wx.MessageBox(msg, "Filename RegEx Error", wx.OK | wx.ICON_ERROR, self)
+            return
+
+        # Making rows from filename_re groups
+        self.grid_rows = [r if r != 'num' else Columns.NUM for r in group_names] + [Columns.FILES, Columns.NOTES]
+
+        zad_file_paths = [os.path.join(zad_dir, path) for path in os.listdir(zad_dir)]
+        tracks_file_paths = [os.path.join(tracks_dir, path) for path in os.listdir(tracks_dir)]
+
+        for file_path in tracks_file_paths + zad_file_paths:
+            name, ext = os.path.basename(file_path).rsplit('.', 1)
+            ext = ext.lower()  # Never forget doing this!
+            match = re.search(self.filename_re, name)
+            if not match:
+                print "[WARNING] File %s does not match filename_re" % file_path
+            num = match.group('num')
+
+            if num not in self.data:
+                self.data[num] = {}
+
+            for group in group_names:
+                value = match.group(group)
+                if value and group != 'num':
+                    self.data[num][group] = value
+
+            if 'files' not in self.data[num]:
+                self.data[num]['files'] = {}
+
+            if ext not in self.data[num]['files']:
+                self.data[num]['files'][ext] = file_path
+            else:
+                print "[!!! DANGER !!!] Duplicate files: \n%s\n%s" % (file_path, self.data[num])
+
+        self.grid_set_shape(len(self.data), len(self.grid_rows))
         for i in range(len(self.grid_rows)):
             self.grid.SetColLabelValue(i, self.grid_rows[i])
 
         i = 0
-        for num, files in sorted(self.files.items()):
-            j = 0
-            self.grid.SetCellValue(i, j, num)
+        for num, data in sorted(self.data.items()):
+            files = data.pop('files')
 
-            name = max([os.path.splitext(os.path.basename(a).split(' ', 1)[1])[0] for a in files], key=len)
-            match = re.search(filename_re, name)
-            j += 1
-            for pos in group_positions:
-                if match.group(pos):
-                    self.grid.SetCellValue(i, j, match.group(pos))
-                j += 1
+            for j in range(len(self.grid_rows)):
+                row = self.grid_rows[j]
+                if row == Columns.NUM:
+                    self.grid.SetCellValue(i, j, num)
+                elif row == Columns.FILES:
+                    self.grid.SetCellValue(i, j, ", ".join(sorted([ext for ext in files.keys()])))
+                elif row in data:
+                    self.grid.SetCellValue(i, j, data[row])
 
-            exts = ", ".join(sorted([a.rsplit('.', 1)[1].lower() for a in files]))
-            self.grid.SetCellValue(i, j, exts)
-            [self.grid.SetReadOnly(i, a) for a in range(6)]
+            [self.grid.SetReadOnly(i, a) for a in range(len(self.grid_rows) - 1)]
             i += 1
 
         self.grid.AutoSizeColumns()
