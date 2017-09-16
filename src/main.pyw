@@ -29,22 +29,22 @@ if sys.platform.startswith('linux'):
         print "XInitThreads() call failed:", x_init_threads_ex
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--filename_re", dest="filename_re", help='Regular expression that parses your '
-                                                              'filenames. Named groups will be processed as rows. '
+parser.add_argument("--filename_re", dest="filename_re", help='Regular expression that parses your filenames. '
+                                                              'Do not add file extension to this RegEx. '
+                                                              'Named groups will be displayed as rows. '
                                                               "The one obligatory named group is 'num'. "
                                                               'Example: ^(?P<num>\d{3})(?P<filename>.*)')
-parser.add_argument("--zad_dir", dest="zad_dir", help='Path to a directory with images that will '
-                                                      'be shown on a second screen on F1 (ZAD)')
-parser.add_argument("--tracks_dir", dest="tracks_dir", help='Path to a directory with tracks that will '
-                                                            'be fired on F2 (music or video)')
-parser.add_argument("--background_zad_path", dest="background_zad_path", help='Path to a base image that will be shown '
-                                                                              'when nothing else is showing (optional)')
+
 parser.add_argument("--background_tracks_dir", dest="background_tracks_dir", help='Path to a directory with background '
                                                                                   'tracks, that will sound on F3')
-
+parser.add_argument("--background_zad_path", dest="background_zad_path", help='Path to a base image that will be shown '
+                                                                              'when nothing else is showing (optional)')
 parser.add_argument("--debug_output", dest="debug_output", action='store_true')
 parser.add_argument("--auto_load_files", dest="auto_load_files", action='store_true')
 parser.add_argument("--auto_load_bg", dest="auto_load_bg", action='store_true')
+
+parser.add_argument('files_dir', nargs='+', help='Path to a directory with tracks, '
+                                                 'zad images or other files.')
 
 args = parser.parse_args()
 
@@ -54,14 +54,13 @@ def fix_encoding(path):
 
 
 filename_re = fix_encoding(args.filename_re)
-zad_dir = fix_encoding(args.zad_dir)
-tracks_dir = fix_encoding(args.tracks_dir)
 background_zad_path = fix_encoding(args.background_zad_path)
 background_tracks_dir = fix_encoding(args.background_tracks_dir)
 debug_output = fix_encoding(args.debug_output)
 auto_load_files = fix_encoding(args.auto_load_files)
 auto_load_bg = fix_encoding(args.auto_load_bg)
 
+dirs = [fix_encoding(d) for d in args.files_dir]
 
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
@@ -100,10 +99,10 @@ class MainFrame(wx.Frame):
 
         menu_file.AppendSeparator()
 
-        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(tracks_dir)),
-                  menu_file.Append(wx.ID_ANY, "Open &MP3 Folder"))
-        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(zad_dir)),
-                  menu_file.Append(wx.ID_ANY, "Open &ZAD Folder"))
+        for folder in dirs:
+            self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(folder)),
+                      menu_file.Append(wx.ID_ANY, "Open '%s' Folder" % os.path.basename(folder)))
+
         self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(background_tracks_dir)),
                   menu_file.Append(wx.ID_ANY, "Open &Background Music Folder"))
 
@@ -425,20 +424,19 @@ class MainFrame(wx.Frame):
             self.switch_to_zad()
             num = self.get_num(self.grid.GetGridCursorRow())
             try:
-                file_path = filter(lambda a: a.rsplit('.', 1)[1].lower() in {'jpg', 'png'}, self.files[num])[0]
+                file_path = [f[1] for f in self.data[num]['files'].items() if f[0] in FileTypes.img_extensions][0]
                 self.proj_win.load_zad(file_path, True)
                 self.image_status(u"Showing №%s" % num)
                 self.status("ZAD Fired!")
             except IndexError:
-                self.status(u"No zad for №%s" % num)
-                self.clear_zad()
+                self.clear_zad(status=u"No ZAD for №%s" % num)
 
         if self.ensure_proj_win():
             wx.CallAfter(delayed_run)
         else:
             delayed_run()
 
-    def clear_zad(self, e=None, no_show=False):
+    def clear_zad(self, e=None, no_show=False, status=u"ZAD Cleared"):
         if not self.proj_win_exists():
             return
         if background_zad_path and not no_show:
@@ -447,7 +445,7 @@ class MainFrame(wx.Frame):
         else:
             self.proj_win.no_show()
             self.image_status("No show")
-        self.status("ZAD Cleared")
+        self.status(status)
 
     def emergency_stop(self, e=None):
         if self.proj_win_exists():
@@ -464,14 +462,12 @@ class MainFrame(wx.Frame):
     # -------------------------------------------------- Data --------------------------------------------------
 
     def load_files(self, e=None):
-        if not zad_dir or not tracks_dir or \
-                not os.path.isdir(zad_dir) or not os.path.isdir(tracks_dir) or not filename_re:
+        if not dirs or not all([os.path.isdir(d) for d in dirs]) or not filename_re:
             msg = "No filename regular expression or ZAD path is invalid or MP3 path is invalid.\n" \
-                  "Please specify valid paths in '--zad_dir' and '--tracks_dir' command line arguments,\n" \
+                  "Please specify valid paths to folders with your files as command line arguments,\n" \
                   "and regular expression that parses your filenames in '--filename_re' command line argument.\n\n" \
-                  "ZAD Path: %s\n" \
-                  "MP3 Path: %s\n" \
-                  "Filename RegEx: %s" % (zad_dir, tracks_dir, filename_re)
+                  "Directories: %s\n" \
+                  "Filename RegEx: %s" % (", ".join(dirs), filename_re)
             wx.MessageBox(msg, "Path Error", wx.OK | wx.ICON_ERROR, self)
             return
 
@@ -480,9 +476,9 @@ class MainFrame(wx.Frame):
         group_names, group_positions = zip(*sorted(self.filename_re.groupindex.items(), key=lambda a: a[1]))
 
         if 'num' not in group_names:
-            msg = "No 'num group in filename RegEx. We recommend using a unique sorting-friendly three-digit\n" \
-                  "number at the beginning of all filenames. In this case the RegEx will look like this:\n\n" \
-                  "^(?P<num>\d{3})(?P<filename>.*)\n\n" \
+            msg = "No 'num' group in filename RegEx. We recommend using a unique sorting-friendly three-digit\n" \
+                  "number at the beginning of all filenames. The order should correspond to your event's program\n\n" \
+                  "In this case the RegEx will look like this: ^(?P<num>\d{3})(?P<filename>.*)\n\n" \
                   "Your filename RegEx: %s" % filename_re
             wx.MessageBox(msg, "Filename RegEx Error", wx.OK | wx.ICON_ERROR, self)
             return
@@ -490,10 +486,10 @@ class MainFrame(wx.Frame):
         # Making rows from filename_re groups
         self.grid_rows = [r if r != 'num' else Columns.NUM for r in group_names] + [Columns.FILES, Columns.NOTES]
 
-        zad_file_paths = [os.path.join(zad_dir, path) for path in os.listdir(zad_dir)]
-        tracks_file_paths = [os.path.join(tracks_dir, path) for path in os.listdir(tracks_dir)]
+        all_files = [[os.path.join(d, path) for path in os.listdir(d)] for d in dirs]
+        all_files = [item for sublist in all_files for item in sublist]  # Flatten
 
-        for file_path in tracks_file_paths + zad_file_paths:
+        for file_path in all_files:
             name, ext = os.path.basename(file_path).rsplit('.', 1)
             ext = ext.lower()  # Never forget doing this!
             match = re.search(self.filename_re, name)
@@ -523,14 +519,12 @@ class MainFrame(wx.Frame):
 
         i = 0
         for num, data in sorted(self.data.items()):
-            files = data.pop('files')
-
             for j in range(len(self.grid_rows)):
                 row = self.grid_rows[j]
                 if row == Columns.NUM:
                     self.grid.SetCellValue(i, j, num)
                 elif row == Columns.FILES:
-                    self.grid.SetCellValue(i, j, ", ".join(sorted([ext for ext in files.keys()])))
+                    self.grid.SetCellValue(i, j, ", ".join(sorted([ext for ext in data['files'].keys()])))
                 elif row in data:
                     self.grid.SetCellValue(i, j, data[row])
 
@@ -541,7 +535,21 @@ class MainFrame(wx.Frame):
         self.status("Loaded %d items" % i)
         self.load_data_item.Enable(False)  # Safety is everything!
         self.replace_file_item.Enable(True)
-        self.SetLabel("%s: %s" % (self.GetLabel(), tracks_dir))
+
+        def longest_substring(strings):
+            """ https://stackoverflow.com/questions/2892931/ """
+            ret = ''
+            if len(strings) > 1 and len(strings[0]) > 0:
+                for i in range(len(strings[0])):
+                    for j in range(len(strings[0]) - i + 1):
+                        if j > len(ret) and all(strings[0][i:i + j] in x for x in strings):
+                            ret = strings[0][i:i + j]
+            return ret
+
+        common_path = longest_substring(dirs)
+        win_label = "%s{%s}" % (common_path, ", ".join([p.replace(common_path, '') for p in dirs]))
+
+        self.SetLabel("%s: %s" % (self.GetLabel(), win_label))
 
     # --- Duplication from notes ---
 
@@ -762,20 +770,20 @@ class MainFrame(wx.Frame):
     def play_async(self, e=None):
         num = self.get_num(self.grid.GetGridCursorRow())
         try:
-            video_files = filter(lambda a: a.rsplit('.', 1)[1].lower() in FileTypes.video_extensions, self.files[num])
+            files = self.data[num]['files'].items()  # (ext, path)
+            video_files = filter(lambda a: a[0] in FileTypes.video_extensions, files)
             if video_files and not self.prefer_audio.IsChecked():
-                file_path = video_files[0]
+                file_path = video_files[0][1]
+                sound_only = False
             else:
-                audio_files = filter(lambda a: a.rsplit('.', 1)[1].lower() in FileTypes.sound_extensions,
-                                     self.files[num])
-                file_path = audio_files[0] if audio_files else video_files[0]
+                audio_files = filter(lambda a: a[0] in FileTypes.audio_extensions, files)
+                file_path, sound_only = (audio_files[0][1], True) if audio_files else (video_files[0][1], False)
         except IndexError:
             self.player_status = u"Nothing to play for №%s" % num
             return
         self.play_pause_bg(play=False)
         self.player.set_media(self.vlc_instance.media_new(file_path))
 
-        sound_only = file_path.rsplit('.', 1)[1].lower() in FileTypes.sound_extensions
         if not sound_only:
             self.ensure_proj_win()
             self.switch_to_vid()

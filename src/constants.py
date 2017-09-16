@@ -24,5 +24,5 @@ class Colors:
 class FileTypes:
     # TODO: Move this to settings
     video_extensions = {'avi', 'mp4', 'mov', 'wmv'}
-    sound_extensions = {'mp3', 'wav'}
+    audio_extensions = {'mp3', 'wav'}
     img_extensions = {'jpeg', 'png', 'jpg'}
