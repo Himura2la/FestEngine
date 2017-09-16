@@ -60,7 +60,7 @@ debug_output = fix_encoding(args.debug_output)
 auto_load_files = fix_encoding(args.auto_load_files)
 auto_load_bg = fix_encoding(args.auto_load_bg)
 
-dirs = [fix_encoding(d) for d in args.files_dir]
+dirs = set(fix_encoding(d) for d in args.files_dir)
 
 
 class MainFrame(wx.Frame):
@@ -552,7 +552,7 @@ class MainFrame(wx.Frame):
                             ret = strings[0][i:i + j]
             return ret
 
-        common_path = longest_substring(dirs)
+        common_path = longest_substring(sorted(list(dirs)))
         win_label = "%s{%s}" % (common_path, ", ".join([p.replace(common_path, '') for p in dirs]))
 
         self.SetLabel("%s: %s" % (self.GetLabel(), win_label))
