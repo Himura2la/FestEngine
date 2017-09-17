@@ -1,11 +1,12 @@
 environment:
   matrix:
-    - PYTHON: "C:\\Miniconda"
+    - PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7"
       PYTHON_ARCH: "32"
 
 install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - "pip install pyinstaller"
+  - "pip install pyinstaller wxpython"
   - 'python -c "import wx; print wx.version()"'
   - "pyinstaller"
+  - ps: echo Waiting for https://github.com/Himura2la/FestEngine/issues/37
