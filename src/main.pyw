@@ -43,8 +43,8 @@ parser.add_argument("--debug_output", dest="debug_output", action='store_true')
 parser.add_argument("--auto_load_files", dest="auto_load_files", action='store_true')
 parser.add_argument("--auto_load_bg", dest="auto_load_bg", action='store_true')
 
-parser.add_argument('files_dir', nargs='+', help='Path to a directory with tracks, '
-                                                 'zad images or other files.')
+parser.add_argument('files_dir', nargs='*', help='Path to a directory with tracks, '
+                                                 'zad images or other files.', default=[])
 
 args = parser.parse_args()
 
