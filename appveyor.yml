@@ -1,0 +1,16 @@
+environment:
+  matrix:
+    - PYTHON: "C:\\Python27"
+      PYTHON_VERSION: "2.7"
+      PYTHON_ARCH: "32"
+      PYWIN_DL: "https://downloads.sourceforge.net/project/pywin32/pywin32/Build%20221/pywin32-221.win32-py2.7.exe"
+      WXPYTHON_DL: "https://downloads.sourceforge.net/project/wxpython/wxPython/3.0.2.0/wxWidgets3.0-devel-win32-3.0.2.0.exe"
+
+install:
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "pip install pyinstaller"
+  - "echo Downloading wxPython"
+  - ps: (new-object net.webclient).DownloadFile("$env:WXPYTHON_DL", "C:\wxPython.exe")
+  - "C:\wxPython.exe /VERYSILENT /NORESTART"
+  - 'python -c "import wx; print wx.version()"'
+  - "pyinstaller"
