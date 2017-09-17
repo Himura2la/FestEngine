@@ -10,7 +10,7 @@ install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "pip install pyinstaller"
   - "echo Downloading wxPython"
-  - ps: (new-object net.webclient).DownloadFile("$env:WXPYTHON_DL", "C:\wxPython.exe")
-  - "C:\wxPython.exe /VERYSILENT /NORESTART"
+  - ps: (new-object net.webclient).DownloadFile("$env:WXPYTHON_DL", "wxPython.exe")
+  - ps: wxPython.exe /VERYSILENT /NORESTART
   - 'python -c "import wx; print wx.version()"'
   - "pyinstaller"
