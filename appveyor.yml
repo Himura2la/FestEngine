@@ -1,3 +1,4 @@
+skip_non_tags: true
 environment:
   matrix:
     - PYTHON: "C:\\Python27"
@@ -8,4 +9,7 @@ environment:
 install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "pip install pyinstaller wxpython"
-  - ps: choco install vlc $env:VLC_INSTALL_FLAGS
+  - ps: choco install vlc $env:VLC_INSTALL_FLAGS -y --no-progress
+build_script:
+  - cmd: cd C:\projects\festengine\bin
+  - cmd: Build.bat
