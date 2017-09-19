@@ -619,7 +619,7 @@ class MainFrame(wx.Frame):
                 wx.Dialog.__init__(self, parent, title=u"Replace File For №%s" % num)
                 top_sizer = wx.BoxSizer(wx.VERTICAL)
 
-                files = sorted(list(parent.files[num]), key=lambda p: p.rsplit('.', 1)[1].lower())
+                files = [path for ext, path in parent.data[num]['files'].items()]
 
                 self.src_file_chooser = wx.RadioBox(self, label="Select which file to replace",
                                                     choices=files, majorDimension=1, style=wx.RA_SPECIFY_COLS)
