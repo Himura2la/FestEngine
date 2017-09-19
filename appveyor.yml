@@ -6,7 +6,8 @@ environment:
 
 install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - "pip install pyinstaller wxpython"
+#  - "pip install pyinstaller wxpython"
+  - ps: choco install poshgit
   - ps: |
         $packageArgs = @{
           packageName   = 'wxPython3'
