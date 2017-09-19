@@ -7,6 +7,25 @@ environment:
 install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "pip install pyinstaller wxpython"
+  - ps: |
+        $packageArgs = @{
+          packageName   = 'wxPython3'
+          softwareName  = 'wxPython3*'
+
+          unzipLocation = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
+          fileType      = 'exe'
+          silentArgs   = '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-'
+
+          url           = 'https://downloads.sourceforge.net/project/wxpython/wxPython/3.0.2.0/wxPython3.0-win32-3.0.2.0-py27.exe'
+          checksum      = '864d44e418a0859cabff71614a495bea57738c5d'
+          checksumType  = 'sha1'
+
+          # url64bit      = 'https://downloads.sourceforge.net/project/wxpython/wxPython/3.0.2.0/wxPython3.0-win64-3.0.2.0-py27.exe'
+          # checksum64    = '32c27449b7b82840b71b9dea07c9b97cb67f4ad6'
+          # checksumType64= 'sha1'
+
+          validExitCodes= @(0, 3010, 1641)
+        }
+
+        Install-ChocolateyPackage @packageArgs
   - 'python -c "import wx; print wx.version()"'
-  - "pyinstaller"
-  - ps: echo Waiting for https://github.com/Himura2la/FestEngine/issues/37
