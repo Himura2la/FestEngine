@@ -34,4 +34,3 @@ pyinstaller -n FestEngine --distpath ..\bin --workpath ..\tmp ^
             --windowed --clean -y main.pyw
 cd ..
 rd /S /Q tmp
-pause
