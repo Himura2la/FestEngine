@@ -233,7 +233,7 @@ class MainFrame(wx.Frame):
         self.toolbar.Add(self.time_label, 0, wx.ALIGN_CENTER_VERTICAL)
 
         self.search_box = wx.TextCtrl(self, size=(40, toolbar_base_height), value='Find', style=wx.TE_PROCESS_ENTER)
-        self.search_box.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_GRAYTEXT))
+        self.search_box.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
         self.toolbar.Add(self.search_box, 0, wx.ALIGN_CENTER_VERTICAL)
 
         def search_box_leave_handler(e):
@@ -245,7 +245,7 @@ class MainFrame(wx.Frame):
         self.search_box.Bind(wx.EVT_KILL_FOCUS, search_box_leave_handler)
         self.search_box.Bind(wx.EVT_TEXT, self.search)
         self.search_box.Bind(wx.EVT_RIGHT_DOWN, self.quit_search)
-        self.search_box.SetToolTipString('Right-click to quit search')
+        self.search_box.SetToolTip('Right-click to quit search')
         self.search_box.Bind(wx.EVT_TEXT_ENTER, self.quit_search)
 
         self.vid_btn = wx.ToggleButton(self, label='VID', size=(35, toolbar_base_height + 2))
@@ -364,7 +364,10 @@ class MainFrame(wx.Frame):
     # -------------------------------------------------- Actions --------------------------------------------------
 
     def proj_win_exists(self):
-        return isinstance(self.proj_win, ProjectorWindow)
+        try:
+            return self.proj_win.ClassName == u'wxFrame'
+        except (AttributeError, RuntimeError) as e:
+            return False
 
     def ensure_proj_win(self, e=None):
         no_window = not self.proj_win_exists()
@@ -692,7 +695,7 @@ class MainFrame(wx.Frame):
     def enter_search(self, e=None):
         if self.search_box.GetValue() == 'Find':
             self.search_box.Clear()
-            self.search_box.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOWTEXT))
+            self.search_box.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
             self.in_search = True
             self.grid_push()
             self.grid.SetDefaultCellBackgroundColour(Colors.FILTERED_GRID)
@@ -744,7 +747,7 @@ class MainFrame(wx.Frame):
         if val:
             self.search_box.SetBackgroundColour((255, 200, 200))
         else:
-            self.search_box.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+            self.search_box.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
         self.search_box.Refresh()
 
     def quit_search(self, e=None):
@@ -753,7 +756,7 @@ class MainFrame(wx.Frame):
             self.paint_search_box(False)
 
             self.search_box.SetValue('Find')
-            self.search_box.SetForegroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_GRAYTEXT))
+            self.search_box.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
 
             selected_row = [self.grid.GetCellValue(self.grid.GetSelectedRows()[0], col)
                             for col in range(self.grid.GetNumberCols())]
@@ -1006,7 +1009,7 @@ class MainFrame(wx.Frame):
                 self.bg_player.window.time_label.SetBackgroundColour((255, 200, 255, 255))
             else:
                 self.bg_player.window.time_label.SetBackgroundColour(
-                    wx.SystemSettings_GetColour(wx.SYS_COLOUR_FRAMEBK))
+                    wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
                 pass
 
         player_state = self.bg_player.player.get_state()

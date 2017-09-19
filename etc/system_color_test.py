@@ -53,7 +53,7 @@ class MainFrame(wx.Frame):
 
         for row in range(len(colors)):
             name, desc = colors[row]
-            color = wx.SystemSettings_GetColour(eval(name))
+            color = wx.SystemSettings.GetColour(eval(name))
             grid.SetCellValue(row, 0, str(color))
             grid.SetCellBackgroundColour(row, 1, color)
             grid.SetCellValue(row, 2, name)

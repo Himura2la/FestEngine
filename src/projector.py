@@ -25,7 +25,7 @@ class ProjectorWindow(wx.Frame):
                 wx.Panel.__init__(self, parent)
 
                 self.SetBackgroundColour(wx.BLACK)
-                self.drawable_bitmap = wx.BitmapFromImage(wx.EmptyImage(parent.w, parent.h))
+                self.drawable_bitmap = wx.Bitmap(wx.Image(parent.w, parent.h))
                 self.SetBackgroundStyle(wx.BG_STYLE_ERASE)
 
                 self.Bind(wx.EVT_SIZE, self.on_size)
@@ -66,7 +66,7 @@ class ProjectorWindow(wx.Frame):
             target_ratio = min(max_w / float(w), max_h / float(h))
             new_w, new_h = [int(x * target_ratio) for x in (w, h)]
             img = img.Scale(new_w, new_h, wx.IMAGE_QUALITY_HIGH)
-        self.images_panel.drawable_bitmap = wx.BitmapFromImage(img)
+        self.images_panel.drawable_bitmap = wx.Bitmap(img)
         self.images_panel.Refresh()
 
     def switch_to_video(self, e=None):
@@ -79,5 +79,5 @@ class ProjectorWindow(wx.Frame):
 
     def no_show(self):
         self.images_panel.drawable_bitmap = \
-            wx.BitmapFromImage(wx.EmptyImage(*self.images_panel.drawable_bitmap.GetSize()))
+            wx.Bitmap(wx.Image(*self.images_panel.drawable_bitmap.GetSize()))
         self.images_panel.Refresh()
