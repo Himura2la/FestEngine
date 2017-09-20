@@ -12,12 +12,12 @@ install:
   - ps: choco install vlc $env:VLC_INSTALL_FLAGS -y --no-progress
 
 build_script:
-  - cmd: cd C:\projects\festengine\bin
-  - cmd: Build.bat
+  - ps: cd $env:APPVEYOR_BUILD_FOLDER
+  - ps: Build.bat
 
 after_build:
-  - ps: 7z a bin\FestEngine.zip %APPVEYOR_BUILD_FOLDER%\bin\FestEngine
+  - ps: 7z a bin\FestEngine.zip $env:APPVEYOR_BUILD_FOLDER\bin\FestEngine
 
 artifacts:
-- path: bin\FestEngine.zip
-  name: FestEngine
+  - path: bin\FestEngine.zip
+    name: FestEngine
