@@ -12,7 +12,7 @@ install:
   - ps: choco install vlc $env:VLC_INSTALL_FLAGS -y --no-progress
 
 build_script:
-  - ps: cd $env:APPVEYOR_BUILD_FOLDER
+  - ps: cd $env:APPVEYOR_BUILD_FOLDER\bin
   - ps: .\Build.bat
 
 after_build:
