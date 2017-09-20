@@ -8,7 +8,9 @@ environment:
 
 install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - "pip install pyinstaller wxpython"
+  - ps: pip install pyinstaller
+  - ps: pip install wxpython
+  - ps: pip install https://github.com/oaubert/python-vlc/archive/master.zip
   - ps: choco install vlc $env:VLC_INSTALL_FLAGS -y --no-progress
 
 build_script:
