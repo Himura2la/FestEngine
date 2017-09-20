@@ -10,6 +10,14 @@ install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "pip install pyinstaller wxpython"
   - ps: choco install vlc $env:VLC_INSTALL_FLAGS -y --no-progress
+
 build_script:
   - cmd: cd C:\projects\festengine\bin
   - cmd: Build.bat
+
+after_build:
+  - ps: 7z a bin\FestEngine.zip %APPVEYOR_BUILD_FOLDER%\bin\FestEngine
+
+artifacts:
+- path: bin\FestEngine.zip
+  name: FestEngine
