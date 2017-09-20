@@ -12,8 +12,8 @@ install:
   - ps: choco install vlc $env:VLC_INSTALL_FLAGS -y --no-progress
 
 build_script:
-  - ps: cd $env:APPVEYOR_BUILD_FOLDER\bin
-  - ps: .\Build.bat
+  - bat: cd %APPVEYOR_BUILD_FOLDER%\bin
+  - bat: .\Build.bat
 
 after_build:
   - ps: 7z a bin\FestEngine.zip $env:APPVEYOR_BUILD_FOLDER\bin\FestEngine\*
