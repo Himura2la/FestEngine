@@ -31,6 +31,6 @@ pyinstaller -n FestEngine --distpath ..\bin --workpath ..\tmp ^
             --add-binary "%VLC_PATH%\libvlc.dll";. ^
             --add-binary "%VLC_PATH%\libvlccore.dll";. ^
             --add-binary "%VLC_PATH%\plugins";plugins ^
-            --clean -y main.pyw
+            --clean --windowed -y main.pyw
 cd ..
 rd /S /Q tmp
