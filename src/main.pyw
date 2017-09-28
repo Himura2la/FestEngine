@@ -10,6 +10,7 @@ import sys
 import threading
 import time
 import webbrowser
+import ctypes
 
 import vlc
 import wx
@@ -20,10 +21,23 @@ from constants import Config, Colors, Columns, FileTypes
 from projector import ProjectorWindow
 from settings import SettingsDialog
 
+if sys.platform.startswith('win'):
+    vsnprintf = ctypes.cdll.msvcrt.vspnrintf
+else:
+    libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
+    vsnprintf = libc.vsnprintf
+
+vsnprintf.restype = ctypes.c_int
+vsnprintf.argtypes = (
+    ctypes.c_char_p,
+    ctypes.c_size_t,
+    ctypes.c_char_p,
+    ctypes.c_void_p,
+)
+
 if sys.platform.startswith('linux'):
     try:
-        import ctypes
-        x11 = ctypes.cdll.LoadLibrary('libX11.so')
+        x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11'))
         x11.XInitThreads()
     except Exception as x_init_threads_ex:
         print "XInitThreads() call failed:", x_init_threads_ex
@@ -277,6 +291,9 @@ class MainFrame(wx.Frame):
         main_sizer.Add(self.toolbar, 0, wx.EXPAND)
         main_sizer.Add(self.grid, 1, wx.EXPAND | wx.TOP, border=1)
 
+        logTextField = wx.TextCtrl(self, style = wx.TE_READONLY | wx.TE_MULTILINE)
+        main_sizer.Add(logTextField, 2, wx.EXPAND)
+
         self.SetSizer(main_sizer)
 
         # ------------------ Status Bar ------------------
@@ -286,6 +303,8 @@ class MainFrame(wx.Frame):
         # ----------------------- VLC ---------------------
 
         self.vlc_instance = vlc.Instance("--file-caching=1000 --no-drop-late-frames --no-skip-frames")
+        cPointerToLog = ctypes.cast(ctypes.pointer(ctypes.py_object(logTextField)), ctypes.POINTER(ctypes.c_void_p))
+        self.vlc_instance.log_set(self.log_callback, cPointerToLog)
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(100)
         self.player.audio_set_mute(False)
@@ -309,6 +328,29 @@ class MainFrame(wx.Frame):
             self.on_bg_load_files()
 
     # ------------------------------------------------------------------------------------------------------------------
+    @vlc.CallbackDecorators.LogCb
+    def log_callback(data, level, ctx, fmt, args):
+        if level == vlc.LogLevel.DEBUG:
+            return
+        logTextField = ctypes.cast(data, ctypes.POINTER(ctypes.py_object)).contents.value
+        BUF_LEN = 1024
+        outBuf = ctypes.create_string_buffer(BUF_LEN)
+        vsnprintf(outBuf, BUF_LEN, fmt, args)
+
+        def appendText():
+            logTextField.SetDefaultStyle(wx.TextAttr(wx.BLACK))
+            logTextField.AppendText('VLC: ')
+            if level == vlc.LogLevel.WARNING:
+                color = wx.TextAttr(wx.Colour(255, 127, 0))
+            elif level == vlc.LogLevel.ERROR:
+                color = wx.TextAttr(wx.RED)
+            else:
+                color = wx.TextAttr(wx.BLACK)
+            logTextField.SetDefaultStyle(color)
+            logTextField.AppendText(outBuf.raw)
+            logTextField.AppendText('\n')
+
+        wx.CallAfter(appendText)
 
     def on_close(self, e):
         self.player.stop()
