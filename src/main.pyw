@@ -62,8 +62,7 @@ def vlc_log_callback(data, level, ctx, fmt, args):
 
     # FIXME: Can return NULL pointer and crash if you comment out the return on DEBUG and start a video with open log_win
     self_logger = ctypes.cast(data, ctypes.POINTER(ctypes.py_object)).contents.value  # Dark magic, Do not repeat at home!
-    self_logger.log(f'[VLC {level}] {msg}')
-
+    self_logger.log('[VLC %s] %s' % (level, msg))
 
 
 parser = argparse.ArgumentParser()
