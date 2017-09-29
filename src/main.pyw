@@ -20,6 +20,7 @@ from background_music_player import BackgroundMusicPlayer
 from constants import Config, Colors, Columns, FileTypes
 from projector import ProjectorWindow
 from settings import SettingsDialog
+from log_window import LogWindow
 
 if sys.platform.startswith('linux'):
     try:
@@ -49,19 +50,14 @@ parser.add_argument('files_dir', nargs='*', help='Path to a directory with track
 
 args = parser.parse_args()
 
+filename_re = args.filename_re
+background_zad_path = args.background_zad_path
+background_tracks_dir = args.background_tracks_dir
+debug_output = args.debug_output
+auto_load_files = args.auto_load_files
+auto_load_bg = args.auto_load_bg
 
-def fix_encoding(path):
-    return path.decode(sys.getfilesystemencoding()) if path and isinstance(path, str) else path
-
-
-filename_re = fix_encoding(args.filename_re)
-background_zad_path = fix_encoding(args.background_zad_path)
-background_tracks_dir = fix_encoding(args.background_tracks_dir)
-debug_output = fix_encoding(args.debug_output)
-auto_load_files = fix_encoding(args.auto_load_files)
-auto_load_bg = fix_encoding(args.auto_load_bg)
-
-dirs = set(fix_encoding(d) for d in args.files_dir)
+dirs = args.files_dir
 
 
 class MainFrame(wx.Frame):
@@ -75,6 +71,8 @@ class MainFrame(wx.Frame):
         self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1}  # The last one
 
         self.proj_win = None
+        self.log_win = None
+        self.log_text = "Init" + os.linesep
         self.filename_re = None
         self.grid_rows = None
         self.data = {}
@@ -114,9 +112,16 @@ class MainFrame(wx.Frame):
             with SettingsDialog(self.settings, self) as settings_dialog:
                 if settings_dialog.ShowModal() == wx.ID_OK:
                     self.settings = settings_dialog.settings
+        self.Bind(wx.EVT_MENU, on_settings, menu_file.Append(wx.ID_ANY, "&Settings"))
 
-        self.Bind(wx.EVT_MENU, on_settings,
-                  menu_file.Append(wx.ID_ANY, "&Settings"))
+        show_log_menu_item = menu_file.Append(wx.ID_ANY, "&Show Log")
+
+        def on_log(e):
+            self.log_win = LogWindow(self, lambda: show_log_menu_item.Enable(True))
+            self.log_win.Show()
+            self.log_win.append(self.log_text)
+            show_log_menu_item.Enable(False)
+        self.Bind(wx.EVT_MENU, on_log, show_log_menu_item)
 
         self.prefer_audio = menu_file.Append(wx.ID_ANY, "&Prefer No Video (fallback)", kind=wx.ITEM_CHECK)
         self.prefer_audio.Check(False)
@@ -316,6 +321,14 @@ class MainFrame(wx.Frame):
         self.vlc_instance.release()
         self.Destroy()
 
+    def log(self, msg):
+        self.log_text += msg + os.linesep
+        try:
+            if self.log_win.ClassName == u'wxDialog':
+                self.log_win.append(msg + os.linesep)
+        except (AttributeError, RuntimeError):
+            return
+
     def grid_set_shape(self, new_rows, new_cols, readonly_cols=None):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
         if current_rows > 0:
@@ -499,7 +512,7 @@ class MainFrame(wx.Frame):
             ext = ext.lower()  # Never forget doing this!
             match = re.search(self.filename_re, name)
             if not match:
-                print("[WARNING] File %s does not match filename_re" % file_path)
+                self.log("[WARNING] File %s does not match filename_re" % file_path)
             num = match.group('num')
 
             if num not in self.data:
@@ -509,7 +522,7 @@ class MainFrame(wx.Frame):
                 value = match.group(group)
                 if value and group != 'num':
                     if group in self.data[num] and self.data[num][group] != value:
-                        print("[WARNING] Inconsistent value '%s': changing '%s' to '%s'.\n\t\tItem: %s" %
+                        self.log("[WARNING] Inconsistent value '%s': changing '%s' to '%s'.\n\t\tItem: %s" %
                                                 (group, self.data[num][group], value, str(self.data[num])))
                     self.data[num][group] = value
 
@@ -520,7 +533,7 @@ class MainFrame(wx.Frame):
                 self.data[num]['files'][ext] = file_path
             else:
                 msg = "Duplicate files were found:\n%s\nConflicts with: %s" % (file_path, self.data[num])
-                print('[!!! ALERT !!!] ' + msg)
+                self.log('[!!! ALERT !!!] ' + msg)
                 wx.MessageBox('ALERT !!!\n' + msg, "Duplicate files alert", wx.OK | wx.ICON_ERROR)
 
         self.grid_set_shape(len(self.data), len(self.grid_rows))
@@ -738,7 +751,7 @@ class MainFrame(wx.Frame):
             return functools.reduce(lambda a, b: a or b, [self.search_box.GetValue().lower() in cell.lower()
                                                                                              for cell in row['cols']])
 
-        filtered_grid_data = filter(match, self.full_grid_data)
+        filtered_grid_data = list(filter(match, self.full_grid_data))
         found = bool(filtered_grid_data)
         if found:
             self.grid_set_data(filtered_grid_data, self.grid_default_bg_color, True)
@@ -781,13 +794,14 @@ class MainFrame(wx.Frame):
         num = self.get_num(self.grid.GetGridCursorRow())
         try:
             files = self.data[num]['files'].items()  # (ext, path)
-            video_files = filter(lambda a: a[0] in FileTypes.video_extensions, files)
+            video_files = [file[1] for file in files if file[0] in FileTypes.video_extensions]
+
             if video_files and not self.prefer_audio.IsChecked():
-                file_path = video_files[0][1]
+                file_path = video_files[0]
                 sound_only = False
             else:
-                audio_files = filter(lambda a: a[0] in FileTypes.audio_extensions, files)
-                file_path, sound_only = (audio_files[0][1], True) if audio_files else (video_files[0][1], False)
+                audio_files = [file[1] for file in files if file[0] in FileTypes.audio_extensions]
+                file_path, sound_only = (audio_files[0], True) if audio_files else (video_files[0], False)
         except IndexError:
             self.player_status = u"Nothing to play for №%s" % num
             return
@@ -809,7 +823,7 @@ class MainFrame(wx.Frame):
     def play_sync(self, target_vol, sound_only):
         if not sound_only:
             while not self.set_vlc_video_panel():
-                print("Trying to get video panel handler...")
+                self.log("Trying to get video panel handler...")
 
         if self.player.play() != 0:  # [Play] button is pushed here!
             wx.CallAfter(lambda: self.set_player_status('Playback FAILED !!!'))
@@ -822,10 +836,10 @@ class MainFrame(wx.Frame):
             status = "%s [%.3fs]" % (self.player_state_parse(state), (time.time() - start))
             wx.CallAfter(lambda: self.set_player_status(status))
             if debug_output:
-                print(status)
+                self.log(status)
             time.sleep(0.007)
         if debug_output:
-            print("Started playback in %.0fms" % ((time.time() - start) * 1000))
+            self.log("Started playback in %.0fms" % ((time.time() - start) * 1000))
 
         if not sound_only:
             wx.CallAfter(lambda: self.proj_win.Layout())
@@ -841,10 +855,10 @@ class MainFrame(wx.Frame):
             status = "Trying to unmute... [%.3fs]" % (time.time() - start)
             wx.CallAfter(lambda: self.set_player_status(status))
             if debug_output:
-                print(status)
+                self.log(status)
             time.sleep(0.001)
         if debug_output and status[0] == 'T':
-            print("Unmuted in %.0fms" % ((time.time() - start) * 1000))
+            self.log("Unmuted in %.0fms" % ((time.time() - start) * 1000))
 
         def ui_upd():
             self.player_status = '%s Vol:%d' % (self.player_state_parse(self.player.get_state()),
