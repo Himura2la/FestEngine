@@ -35,7 +35,9 @@ elif sys.platform.startswith('linux'):
     except Exception as x_init_threads_ex:
         print("XInitThreads() call failed:", x_init_threads_ex)
 elif sys.platform == "darwin":  # MacOS
-    print("Not supported yet")  # FIXME
+    app = wx.App(True)
+    wx.MessageBox("Please find out how to get the vsnprintf() function on your OS",
+                  "No MacOS support", wx.OK | wx.ICON_ERROR)  # FIXME
     exit()
 
 vsnprintf.restype = ctypes.c_int
@@ -1092,10 +1094,10 @@ class MainFrame(wx.Frame):
 
     def start_countdown(self, e=None):
         self.ensure_proj_win()
-        self.proj_win.switch_to_timer(65) # TODO: dialog with time settings
+        self.proj_win.switch_to_timer(65)  # TODO: dialog with time settings
 
 
 if __name__ == "__main__":
-    app = wx.App(False)
+    app = wx.App(True)
     frame = MainFrame(None, 'Fest Engine')
     app.MainLoop()
