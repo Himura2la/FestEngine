@@ -30,12 +30,13 @@ elif sys.platform.startswith('linux'):
     libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
     vsnprintf = libc.vsnprintf
     try:
-        import ctypes
         x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11'))
         x11.XInitThreads()
     except Exception as x_init_threads_ex:
         print("XInitThreads() call failed:", x_init_threads_ex)
-
+elif sys.platform == "darwin":  # MacOS
+    print("Not supported yet")  # FIXME
+    exit()
 
 vsnprintf.restype = ctypes.c_int
 vsnprintf.argtypes = (
