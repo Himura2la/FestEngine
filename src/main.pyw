@@ -10,6 +10,7 @@ import sys
 import threading
 import time
 import webbrowser
+import ctypes
 
 import functools
 import vlc
@@ -20,15 +21,49 @@ from background_music_player import BackgroundMusicPlayer
 from constants import Config, Colors, Columns, FileTypes
 from projector import ProjectorWindow
 from settings import SettingsDialog
-from log_window import LogWindow
+from logger import Logger
 
-if sys.platform.startswith('linux'):
+
+if sys.platform.startswith('win'):
+    vsnprintf = ctypes.cdll.msvcrt.vsnprintf
+elif sys.platform.startswith('linux'):
+    libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
+    vsnprintf = libc.vsnprintf
     try:
         import ctypes
-        x11 = ctypes.cdll.LoadLibrary('libX11.so')
+        x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11'))
         x11.XInitThreads()
     except Exception as x_init_threads_ex:
         print("XInitThreads() call failed:", x_init_threads_ex)
+
+
+vsnprintf.restype = ctypes.c_int
+vsnprintf.argtypes = (
+    ctypes.c_char_p,
+    ctypes.c_size_t,
+    ctypes.c_char_p,
+    ctypes.c_void_p,
+)
+
+
+@vlc.CallbackDecorators.LogCb
+def vlc_log_callback(data, level, ctx, fmt, args):
+    if level == vlc.LogLevel.DEBUG:
+        return
+    buf_len = 1024
+    out_buf = ctypes.create_string_buffer(buf_len)
+    vsnprintf(out_buf, buf_len, fmt, args)
+
+    msg = out_buf.raw[:out_buf.raw.find(b'\x00')].decode()
+
+    try:
+        # FIXME: Can fail here if you comment out the DEBUG return.
+        self_logger = ctypes.cast(data, ctypes.POINTER(ctypes.py_object)).contents.value  # Dark magic, Do not repeat at home!
+        self_logger.log('[VLC] ' + msg)
+    except ValueError as e:
+        print(f'Failed to log the following message ({e}):')
+        print('[VLC] ' + msg)
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--filename_re", dest="filename_re", help='Regular expression that parses your filenames. '
@@ -70,9 +105,8 @@ class MainFrame(wx.Frame):
         self.fade_out_delays_ms = 10
         self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1}  # The last one
 
+        self.logger = Logger(self)
         self.proj_win = None
-        self.log_win = None
-        self.log_text = "Init" + os.linesep
         self.filename_re = None
         self.grid_rows = None
         self.data = {}
@@ -117,9 +151,7 @@ class MainFrame(wx.Frame):
         show_log_menu_item = menu_file.Append(wx.ID_ANY, "&Show Log")
 
         def on_log(e):
-            self.log_win = LogWindow(self, lambda: show_log_menu_item.Enable(True))
-            self.log_win.Show()
-            self.log_win.append(self.log_text)
+            self.logger.open_window(lambda: show_log_menu_item.Enable(True))
             show_log_menu_item.Enable(False)
         self.Bind(wx.EVT_MENU, on_log, show_log_menu_item)
 
@@ -292,6 +324,10 @@ class MainFrame(wx.Frame):
         # ----------------------- VLC ---------------------
 
         self.vlc_instance = vlc.Instance("--file-caching=1000 --no-drop-late-frames --no-skip-frames")
+
+        log_func_ptr = ctypes.cast(ctypes.pointer(ctypes.py_object(self.logger)), ctypes.POINTER(ctypes.c_void_p))
+        self.vlc_instance.log_set(vlc_log_callback, log_func_ptr)
+
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(100)
         self.player.audio_set_mute(False)
@@ -320,14 +356,6 @@ class MainFrame(wx.Frame):
         self.player.stop()
         self.vlc_instance.release()
         self.Destroy()
-
-    def log(self, msg):
-        self.log_text += msg + os.linesep
-        try:
-            if self.log_win.ClassName == u'wxDialog':
-                self.log_win.append(msg + os.linesep)
-        except (AttributeError, RuntimeError):
-            return
 
     def grid_set_shape(self, new_rows, new_cols, readonly_cols=None):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
@@ -512,7 +540,7 @@ class MainFrame(wx.Frame):
             ext = ext.lower()  # Never forget doing this!
             match = re.search(self.filename_re, name)
             if not match:
-                self.log("[WARNING] File %s does not match filename_re" % file_path)
+                self.logger.log("[WARNING] File %s does not match filename_re" % file_path)
             num = match.group('num')
 
             if num not in self.data:
@@ -522,7 +550,7 @@ class MainFrame(wx.Frame):
                 value = match.group(group)
                 if value and group != 'num':
                     if group in self.data[num] and self.data[num][group] != value:
-                        self.log("[WARNING] Inconsistent value '%s': changing '%s' to '%s'.\n\t\tItem: %s" %
+                        self.logger.log("[WARNING] Inconsistent value '%s': changing '%s' to '%s'.\n\t\tItem: %s" %
                                                 (group, self.data[num][group], value, str(self.data[num])))
                     self.data[num][group] = value
 
@@ -533,7 +561,7 @@ class MainFrame(wx.Frame):
                 self.data[num]['files'][ext] = file_path
             else:
                 msg = "Duplicate files were found:\n%s\nConflicts with: %s" % (file_path, self.data[num])
-                self.log('[!!! ALERT !!!] ' + msg)
+                self.logger.log('[!!! ALERT !!!] ' + msg)
                 wx.MessageBox('ALERT !!!\n' + msg, "Duplicate files alert", wx.OK | wx.ICON_ERROR)
 
         self.grid_set_shape(len(self.data), len(self.grid_rows))
@@ -823,7 +851,7 @@ class MainFrame(wx.Frame):
     def play_sync(self, target_vol, sound_only):
         if not sound_only:
             while not self.set_vlc_video_panel():
-                self.log("Trying to get video panel handler...")
+                self.logger.log("Trying to get video panel handler...")
 
         if self.player.play() != 0:  # [Play] button is pushed here!
             wx.CallAfter(lambda: self.set_player_status('Playback FAILED !!!'))
@@ -836,10 +864,10 @@ class MainFrame(wx.Frame):
             status = "%s [%.3fs]" % (self.player_state_parse(state), (time.time() - start))
             wx.CallAfter(lambda: self.set_player_status(status))
             if debug_output:
-                self.log(status)
+                self.logger.log(status)
             time.sleep(0.007)
         if debug_output:
-            self.log("Started playback in %.0fms" % ((time.time() - start) * 1000))
+            self.logger.log("Started playback in %.0fms" % ((time.time() - start) * 1000))
 
         if not sound_only:
             wx.CallAfter(lambda: self.proj_win.Layout())
@@ -855,10 +883,10 @@ class MainFrame(wx.Frame):
             status = "Trying to unmute... [%.3fs]" % (time.time() - start)
             wx.CallAfter(lambda: self.set_player_status(status))
             if debug_output:
-                self.log(status)
+                self.logger.log(status)
             time.sleep(0.001)
         if debug_output and status[0] == 'T':
-            self.log("Unmuted in %.0fms" % ((time.time() - start) * 1000))
+            self.logger.log("Unmuted in %.0fms" % ((time.time() - start) * 1000))
 
         def ui_upd():
             self.player_status = '%s Vol:%d' % (self.player_state_parse(self.player.get_state()),
