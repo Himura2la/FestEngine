@@ -189,6 +189,7 @@ class MainFrame(wx.Frame):
         no_show_item = menu_play.Append(wx.ID_ANY, "&No Show")
         menu_play.AppendSeparator()
         play_pause_bg_item = menu_play.Append(wx.ID_ANY, "&Play/Pause Background\tF3")
+        start_countdown_item = menu_play.Append(wx.ID_ANY, "Countdown")
 
         self.Bind(wx.EVT_MENU, self.emergency_stop, emergency_stop_item)
         self.Bind(wx.EVT_MENU, self.show_zad, show_zad_item)
@@ -196,6 +197,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.clear_zad, clear_zad_item)
         self.Bind(wx.EVT_MENU, lambda e: self.clear_zad(e, True), no_show_item)
         self.Bind(wx.EVT_MENU, self.play_pause_bg, play_pause_bg_item)
+        self.Bind(wx.EVT_MENU, self.start_countdown, start_countdown_item)
 
         self.SetAcceleratorTable(wx.AcceleratorTable([
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, emergency_stop_item.GetId()),
@@ -1060,6 +1062,10 @@ class MainFrame(wx.Frame):
                 self.background_play(from_grid=False)
         else:
             self.background_pause(paused=True)
+
+    def start_countdown(self, e=None):
+        self.ensure_proj_win()
+        self.proj_win.switch_to_timer(65) # TODO: dialog with time settings
 
 
 if __name__ == "__main__":
