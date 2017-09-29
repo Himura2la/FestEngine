@@ -1,4 +1,4 @@
-#!python2
+#!python3
 # -*- coding: utf-8 -*-
 
 import argparse
@@ -11,6 +11,7 @@ import threading
 import time
 import webbrowser
 
+import functools
 import vlc
 import wx
 import wx.grid
@@ -26,7 +27,7 @@ if sys.platform.startswith('linux'):
         x11 = ctypes.cdll.LoadLibrary('libX11.so')
         x11.XInitThreads()
     except Exception as x_init_threads_ex:
-        print "XInitThreads() call failed:", x_init_threads_ex
+        print("XInitThreads() call failed:", x_init_threads_ex)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--filename_re", dest="filename_re", help='Regular expression that parses your filenames. '
@@ -498,7 +499,7 @@ class MainFrame(wx.Frame):
             ext = ext.lower()  # Never forget doing this!
             match = re.search(self.filename_re, name)
             if not match:
-                print "[WARNING] File %s does not match filename_re" % file_path
+                print("[WARNING] File %s does not match filename_re" % file_path)
             num = match.group('num')
 
             if num not in self.data:
@@ -508,8 +509,8 @@ class MainFrame(wx.Frame):
                 value = match.group(group)
                 if value and group != 'num':
                     if group in self.data[num] and self.data[num][group] != value:
-                        print "[WARNING] Inconsistent value '%s': changing '%s' to '%s'.\n\t\tItem: %s" % \
-                              (group, self.data[num][group], value, str(self.data[num]))
+                        print("[WARNING] Inconsistent value '%s': changing '%s' to '%s'.\n\t\tItem: %s" %
+                                                (group, self.data[num][group], value, str(self.data[num])))
                     self.data[num][group] = value
 
             if 'files' not in self.data[num]:
@@ -519,7 +520,7 @@ class MainFrame(wx.Frame):
                 self.data[num]['files'][ext] = file_path
             else:
                 msg = "Duplicate files were found:\n%s\nConflicts with: %s" % (file_path, self.data[num])
-                print '[!!! ALERT !!!] ' + msg
+                print('[!!! ALERT !!!] ' + msg)
                 wx.MessageBox('ALERT !!!\n' + msg, "Duplicate files alert", wx.OK | wx.ICON_ERROR)
 
         self.grid_set_shape(len(self.data), len(self.grid_rows))
@@ -734,8 +735,8 @@ class MainFrame(wx.Frame):
 
         def match(row):
             """Returns True if any cell in a row matches"""
-            return reduce(lambda a, b: a or b, [self.search_box.GetValue().lower() in cell.lower()
-                                                for cell in row['cols']])
+            return functools.reduce(lambda a, b: a or b, [self.search_box.GetValue().lower() in cell.lower()
+                                                                                             for cell in row['cols']])
 
         filtered_grid_data = filter(match, self.full_grid_data)
         found = bool(filtered_grid_data)
@@ -808,7 +809,7 @@ class MainFrame(wx.Frame):
     def play_sync(self, target_vol, sound_only):
         if not sound_only:
             while not self.set_vlc_video_panel():
-                print "Trying to get video panel handler..."
+                print("Trying to get video panel handler...")
 
         if self.player.play() != 0:  # [Play] button is pushed here!
             wx.CallAfter(lambda: self.set_player_status('Playback FAILED !!!'))
@@ -821,10 +822,10 @@ class MainFrame(wx.Frame):
             status = "%s [%.3fs]" % (self.player_state_parse(state), (time.time() - start))
             wx.CallAfter(lambda: self.set_player_status(status))
             if debug_output:
-                print status
+                print(status)
             time.sleep(0.007)
         if debug_output:
-            print "Started playback in %.0fms" % ((time.time() - start) * 1000)
+            print("Started playback in %.0fms" % ((time.time() - start) * 1000))
 
         if not sound_only:
             wx.CallAfter(lambda: self.proj_win.Layout())
@@ -840,10 +841,10 @@ class MainFrame(wx.Frame):
             status = "Trying to unmute... [%.3fs]" % (time.time() - start)
             wx.CallAfter(lambda: self.set_player_status(status))
             if debug_output:
-                print status
+                print(status)
             time.sleep(0.001)
         if debug_output and status[0] == 'T':
-            print "Unmuted in %.0fms" % ((time.time() - start) * 1000)
+            print("Unmuted in %.0fms" % ((time.time() - start) * 1000))
 
         def ui_upd():
             self.player_status = '%s Vol:%d' % (self.player_state_parse(self.player.get_state()),
