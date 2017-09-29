@@ -56,14 +56,12 @@ def vlc_log_callback(data, level, ctx, fmt, args):
     vsnprintf(out_buf, buf_len, fmt, args)
 
     msg = out_buf.raw[:out_buf.raw.find(b'\x00')].decode()
+    level = {0: 'DEBUG', 2: 'NOTICE', 3: 'WARNING', 4: 'ERROR'}[level]
 
-    try:
-        # FIXME: Can fail here if you comment out the DEBUG return.
-        self_logger = ctypes.cast(data, ctypes.POINTER(ctypes.py_object)).contents.value  # Dark magic, Do not repeat at home!
-        self_logger.log('[VLC] ' + msg)
-    except ValueError as e:
-        print(f'Failed to log the following message ({e}):')
-        print('[VLC] ' + msg)
+    # FIXME: Can return NULL pointer and crash if you comment out the return on DEBUG and start a video with open log_win
+    self_logger = ctypes.cast(data, ctypes.POINTER(ctypes.py_object)).contents.value  # Dark magic, Do not repeat at home!
+    self_logger.log(f'[VLC {level}] {msg}')
+
 
 
 parser = argparse.ArgumentParser()
