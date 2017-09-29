@@ -1,5 +1,5 @@
 import wx
-
+import countdown_panel
 
 class ProjectorWindow(wx.Frame):
     def __init__(self, parent, screen=None):
@@ -49,8 +49,14 @@ class ProjectorWindow(wx.Frame):
                 dc.DrawBitmap(self.drawable_bitmap, w//2 - drw_w//2, 0)
 
         self.images_panel = ImagesPanel(self)
+
+        self.countdown_panel = countdown_panel.CountdownPanel(self)
+        self.countdown_panel.Bind(countdown_panel.EVT_COUNTDOWN_RANOUT_EVENT, self.on_timer_ranout)
+        self.countdown_panel.Hide()
+
         self.sizer.Add(self.images_panel, 1, wx.EXPAND)
         self.sizer.Add(self.video_panel, 1, wx.EXPAND)  # TODO: Align top
+        self.sizer.Add(self.countdown_panel, 1, wx.EXPAND)
 
         self.SetSizer(self.sizer)
         self.Layout()
@@ -81,3 +87,14 @@ class ProjectorWindow(wx.Frame):
         self.images_panel.drawable_bitmap = \
             wx.Bitmap(wx.Image(*self.images_panel.drawable_bitmap.GetSize()))
         self.images_panel.Refresh()
+
+    def switch_to_timer(self, timedelta):
+        self.video_panel.Hide()
+        self.images_panel.Hide()
+        self.countdown_panel.start_timer(timedelta)
+        self.countdown_panel.Show()
+
+    def on_timer_ranout(self, e):
+        self.countdown_panel.Hide()
+        self.images_panel.Show()
+        self.no_show()
