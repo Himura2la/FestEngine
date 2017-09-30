@@ -1,4 +1,5 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/c7ekg1bix79434tm?retina=true)](https://ci.appveyor.com/project/Himura2la/festengine)
+[![](res/gitter.svg)](https://gitter.im/FestEngine/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
 Сидел я однажды на региональном Аниме-фесте, смотрел как на проекторе мышкой таскают файлы и осознал что хватит это терпеть!
 
