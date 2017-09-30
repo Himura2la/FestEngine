@@ -1,6 +1,6 @@
 from datetime import *
 import wx
-
+from constants import Strings
 
 class ProjectorWindow(wx.Frame):
     def __init__(self, parent, screen=None):
@@ -50,59 +50,73 @@ class ProjectorWindow(wx.Frame):
 
         self.images_panel = ImagesPanel(self)
 
-
         class CountdownPanel(wx.Panel):
             def __init__(self, parent):
                 wx.Panel.__init__(self, parent)
                 self.parent = parent
                 self.timer = wx.Timer()
                 self.timer.Bind(wx.EVT_TIMER, self.update_time)
-                self.time_remain = timedelta()
+                self.time_left = timedelta()
                 self.time_started = None
                 self.time_end = None
 
-                self.label = wx.StaticText(self, label="00:00")
-                self.label.SetForegroundColour((255, 255, 255, 255))  # To settings!
+                self.info_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL | wx.ST_NO_AUTORESIZE)
+                self.countdown_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL | wx.ST_NO_AUTORESIZE)
+                self.time_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL | wx.ST_NO_AUTORESIZE)
 
-                h_sizer = wx.BoxSizer(wx.HORIZONTAL)
-                v_sizer = wx.BoxSizer(wx.VERTICAL)
+                text_color = (255, 255, 255, 255)  # To settings!
+                self.countdown_text.SetForegroundColour(text_color)
+                self.info_text.SetForegroundColour(text_color)
+                self.time_text.SetForegroundColour(text_color)
 
-                h_sizer.AddStretchSpacer()
-                h_sizer.Add(v_sizer, 0)
-                h_sizer.AddStretchSpacer()
+                sizer = wx.BoxSizer(wx.VERTICAL)
 
-                v_sizer.AddStretchSpacer()
-                v_sizer.Add(self.label, 1)
-                v_sizer.AddStretchSpacer()
+                sizer.AddStretchSpacer()
+                sizer.Add(self.info_text, 0, wx.EXPAND)
+                sizer.Add(self.countdown_text, 0, wx.EXPAND)
+                sizer.Add(self.time_text, 0, wx.EXPAND)
+                sizer.AddStretchSpacer()
 
-                self.SetSizer(h_sizer)
+                self.SetSizer(sizer)
                 self.Layout()
 
                 self.Bind(wx.EVT_SIZE, self._recalculate_font_size)
                 self._recalculate_font_size()
 
             def _recalculate_font_size(self, e=None):
-                font = self.label.GetFont()
-                font_height = self.GetSize().height / 4
+                font = self.countdown_text.GetFont()
+                font_height = self.GetSize().height / 3
                 font.SetPixelSize(wx.Size(0, font_height))
-                self.label.SetFont(font)
+                self.countdown_text.SetFont(font)
+                font.SetPixelSize(wx.Size(0, font_height / 3))
+                self.info_text.SetFont(font)
+                self.time_text.SetFont(font)
                 if e:
                     e.Skip()
 
-            def start_timer(self, minutes):
+            def start_timer(self, minutes, text):
                 if not self.timer.IsRunning():
-                    self.timer.Start(300)
+                    self.timer.Start(100)
 
-                self.time_started = datetime.now()
+                self.time_started = datetime.now() + timedelta(seconds=1)
                 self.time_end = self.time_started + timedelta(minutes=minutes)
+
+                self.info_text.SetLabel(text)
+                self.time_text.SetLabel(Strings.COUNTDOWN_EXACT_TIME_FMT % self.time_end.strftime("%H:%M"))
                 self.update_time()
 
             def update_time(self, e=None):
-                self.time_remain = self.time_end - datetime.now()
-                string_time = str(self.time_remain)
+                self.time_left = self.time_end - datetime.now()
+
+                if self.time_left < timedelta(seconds=1):
+                    self.timer.Stop()
+                    wx.CallAfter(self.parent.on_timer_ranout)
+                    return
+
+                string_time = str(self.time_left)
 
                 def update_ui():
-                    self.label.SetLabel(string_time[:string_time.find('.')])
+                    self.countdown_text.SetLabel(string_time[:string_time.find('.')])
                     self.Layout()
                 wx.CallAfter(update_ui)
 
@@ -145,14 +159,14 @@ class ProjectorWindow(wx.Frame):
         self.video_panel.Hide()
         self.images_panel.Show()
 
-    def launch_timer(self, timedelta):
+    def launch_timer(self, *args):
         self.video_panel.Hide()
         self.images_panel.Hide()
         self.countdown_panel.Show()
         self.Layout()
-        self.countdown_panel.start_timer(timedelta)
+        self.countdown_panel.start_timer(*args)
 
-    def on_timer_ranout(self, e):
+    def on_timer_ranout(self):
         self.switch_to_images()
         self.no_show()
 

@@ -10,6 +10,8 @@ class Columns:
     FILES = 'files'
     NOTES = 'notes'
 
+class Strings:
+    COUNTDOWN_EXACT_TIME_FMT = "Ждём Вас в %s ^_^"
 
 class Colors:
     DUP_ROW = (255, 128, 255, 255)

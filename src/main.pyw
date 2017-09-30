@@ -1095,7 +1095,7 @@ class MainFrame(wx.Frame):
 
     def start_countdown(self, e=None):
         self.ensure_proj_win()
-        self.proj_win.launch_timer(65)  # TODO: dialog with time settings
+        self.proj_win.launch_timer(1, "До начала фестиваля")  # TODO: dialog with time settings
 
 
 if __name__ == "__main__":
