@@ -62,7 +62,7 @@ def vlc_log_callback(data, level, ctx, fmt, args):
     msg = out_buf.raw[:out_buf.raw.find(b'\x00')].decode('utf-8')
     level = {0: 'DEBUG', 2: 'NOTICE', 3: 'WARNING', 4: 'ERROR'}[level]
 
-    self_logger = ctypes.cast(data, ctypes.POINTER(ctypes.py_object)).contents.value  # Dark magic, Do not repeat at home!
+    self_logger = ctypes.cast(data, ctypes.POINTER(ctypes.py_object)).contents.value  # Dark magic, Never repeat at home
     self_logger.log('[VLC %s] %s' % (level, msg))
 
 
@@ -1158,6 +1158,6 @@ class MainFrame(wx.Frame):
 
 
 if __name__ == "__main__":
-    app = wx.App(False)
+    app = wx.App(True)
     frame = MainFrame(None, 'Fest Engine')
     app.MainLoop()
