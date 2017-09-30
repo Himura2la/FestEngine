@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="36" version="1.1" viewBox="0 0 52.916665 9.5250003" xmlns="http://www.w3.org/2000/svg">
+ <g transform="translate(1.2391e-7 -287.48)">
+  <g transform="matrix(.47247 0 0 .47247 56.573 152.98)">
+   <g transform="translate(-119.74 284.82)" shape-rendering="crispEdges" stroke-width="1.004">
+    <path d="m0-0.16h39v20.16h-39z" fill="#555"/>
+    <path d="m39-0.16h73v20.16h-73z" fill="#4c1"/>
+   </g>
+   <g transform="translate(-119.74 284.82)" fill="#fff" font-family="'DejaVu Sans', Verdana, Geneva, sans-serif" font-size="11px" text-anchor="middle">
+    <text x="19.5" y="13.791914">gitter</text>
+    <text x="74.5" y="13.791914">join chat →</text>
+   </g>
+  </g>
+ </g>
+</svg>
