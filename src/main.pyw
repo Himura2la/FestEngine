@@ -23,13 +23,46 @@ from settings import SettingsDialog
 from logger import Logger
 
 
-if sys.platform.startswith('linux'):
-    try:
-        import ctypes
-        x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11'))
-        x11.XInitThreads()
-    except Exception as x_init_threads_ex:
-        print("XInitThreads() call failed:", x_init_threads_ex)
+if sys.platform.startswith('win'):
+    vsnprintf = ctypes.cdll.msvcrt.vsnprintf
+elif sys.platform.startswith('linux') or sys.platform.startswith('darwin'):
+    libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
+    vsnprintf = libc.vsnprintf
+    if sys.platform.startswith('linux'):
+        try:
+            x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11'))
+            x11.XInitThreads()
+        except Exception as x_init_threads_ex:
+            print("XInitThreads() call failed:", x_init_threads_ex)
+else:
+    app = wx.App(True)
+    wx.MessageBox("Your operating system is not recognized, please open the source code and support it.\n"
+                  "This should not be hard if you already read this.",
+                  "Unknown OS", wx.OK | wx.ICON_ERROR)  # FIXME
+    exit()
+
+vsnprintf.restype = ctypes.c_int
+vsnprintf.argtypes = (
+    ctypes.c_char_p,
+    ctypes.c_size_t,
+    ctypes.c_char_p,
+    ctypes.c_void_p,
+)
+
+
+@vlc.CallbackDecorators.LogCb
+def vlc_log_callback(data, level, ctx, fmt, args):
+    if level == vlc.LogLevel.DEBUG:
+        return
+    buf_len = 1024
+    out_buf = ctypes.create_string_buffer(buf_len)
+    vsnprintf(out_buf, buf_len, fmt, args)
+
+    msg = out_buf.raw[:out_buf.raw.find(b'\x00')].decode('utf-8')
+    level = {0: 'DEBUG', 2: 'NOTICE', 3: 'WARNING', 4: 'ERROR'}[level]
+
+    self_logger = ctypes.cast(data, ctypes.POINTER(ctypes.py_object)).contents.value  # Dark magic, Do not repeat at home!
+    self_logger.log('[VLC %s] %s' % (level, msg))
 
 
 parser = argparse.ArgumentParser()
@@ -326,7 +359,7 @@ class MainFrame(wx.Frame):
     def on_close(self, e):
         self.player.stop()
         self.vlc_instance.release()
-        self.Destroy()
+        e.Skip()
 
     def grid_set_shape(self, new_rows, new_cols, readonly_cols=None):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
@@ -1121,6 +1154,6 @@ class MainFrame(wx.Frame):
 
 
 if __name__ == "__main__":
-    app = wx.App(True)
+    app = wx.App(False)
     frame = MainFrame(None, 'Fest Engine')
     app.MainLoop()
