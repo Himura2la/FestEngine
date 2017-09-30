@@ -1023,7 +1023,7 @@ class MainFrame(wx.Frame):
                 gauge_length = track_length - 1000 if track_length > 1000 else track_length
                 self.time_bar.SetRange(gauge_length)
                 self.time_bar.SetValue(track_time if track_time <= gauge_length else gauge_length)
-            else:
+            elif 0 < track_length < track_time:
                 self.time_bar.SetRange(track_length)
                 self.time_bar.SetValue(track_time)
 
