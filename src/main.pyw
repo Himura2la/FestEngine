@@ -18,7 +18,7 @@ import wx
 import wx.grid
 
 from background_music_player import BackgroundMusicPlayer
-from constants import Config, Colors, Columns, FileTypes
+from constants import Config, Colors, Columns, FileTypes, Strings
 from projector import ProjectorWindow
 from settings import SettingsDialog
 from logger import Logger
@@ -26,10 +26,10 @@ from logger import Logger
 
 if sys.platform.startswith('win'):
     vsnprintf = ctypes.cdll.msvcrt.vsnprintf
-elif sys.platform in {'linux', 'darwin'}:
+elif sys.platform.startswith('linux') or sys.platform.startswith('darwin'):
     libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
     vsnprintf = libc.vsnprintf
-    if sys.platform == 'linux':
+    if sys.platform.startswith('linux'):
         try:
             x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11'))
             x11.XInitThreads()
@@ -175,9 +175,16 @@ class MainFrame(wx.Frame):
         self.replace_file_item.Enable(False)
         self.Bind(wx.EVT_MENU, self.replace_file, self.replace_file_item)
 
-        self.del_dup_row_item = menu_item.Append(wx.ID_ANY, "&Delete duplicate")
+        self.del_dup_row_item = menu_item.Append(wx.ID_ANY, "&Delete item")
         self.del_dup_row_item.Enable(False)
-        self.Bind(wx.EVT_MENU, self.del_dup_row, self.del_dup_row_item)
+        self.Bind(wx.EVT_MENU, self.del_row, self.del_dup_row_item)
+
+        menu_item.AppendSeparator()
+
+        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(False),
+                  menu_item.Append(wx.ID_ANY, "&Add intermission (countdown) above"))
+        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(True),
+                  menu_item.Append(wx.ID_ANY, "&Add intermission (countdown) below"))
 
         menu_bar.Append(menu_item, "&Item")
 
@@ -310,7 +317,7 @@ class MainFrame(wx.Frame):
             self.grid.Unbind(wx.grid.EVT_GRID_RANGE_SELECT)
             self.grid.SelectRow(row)
             self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
-            self.del_dup_row_item.Enable(self.is_dup_row(row))
+            self.del_dup_row_item.Enable(self.is_row_deletable(row))
 
         self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
         self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
@@ -626,7 +633,8 @@ class MainFrame(wx.Frame):
 
                 nums = [self.grid.GetCellValue(i, row[Columns.NUM]['col']) for i in range(self.grid.GetNumberRows())]
 
-                if new_num not in nums or not self.is_dup_row(nums.index(new_num)):
+                if new_num not in nums \
+                        or not self.grid.GetCellBackgroundColour(nums.index(new_num), 0) == Colors.DUP_ROW:
                     i = ord('a')
                     while row[Columns.NUM]['val'] in nums:  # If num already exists, append a letter
                         row[Columns.NUM]['val'] = new_num + chr(i)
@@ -634,7 +642,7 @@ class MainFrame(wx.Frame):
                     new_row = bisect.bisect(nums, row[Columns.NUM]['val'])  # determining row insertion point
                     self.grid.InsertRows(new_row, 1)
                 else:
-                    new_row = nums.index(new_num)
+                    new_row = nums.index(new_num)  # Updating
 
                 for cell in row.values():
                     self.grid.SetCellValue(new_row, cell['col'], cell['val'])
@@ -643,19 +651,38 @@ class MainFrame(wx.Frame):
 
         self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
 
-    def is_dup_row(self, row):
-        return self.grid.GetCellBackgroundColour(row, 0) == Colors.DUP_ROW
+    def is_row_deletable(self, row):
+        row_color = self.grid.GetCellBackgroundColour(row, 0)
+        return row_color == Colors.DUP_ROW or row_color == Colors.COUNTDOWN_ROW
 
     def get_num(self, row):
-        if self.is_dup_row(row):
+        if self.is_row_deletable(row):
             return self.grid.GetCellValue(row, self.grid_rows.index(Columns.NOTES))[1:4]
         else:
             return self.grid.GetCellValue(row, self.grid_rows.index(Columns.NUM))
 
-    def del_dup_row(self, e=None):
+    def del_row(self, e=None):
         row = self.grid.GetGridCursorRow()
-        if self.is_dup_row(row):  # Extra check, this method is very dangerous.
+        if self.is_row_deletable(row):  # Extra check, this method is very dangerous.
             self.grid.DeleteRows(row)
+
+    # --- Countdown timer ---
+
+    def add_countdown_row(self, below_current_row):
+        base_row_pos = self.grid.GetGridCursorRow()
+
+        row_pos = base_row_pos + 1 if below_current_row else base_row_pos
+
+        self.grid.InsertRows(row_pos, 1)
+        self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.NUM), Strings.COUNTDOWN_ROW_TEXT[:2])
+        self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.FILES), Strings.COUNTDOWN_ROW_TEXT)
+
+        self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.NOTES), "30m")  # Can be 15:35
+
+        [self.grid.SetCellBackgroundColour(row_pos, col, Colors.COUNTDOWN_ROW)
+                                                    for col in range(self.grid.GetNumberCols())]
+
+    # --- Replacer ---
 
     def replace_file(self, e):
         num = self.get_num(self.grid.GetGridCursorRow())

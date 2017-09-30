@@ -1,6 +1,7 @@
-from datetime import *
 import wx
-from constants import Strings
+from datetime import *
+from constants import Strings, Colors
+
 
 class ProjectorWindow(wx.Frame):
     def __init__(self, parent, screen=None):
@@ -64,10 +65,9 @@ class ProjectorWindow(wx.Frame):
                 self.countdown_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL | wx.ST_NO_AUTORESIZE)
                 self.time_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL | wx.ST_NO_AUTORESIZE)
 
-                text_color = (255, 255, 255, 255)  # To settings!
-                self.countdown_text.SetForegroundColour(text_color)
-                self.info_text.SetForegroundColour(text_color)
-                self.time_text.SetForegroundColour(text_color)
+                self.countdown_text.SetForegroundColour(Colors.COUNTDOWN_TEXT_COLOR)
+                self.info_text.SetForegroundColour(Colors.COUNTDOWN_TEXT_COLOR)
+                self.time_text.SetForegroundColour(Colors.COUNTDOWN_TEXT_COLOR)
 
                 sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -86,8 +86,10 @@ class ProjectorWindow(wx.Frame):
             def _recalculate_font_size(self, e=None):
                 font = self.countdown_text.GetFont()
                 font_height = self.GetSize().height / 3
+
                 font.SetPixelSize(wx.Size(0, font_height))
                 self.countdown_text.SetFont(font)
+
                 font.SetPixelSize(wx.Size(0, font_height / 3))
                 self.info_text.SetFont(font)
                 self.time_text.SetFont(font)
@@ -102,7 +104,7 @@ class ProjectorWindow(wx.Frame):
                 self.time_end = self.time_started + timedelta(minutes=minutes)
 
                 self.info_text.SetLabel(text)
-                self.time_text.SetLabel(Strings.COUNTDOWN_EXACT_TIME_FMT % self.time_end.strftime("%H:%M"))
+                self.time_text.SetLabel(Strings.TIMER_EXACT_TIME_FMT % self.time_end.strftime("%H:%M"))
                 self.update_time()
 
             def update_time(self, e=None):
@@ -114,11 +116,7 @@ class ProjectorWindow(wx.Frame):
                     return
 
                 string_time = str(self.time_left)
-
-                def update_ui():
-                    self.countdown_text.SetLabel(string_time[:string_time.find('.')])
-                    self.Layout()
-                wx.CallAfter(update_ui)
+                wx.CallAfter(lambda: self.countdown_text.SetLabel(string_time[:string_time.find('.')]))
 
         self.countdown_panel = CountdownPanel(self)
         self.countdown_panel.Hide()
