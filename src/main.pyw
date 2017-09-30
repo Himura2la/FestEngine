@@ -463,9 +463,6 @@ class MainFrame(wx.Frame):
         if not self.proj_win_exists():
             return
 
-        if self.proj_win.countdown_panel.IsShown():
-            self.proj_win.stop_timer()
-
         if background_zad_path and not no_show:
             self.proj_win.load_zad(background_zad_path, True)
             self.image_status("Background")

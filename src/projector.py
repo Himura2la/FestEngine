@@ -10,6 +10,7 @@ class ProjectorWindow(wx.Frame):
         origin_x, origin_y, self.w, self.h = wx.Display(screen).GetGeometry().Get()
         single_screen = wx.Display.GetCount() < 2
 
+        self.parent = parent
         wx.Frame.__init__(self, parent, pos=(origin_x + 60, origin_y + 60), size=(self.w - 120, self.h - 120),
                           title='Projector Window',
                           style=wx.DEFAULT_FRAME_STYLE | (0 if single_screen else wx.STAY_ON_TOP))
@@ -113,7 +114,10 @@ class ProjectorWindow(wx.Frame):
                 self.time_left = self.time_end - datetime.now()
 
                 if self.time_left < timedelta(seconds=1):
-                    wx.CallAfter(self.parent.stop_timer)
+                    def ui_upd():
+                        self.parent.switch_to_images()
+                        self.parent.parent.clear_zad(status=u"Poehali !!!")
+                    wx.CallAfter(ui_upd)
                     return
 
                 string_time = str(self.time_left)
@@ -121,6 +125,7 @@ class ProjectorWindow(wx.Frame):
                 def ui_upd():
                     self.countdown_text.SetLabel(string_time[:string_time.find('.')])
                     self.Layout()
+                    self.parent.parent.image_status("Countdown: %s" % string_time)
                 wx.CallAfter(ui_upd)
 
         self.countdown_panel = CountdownPanel(self)
@@ -136,7 +141,6 @@ class ProjectorWindow(wx.Frame):
         if not single_screen:
             self.ShowFullScreen(True, wx.FULLSCREEN_ALL)
 
-
         self.Bind(wx.EVT_CLOSE, parent.on_proj_win_close)
 
     def load_zad(self, file_path, fit=True):
@@ -151,12 +155,16 @@ class ProjectorWindow(wx.Frame):
         self.images_panel.Refresh()
 
     def switch_to_video(self, e=None):
-        self.countdown_panel.Hide()
+        if self.countdown_panel.IsShown():
+            self.countdown_panel.timer.Stop()
+            self.countdown_panel.Hide()
         self.video_panel.Show()
         self.images_panel.Hide()
 
     def switch_to_images(self, e=None):
-        self.countdown_panel.Hide()
+        if self.countdown_panel.IsShown():
+            self.countdown_panel.timer.Stop()
+            self.countdown_panel.Hide()
         self.video_panel.Hide()
         self.images_panel.Show()
 
@@ -168,7 +176,7 @@ class ProjectorWindow(wx.Frame):
 
         if time[-1] == 'm':  # Assuming duration
             try:
-                minutes = int(time[:-1])
+                minutes = float(time[:-1])
             except:
                 return False
         elif ':' in time:  # Assuming time
@@ -180,10 +188,7 @@ class ProjectorWindow(wx.Frame):
             except:
                 return False
         self.countdown_panel.start_timer(minutes, text)
-
-    def stop_timer(self):
-        self.countdown_panel.timer.Stop()
-        self.switch_to_images()
+        return True
 
     def no_show(self):
         self.images_panel.drawable_bitmap = \
