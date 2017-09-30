@@ -11,7 +11,7 @@ class Logger(object):
     def open_window(self, pre_close_func):
         self.log_win = LogWindow(self.parent)
         self.log_win.Show()
-        self.log_win.append(self.log_text)
+        self.log_win.append_message(self.log_text)
 
         def on_close(e):
             pre_close_func()
@@ -22,7 +22,7 @@ class Logger(object):
     def log(self, msg):
         self.log_text += msg + os.linesep
         if self.log_win:
-            self.log_win.append(msg + os.linesep)
+            self.log_win.append_message(msg + os.linesep)
 
 
 class LogWindow(wx.Dialog):
@@ -33,7 +33,18 @@ class LogWindow(wx.Dialog):
         self.text_ctrl = wx.TextCtrl(self, style=wx.TE_READONLY | wx.TE_MULTILINE)
         main_sizer.Add(self.text_ctrl, 1, wx.EXPAND)
 
+        self.pending_messages = list()
+        self.timer = wx.Timer()
+        self.timer.Bind(wx.EVT_TIMER, self.append_pending_messages)
+        self.timer.Start(500)
         self.SetSizer(main_sizer)
 
-    def append(self, text):
-        wx.CallAfter(lambda: self.text_ctrl.AppendText(text))
+    def append_pending_messages(self, e=None):
+        if len(self.pending_messages) == 0:
+            return
+        for msg in self.pending_messages:
+            self.text_ctrl.AppendText(msg)
+        self.pending_messages = list()
+
+    def append_message(self, msg):
+        self.pending_messages.append(msg)
