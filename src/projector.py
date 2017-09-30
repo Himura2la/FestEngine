@@ -1,5 +1,6 @@
+from datetime import *
 import wx
-import countdown_panel
+
 
 class ProjectorWindow(wx.Frame):
     def __init__(self, parent, screen=None):
@@ -17,7 +18,6 @@ class ProjectorWindow(wx.Frame):
 
         self.video_panel = wx.Panel(self)
         self.video_panel.SetBackgroundColour(wx.BLACK)
-
         self.video_panel.Hide()
 
         class ImagesPanel(wx.Panel):
@@ -50,19 +50,79 @@ class ProjectorWindow(wx.Frame):
 
         self.images_panel = ImagesPanel(self)
 
-        self.countdown_panel = countdown_panel.CountdownPanel(self)
-        self.countdown_panel.Bind(countdown_panel.EVT_COUNTDOWN_RANOUT_EVENT, self.on_timer_ranout)
+
+        class CountdownPanel(wx.Panel):
+            def __init__(self, parent):
+                wx.Panel.__init__(self, parent)
+                self.parent = parent
+                self.timer = wx.Timer()
+                self.timer.Bind(wx.EVT_TIMER, self.update_time)
+                self.time_remain = timedelta()
+                self.time_started = None
+                self.time_end = None
+
+                self.label = wx.StaticText(self, label="00:00")
+                self.label.SetForegroundColour((255, 255, 255, 255))  # To settings!
+
+                h_sizer = wx.BoxSizer(wx.HORIZONTAL)
+                v_sizer = wx.BoxSizer(wx.VERTICAL)
+
+                h_sizer.AddStretchSpacer()
+                h_sizer.Add(v_sizer, 0)
+                h_sizer.AddStretchSpacer()
+
+                v_sizer.AddStretchSpacer()
+                v_sizer.Add(self.label, 1)
+                v_sizer.AddStretchSpacer()
+
+                self.SetSizer(h_sizer)
+                self.Layout()
+
+                self.Bind(wx.EVT_SIZE, self._recalculate_font_size)
+                self._recalculate_font_size()
+
+            def _recalculate_font_size(self, e=None):
+                font = self.label.GetFont()
+                font_height = self.GetSize().height / 4
+                font.SetPixelSize(wx.Size(0, font_height))
+                self.label.SetFont(font)
+                if e:
+                    e.Skip()
+
+            def start_timer(self, minutes):
+                if not self.timer.IsRunning():
+                    self.timer.Start(300)
+
+                self.time_started = datetime.now()
+                self.time_end = self.time_started + timedelta(minutes=minutes)
+                self.update_time()
+
+            def update_time(self, e=None):
+                self.time_remain = self.time_end - datetime.now()
+                string_time = str(self.time_remain)
+
+                def update_ui():
+                    self.label.SetLabel(string_time[:string_time.find('.')])
+                    self.Layout()
+                wx.CallAfter(update_ui)
+
+        self.countdown_panel = CountdownPanel(self)
         self.countdown_panel.Hide()
+        self.countdown_panel.SetDoubleBuffered(True)  # Fixes flickering
 
         self.sizer.Add(self.images_panel, 1, wx.EXPAND)
         self.sizer.Add(self.video_panel, 1, wx.EXPAND)  # TODO: Align top
         self.sizer.Add(self.countdown_panel, 1, wx.EXPAND)
 
         self.SetSizer(self.sizer)
-        self.Layout()
 
         if not single_screen:
             self.ShowFullScreen(True, wx.FULLSCREEN_ALL)
+
+        def on_close(e):
+            self.countdown_panel.timer.Stop()
+            self.Destroy()
+        self.Bind(wx.EVT_CLOSE, on_close)
 
     def load_zad(self, file_path, fit=True):
         img = wx.Image(file_path, wx.BITMAP_TYPE_ANY)
@@ -76,25 +136,29 @@ class ProjectorWindow(wx.Frame):
         self.images_panel.Refresh()
 
     def switch_to_video(self, e=None):
+        self.countdown_panel.Hide()
         self.video_panel.Show()
         self.images_panel.Hide()
 
     def switch_to_images(self, e=None):
+        self.countdown_panel.Hide()
         self.video_panel.Hide()
         self.images_panel.Show()
+
+    def launch_timer(self, timedelta):
+        self.video_panel.Hide()
+        self.images_panel.Hide()
+        self.countdown_panel.Show()
+        self.Layout()
+        self.countdown_panel.start_timer(timedelta)
+
+    def on_timer_ranout(self, e):
+        self.switch_to_images()
+        self.no_show()
 
     def no_show(self):
         self.images_panel.drawable_bitmap = \
             wx.Bitmap(wx.Image(*self.images_panel.drawable_bitmap.GetSize()))
         self.images_panel.Refresh()
 
-    def switch_to_timer(self, timedelta):
-        self.video_panel.Hide()
-        self.images_panel.Hide()
-        self.countdown_panel.start_timer(timedelta)
-        self.countdown_panel.Show()
 
-    def on_timer_ranout(self, e):
-        self.countdown_panel.Hide()
-        self.images_panel.Show()
-        self.no_show()

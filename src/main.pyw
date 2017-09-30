@@ -26,18 +26,20 @@ from logger import Logger
 
 if sys.platform.startswith('win'):
     vsnprintf = ctypes.cdll.msvcrt.vsnprintf
-elif sys.platform.startswith('linux'):
+elif sys.platform in {'linux', 'darwin'}:
     libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
     vsnprintf = libc.vsnprintf
-    try:
-        x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11'))
-        x11.XInitThreads()
-    except Exception as x_init_threads_ex:
-        print("XInitThreads() call failed:", x_init_threads_ex)
-elif sys.platform == "darwin":  # MacOS
+    if sys.platform == 'linux':
+        try:
+            x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11'))
+            x11.XInitThreads()
+        except Exception as x_init_threads_ex:
+            print("XInitThreads() call failed:", x_init_threads_ex)
+else:
     app = wx.App(True)
-    wx.MessageBox("Please find out how to get the vsnprintf() function on your OS",
-                  "No MacOS support", wx.OK | wx.ICON_ERROR)  # FIXME
+    wx.MessageBox("Your operating system is not recognized, please open the source code and support it.\n"
+                  "This should not be hard if you already read this.",
+                  "Unknown OS", wx.OK | wx.ICON_ERROR)  # FIXME
     exit()
 
 vsnprintf.restype = ctypes.c_int
@@ -1093,7 +1095,7 @@ class MainFrame(wx.Frame):
 
     def start_countdown(self, e=None):
         self.ensure_proj_win()
-        self.proj_win.switch_to_timer(65)  # TODO: dialog with time settings
+        self.proj_win.launch_timer(65)  # TODO: dialog with time settings
 
 
 if __name__ == "__main__":
