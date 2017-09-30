@@ -61,6 +61,8 @@ class ProjectorWindow(wx.Frame):
                 self.time_started = None
                 self.time_end = None
 
+                self.SetBackgroundColour(wx.BLACK)
+
                 self.info_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL)
                 self.countdown_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL)
                 self.time_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL)
@@ -111,8 +113,7 @@ class ProjectorWindow(wx.Frame):
                 self.time_left = self.time_end - datetime.now()
 
                 if self.time_left < timedelta(seconds=1):
-                    self.timer.Stop()
-                    wx.CallAfter(self.parent.on_timer_ranout)
+                    wx.CallAfter(self.parent.stop_timer)
                     return
 
                 string_time = str(self.time_left)
@@ -135,10 +136,8 @@ class ProjectorWindow(wx.Frame):
         if not single_screen:
             self.ShowFullScreen(True, wx.FULLSCREEN_ALL)
 
-        def on_close(e):
-            self.countdown_panel.timer.Stop()
-            self.Destroy()
-        self.Bind(wx.EVT_CLOSE, on_close)
+
+        self.Bind(wx.EVT_CLOSE, parent.on_proj_win_close)
 
     def load_zad(self, file_path, fit=True):
         img = wx.Image(file_path, wx.BITMAP_TYPE_ANY)
@@ -182,9 +181,9 @@ class ProjectorWindow(wx.Frame):
                 return False
         self.countdown_panel.start_timer(minutes, text)
 
-    def on_timer_ranout(self):
+    def stop_timer(self):
+        self.countdown_panel.timer.Stop()
         self.switch_to_images()
-        self.no_show()
 
     def no_show(self):
         self.images_panel.drawable_bitmap = \

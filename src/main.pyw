@@ -230,7 +230,6 @@ class MainFrame(wx.Frame):
         no_show_item = menu_play.Append(wx.ID_ANY, "&No Show")
         menu_play.AppendSeparator()
         play_pause_bg_item = menu_play.Append(wx.ID_ANY, "&Play/Pause Background\tF3")
-        start_countdown_item = menu_play.Append(wx.ID_ANY, "Countdown")
 
         self.Bind(wx.EVT_MENU, self.emergency_stop, emergency_stop_item)
         self.Bind(wx.EVT_MENU, self.show_zad, show_zad_item)
@@ -415,11 +414,13 @@ class MainFrame(wx.Frame):
 
     # -------------------------------------------------- Actions --------------------------------------------------
 
+    def on_proj_win_close(self, e):
+        self.proj_win.countdown_panel.timer.Stop()
+        self.proj_win.Destroy()
+        self.proj_win = None
+
     def proj_win_exists(self):
-        try:
-            return self.proj_win.ClassName == u'wxFrame'
-        except (AttributeError, RuntimeError) as e:
-            return False
+        return bool(self.proj_win)
 
     def ensure_proj_win(self, e=None):
         no_window = not self.proj_win_exists()
@@ -428,10 +429,10 @@ class MainFrame(wx.Frame):
 
             self.vid_btn.Bind(wx.EVT_TOGGLEBUTTON, self.switch_to_vid)
             self.zad_btn.Bind(wx.EVT_TOGGLEBUTTON, self.switch_to_zad)
-            self.vid_btn.Enable(True)
-            self.zad_btn.Enable(True)
             self.switch_to_zad()
             self.image_status("Projector Window Created")
+        self.vid_btn.Enable(True)
+        self.zad_btn.Enable(True)
         self.proj_win.Show()
         self.destroy_proj_win_item.Enable(True)
         wx.CallAfter(self.Raise)
@@ -499,6 +500,10 @@ class MainFrame(wx.Frame):
     def clear_zad(self, e=None, no_show=False, status=u"ZAD Cleared"):
         if not self.proj_win_exists():
             return
+
+        if self.proj_win.countdown_panel.IsShown():
+            self.proj_win.stop_timer()
+
         if background_zad_path and not no_show:
             self.proj_win.load_zad(background_zad_path, True)
             self.image_status("Background")
@@ -605,8 +610,8 @@ class MainFrame(wx.Frame):
 
         self.grid.AutoSizeColumns()
         self.status("Loaded %d items" % i)
-        self.load_data_item.Enable(False)  # Safety is everything!
-        self.replace_file_item.Enable(True)
+
+        self.add_countdown_row(False, 0, "До начала фестиваля")
 
         def longest_substring(strings):
             """ https://stackoverflow.com/questions/2892931/ """
@@ -622,6 +627,9 @@ class MainFrame(wx.Frame):
         win_label = "%s{%s}" % (common_path, ", ".join([p.replace(common_path, '') for p in dirs]))
 
         self.SetLabel("%s: %s" % (self.GetLabel(), win_label))
+
+        self.load_data_item.Enable(False)  # Safety is everything!
+        self.replace_file_item.Enable(True)
 
     # --- Duplication from notes ---
 
@@ -685,15 +693,15 @@ class MainFrame(wx.Frame):
 
     # --- Countdown timer ---
 
-    def add_countdown_row(self, below_current_row):
-        base_row_pos = self.grid.GetGridCursorRow()
+    def add_countdown_row(self, below_current_row, base_row=None, message=''):
+        base_row = base_row if base_row else self.grid.GetGridCursorRow()
 
-        row_pos = base_row_pos + 1 if below_current_row else base_row_pos
+        row_pos = base_row + 1 if below_current_row else base_row
 
         self.grid.InsertRows(row_pos, 1)
         self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.NUM), Strings.COUNTDOWN_ROW_TEXT_SHORT)
         self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.FILES), Strings.COUNTDOWN_ROW_TEXT_FULL)
-
+        self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.NAME), message)
         self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.NOTES), "30m")  # Can be 15:35
 
         [self.grid.SetCellBackgroundColour(row_pos, col, Colors.COUNTDOWN_ROW)
@@ -871,6 +879,11 @@ class MainFrame(wx.Frame):
         if num == 'countdown':
             notes = self.grid.GetCellValue(self.grid.GetGridCursorRow(), self.grid_rows.index(Columns.NOTES))
             self.ensure_proj_win()
+
+            self.vid_btn.SetValue(False)
+            self.zad_btn.SetValue(False)
+            self.vid_btn.Enable(False)
+            self.zad_btn.Enable(False)
 
             if not self.proj_win.launch_timer(notes, self.grid.GetCellValue(self.grid.GetGridCursorRow(),
                                                                             self.grid_rows.index(Columns.NAME))):
