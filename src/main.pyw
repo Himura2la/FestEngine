@@ -71,8 +71,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--filename_re", dest="filename_re", help='Regular expression that parses your filenames. '
                                                               'Do not add file extension to this RegEx. '
                                                               'Named groups will be displayed as rows. '
-                                                              "The one obligatory named group is 'num'. "
-                                                              'Example: ^(?P<num>\d{3})(?P<filename>.*)')
+                                                              "The obligatory named groups are 'num' and '%s'. "
+                                                              'Example: ^(?P<num>\d{3})(?P<name>.*)' % Columns.NAME)
 
 parser.add_argument("--background_tracks_dir", dest="background_tracks_dir", help='Path to a directory with background '
                                                                                   'tracks, that will sound on F3')
@@ -238,7 +238,6 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.clear_zad, clear_zad_item)
         self.Bind(wx.EVT_MENU, lambda e: self.clear_zad(e, True), no_show_item)
         self.Bind(wx.EVT_MENU, self.play_pause_bg, play_pause_bg_item)
-        self.Bind(wx.EVT_MENU, self.start_countdown, start_countdown_item)
 
         self.SetAcceleratorTable(wx.AcceleratorTable([
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, emergency_stop_item.GetId()),
@@ -317,7 +316,7 @@ class MainFrame(wx.Frame):
             self.grid.Unbind(wx.grid.EVT_GRID_RANGE_SELECT)
             self.grid.SelectRow(row)
             self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
-            self.del_dup_row_item.Enable(self.is_row_deletable(row))
+            self.del_dup_row_item.Enable(self.row_type(row) != 'track')
 
         self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
         self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
@@ -477,6 +476,10 @@ class MainFrame(wx.Frame):
         self.proj_win.switch_to_images()
 
     def show_zad(self, e):
+        if self.get_num(self.grid.GetGridCursorRow()) == 'countdown':
+            self.play_async()
+            return
+
         def delayed_run():
             self.switch_to_zad()
             num = self.get_num(self.grid.GetGridCursorRow())
@@ -535,8 +538,15 @@ class MainFrame(wx.Frame):
         if 'num' not in group_names:
             msg = "No 'num' group in filename RegEx. We recommend using a unique sorting-friendly three-digit\n" \
                   "number at the beginning of all filenames. The order should correspond to your event's program\n\n" \
-                  "In this case the RegEx will look like this: ^(?P<num>\d{3})(?P<filename>.*)\n\n" \
+                  "In this case the RegEx will look like this: ^(?P<num>\d{3})(?P<name>.*)\n\n" \
                   "Your filename RegEx: %s" % filename_re
+            wx.MessageBox(msg, "Filename RegEx Error", wx.OK | wx.ICON_ERROR, self)
+            return
+
+        if Columns.NAME not in group_names:
+            msg = "No '%s' group in filename RegEx. It is required to set the countdown description.\n\n" \
+                  "The simplest RegEx looks like this: ^(?P<num>\d{3})(?P<name>.*)\n\n" \
+                  "Your filename RegEx: %s" % (Columns.NAME, filename_re)
             wx.MessageBox(msg, "Filename RegEx Error", wx.OK | wx.ICON_ERROR, self)
             return
 
@@ -633,8 +643,7 @@ class MainFrame(wx.Frame):
 
                 nums = [self.grid.GetCellValue(i, row[Columns.NUM]['col']) for i in range(self.grid.GetNumberRows())]
 
-                if new_num not in nums \
-                        or not self.grid.GetCellBackgroundColour(nums.index(new_num), 0) == Colors.DUP_ROW:
+                if new_num not in nums or self.row_type(nums.index(new_num)) != 'dup':
                     i = ord('a')
                     while row[Columns.NUM]['val'] in nums:  # If num already exists, append a letter
                         row[Columns.NUM]['val'] = new_num + chr(i)
@@ -651,19 +660,27 @@ class MainFrame(wx.Frame):
 
         self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
 
-    def is_row_deletable(self, row):
+    def row_type(self, row):
         row_color = self.grid.GetCellBackgroundColour(row, 0)
-        return row_color == Colors.DUP_ROW or row_color == Colors.COUNTDOWN_ROW
+        if row_color == Colors.DUP_ROW:
+            return 'dup'
+        elif row_color == Colors.COUNTDOWN_ROW:
+            return 'countdown'
+        else:
+            return 'track'
 
     def get_num(self, row):
-        if self.is_row_deletable(row):
+        row_type = self.row_type(row)
+        if row_type == 'track':
+            return self.grid.GetCellValue(row, self.grid_rows.index(Columns.NUM))
+        elif row_type == 'dup':
             return self.grid.GetCellValue(row, self.grid_rows.index(Columns.NOTES))[1:4]
         else:
-            return self.grid.GetCellValue(row, self.grid_rows.index(Columns.NUM))
+            return row_type
 
     def del_row(self, e=None):
         row = self.grid.GetGridCursorRow()
-        if self.is_row_deletable(row):  # Extra check, this method is very dangerous.
+        if self.row_type(row) != 'track':  # Extra check, this method is very dangerous.
             self.grid.DeleteRows(row)
 
     # --- Countdown timer ---
@@ -674,8 +691,8 @@ class MainFrame(wx.Frame):
         row_pos = base_row_pos + 1 if below_current_row else base_row_pos
 
         self.grid.InsertRows(row_pos, 1)
-        self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.NUM), Strings.COUNTDOWN_ROW_TEXT[:2])
-        self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.FILES), Strings.COUNTDOWN_ROW_TEXT)
+        self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.NUM), Strings.COUNTDOWN_ROW_TEXT_SHORT)
+        self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.FILES), Strings.COUNTDOWN_ROW_TEXT_FULL)
 
         self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.NOTES), "30m")  # Can be 15:35
 
@@ -851,6 +868,16 @@ class MainFrame(wx.Frame):
 
     def play_async(self, e=None):
         num = self.get_num(self.grid.GetGridCursorRow())
+        if num == 'countdown':
+            notes = self.grid.GetCellValue(self.grid.GetGridCursorRow(), self.grid_rows.index(Columns.NOTES))
+            self.ensure_proj_win()
+
+            if not self.proj_win.launch_timer(notes, self.grid.GetCellValue(self.grid.GetGridCursorRow(),
+                                                                            self.grid_rows.index(Columns.NAME))):
+                self.status("Invalid countdown row")
+            else:
+                self.status("Countdown started!")
+            return
         try:
             files = self.data[num]['files'].items()  # (ext, path)
             video_files = [file[1] for file in files if file[0] in FileTypes.video_extensions]
@@ -1119,10 +1146,6 @@ class MainFrame(wx.Frame):
                 self.background_play(from_grid=False)
         else:
             self.background_pause(paused=True)
-
-    def start_countdown(self, e=None):
-        self.ensure_proj_win()
-        self.proj_win.launch_timer(1, "До начала фестиваля")  # TODO: dialog with time settings
 
 
 if __name__ == "__main__":

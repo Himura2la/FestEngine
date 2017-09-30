@@ -61,8 +61,8 @@ class ProjectorWindow(wx.Frame):
                 self.time_started = None
                 self.time_end = None
 
-                self.info_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL )
-                self.countdown_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL )
+                self.info_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL)
+                self.countdown_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL)
                 self.time_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL)
 
                 self.countdown_text.SetForegroundColour(Colors.COUNTDOWN_TEXT_COLOR)
@@ -161,12 +161,26 @@ class ProjectorWindow(wx.Frame):
         self.video_panel.Hide()
         self.images_panel.Show()
 
-    def launch_timer(self, *args):
+    def launch_timer(self, time, text):
         self.video_panel.Hide()
         self.images_panel.Hide()
         self.countdown_panel.Show()
         self.Layout()
-        self.countdown_panel.start_timer(*args)
+
+        if time[-1] == 'm':  # Assuming duration
+            try:
+                minutes = int(time[:-1])
+            except:
+                return False
+        elif ':' in time:  # Assuming time
+            try:
+                time = datetime.strptime(time, '%H:%M')
+                now = datetime.now()
+                time = now.replace(hour=time.hour, minute=time.minute + 1, second=0, microsecond=0)
+                minutes = (time - now).seconds // 60
+            except:
+                return False
+        self.countdown_panel.start_timer(minutes, text)
 
     def on_timer_ranout(self):
         self.switch_to_images()
