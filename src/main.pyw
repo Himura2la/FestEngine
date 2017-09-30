@@ -1016,7 +1016,7 @@ class MainFrame(wx.Frame):
 
     def player_time_update(self, e=None):
         player_state = self.player.get_state()
-        if player_state in range(4):  # Playing or going to play
+        if player_state in range(1, 4):  # Playing or going to play
             track_length, track_time = self.player.get_length(), self.player.get_time()
 
             if sys.platform == "win32":  # FIXME: Don't know why it does not reach the end on win32
