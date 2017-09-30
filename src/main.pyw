@@ -499,7 +499,7 @@ class MainFrame(wx.Frame):
     def clear_zad(self, e=None, no_show=False, status=u"ZAD Cleared"):
         if not self.proj_win_exists():
             return
-
+        self.proj_win.switch_to_images()
         if background_zad_path and not no_show:
             self.proj_win.load_zad(background_zad_path, True)
             self.image_status("Background")
@@ -1023,7 +1023,7 @@ class MainFrame(wx.Frame):
                 gauge_length = track_length - 1000 if track_length > 1000 else track_length
                 self.time_bar.SetRange(gauge_length)
                 self.time_bar.SetValue(track_time if track_time <= gauge_length else gauge_length)
-            elif 0 <= track_time <= track_length:
+            elif 0 <= track_time < track_length:
                 self.time_bar.SetRange(track_length)
                 self.time_bar.SetValue(track_time)
 
