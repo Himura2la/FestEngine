@@ -15,6 +15,7 @@ import functools
 import vlc
 import wx
 import wx.grid
+import ctypes
 
 from background_music_player import BackgroundMusicPlayer
 from constants import Config, Colors, Columns, FileTypes, Strings
@@ -331,6 +332,9 @@ class MainFrame(wx.Frame):
         # ----------------------- VLC ---------------------
 
         self.vlc_instance = vlc.Instance("--file-caching=1000 --no-drop-late-frames --no-skip-frames")
+
+        log_func_ptr = ctypes.cast(ctypes.pointer(ctypes.py_object(self.logger)), ctypes.POINTER(ctypes.c_void_p))
+        self.vlc_instance.log_set(vlc_log_callback, log_func_ptr)
 
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(100)
