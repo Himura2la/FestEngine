@@ -61,9 +61,9 @@ class ProjectorWindow(wx.Frame):
                 self.time_started = None
                 self.time_end = None
 
-                self.info_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL | wx.ST_NO_AUTORESIZE)
-                self.countdown_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL | wx.ST_NO_AUTORESIZE)
-                self.time_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL | wx.ST_NO_AUTORESIZE)
+                self.info_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL )
+                self.countdown_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL )
+                self.time_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL)
 
                 self.countdown_text.SetForegroundColour(Colors.COUNTDOWN_TEXT_COLOR)
                 self.info_text.SetForegroundColour(Colors.COUNTDOWN_TEXT_COLOR)
@@ -72,9 +72,9 @@ class ProjectorWindow(wx.Frame):
                 sizer = wx.BoxSizer(wx.VERTICAL)
 
                 sizer.AddStretchSpacer()
-                sizer.Add(self.info_text, 0, wx.EXPAND)
-                sizer.Add(self.countdown_text, 0, wx.EXPAND)
-                sizer.Add(self.time_text, 0, wx.EXPAND)
+                sizer.Add(self.info_text, 0, wx.CENTER)
+                sizer.Add(self.countdown_text, 0, wx.CENTER)
+                sizer.Add(self.time_text, 0, wx.CENTER)
                 sizer.AddStretchSpacer()
 
                 self.SetSizer(sizer)
@@ -116,7 +116,11 @@ class ProjectorWindow(wx.Frame):
                     return
 
                 string_time = str(self.time_left)
-                wx.CallAfter(lambda: self.countdown_text.SetLabel(string_time[:string_time.find('.')]))
+
+                def ui_upd():
+                    self.countdown_text.SetLabel(string_time[:string_time.find('.')])
+                    self.Layout()
+                wx.CallAfter(ui_upd)
 
         self.countdown_panel = CountdownPanel(self)
         self.countdown_panel.Hide()
