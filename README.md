@@ -48,7 +48,7 @@
 
 # На чём это зиждется?
 
-- **Python 2** -- самый простой язык в мире, в коде разберётся даже школоло
+- **Python 3** -- самый простой язык в мире, в коде разберётся даже школоло
 - **wxPython 4** -- мощнее чем tcl/tk и более пайтонично чем Qt (ну не люблю я Qt)
 - **VLC Python bindings** -- оказывается можно показывать видео через VLC не запуская VLC (но устанвоить всё-таки надо)
 
@@ -73,19 +73,19 @@
 ## Windows
 
 - Выбрать разрядность (x32 или x64) и придерживаться этой разрядности во всех дальнейших установках
-- Установить последний [Python 2.7](https://www.python.org/downloads/windows/) выбранной разядности. При установке отметить чекбокс **Добавить python.exe в PATH** (если это единственный Python, который у вас будет).
+- Установить последний [Python 3](https://www.python.org/downloads/windows/) выбранной разядности. При установке отметить чекбокс **Добавить python.exe в PATH** (если это единственный Python, который у вас будет).
 - Открыть консоль и установить **wxPython** и [VLC Python Bindings](https://wiki.videolan.org/python_bindings) (библиотека для управления плеером VLC)
    ```ps
    pip install --upgrade setuptools
    pip install wxpython
    pip install https://github.com/oaubert/python-vlc/archive/master.zip
    ```
-- Установить последний [VLC](https://www.videolan.org/vlc/index.ru.html) **выбранной разядности** (если у вас ничего не запускается, проверьте разрядность VLC. Это common issue.)
-- Установить [Git](https://git-scm.com/), [SourceTree](https://www.sourcetreeapp.com/) или [GitHub](https://desktop.github.com/) и научиться клонировать репозитории
-- Если вы установили чистый git, то клонируйте рекурсивно, чтобы [python-vlc](https://github.com/oaubert/python-vlc/) тоже прилетел: `git clone https://github.com/Himura2la/FestEngine.git`
-- Можно запускать Fest Engine: Из папки **src** выполнить `python main.py`
-- Качнуть [тестовые данные](https://drive.google.com/file/d/0B4v9WFUhaeVvRmdXcXNaRHB0THc/view), отредактировать пути в [Debug-tulafest16.bat](https://github.com/Himura2la/FestEngine/blob/master/Debug-tulafest16.bat) и запустить Fest Endine с данными.
-- Писать код в [PyCharm](https://www.jetbrains.com/pycharm/) и отправлять Pull-Request'ы
+- Установить последний [VLC](https://www.videolan.org/vlc/index.ru.html) **выбранной разядности** (если у вас ничего не запускается, проверьте разрядность VLC. Это common issue)
+- Установить [Git](https://git-scm.com/), [GitKraken](https://www.gitkraken.com/), [SourceTree](https://www.sourcetreeapp.com/) или [GitHub](https://desktop.github.com/) и cклонировать репозиторий: `git clone https://github.com/Himura2la/FestEngine.git`
+- Можно запускать Fest Engine. Из папки **src** выполнить `py main.pyw`
+- Качнуть [тестовые данные](https://drive.google.com/file/d/0B4v9WFUhaeVvRmdXcXNaRHB0THc/view), отредактировать пути в [Debug-tulafest16.bat](https://github.com/Himura2la/FestEngine/blob/master/Debug-tulafest16.bat) и запустить Fest Engine с данными.
+- Писать код в [PyCharm](https://www.jetbrains.com/pycharm/) или [Visual Studio Code](https://code.visualstudio.com/) и отправлять Pull-Request'ы.
+- Писать в [Gitter](https://gitter.im/FestEngine/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link), по поводу и без ))
 
 ## Debian-based
 
