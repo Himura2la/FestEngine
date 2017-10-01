@@ -74,7 +74,7 @@
 
 - Выбрать разрядность (x32 или x64) и придерживаться этой разрядности во всех дальнейших установках
 - Установить последний [Python 3](https://www.python.org/downloads/windows/) выбранной разядности. При установке отметить чекбокс **Добавить python.exe в PATH** (если это единственный Python, который у вас будет).
-- Открыть консоль и установить **wxPython** и [VLC Python Bindings](https://wiki.videolan.org/python_bindings) (библиотека для управления плеером VLC)
+- Открыть консоль или PowerShell от администратора и установить **wxPython** и [VLC Python Bindings](https://wiki.videolan.org/python_bindings) (библиотека для управления плеером VLC)
    ```ps
    pip install --upgrade setuptools pip
    pip install wxpython https://github.com/oaubert/python-vlc/archive/master.zip
@@ -89,11 +89,11 @@
 ## Debian-based
 
 ```sh
-sudo apt install git python2.7-dev vlc -y
+sudo apt install git python3 vlc -y
 git clone https://github.com/Himura2la/FestEngine.git
-pip install --upgrade setuptools pip
-pip install wxpython https://github.com/oaubert/python-vlc/archive/master.zip
-python main.py # pass arguments to configure your paths
+sudo -H pip3 install --upgrade setuptools pip
+sudo -H pip3 install wxpython https://github.com/oaubert/python-vlc/archive/master.zip
+python3 main.pyw # pass arguments to configure your paths
 ```
 
 # Кто это использует?
