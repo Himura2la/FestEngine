@@ -563,6 +563,7 @@ class MainFrame(wx.Frame):
             match = re.search(self.filename_re, name)
             if not match:
                 self.logger.log("[WARNING] File %s does not match filename_re" % file_path)
+                continue
             num = match.group('num')
 
             if num not in self.data:
