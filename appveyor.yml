@@ -1,11 +1,16 @@
 skip_non_tags: true
 environment:
   matrix:
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7"
+    - PYTHON: "C:\\Python36"
+      PYTHON_VERSION: "3.6"
       PYTHON_ARCH: "32"
       VLC_INSTALL_FLAGS: "--x86"
-
+  matrix:
+    - PYTHON: "C:\\Python36"
+      PYTHON_VERSION: "3.6"
+      PYTHON_ARCH: "64"
+      VLC_INSTALL_FLAGS: ""
+      
 install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - ps: pip install pyinstaller
