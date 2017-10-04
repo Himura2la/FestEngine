@@ -15,7 +15,6 @@ import functools
 import vlc
 import wx
 import wx.grid
-import ctypes
 
 from background_music_player import BackgroundMusicPlayer
 from constants import Config, Colors, Columns, FileTypes, Strings
@@ -24,46 +23,13 @@ from settings import SettingsDialog
 from logger import Logger
 
 
-if sys.platform.startswith('win'):
-    vsnprintf = ctypes.cdll.msvcrt.vsnprintf
-elif sys.platform.startswith('linux') or sys.platform.startswith('darwin'):
-    libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library('c'))
-    vsnprintf = libc.vsnprintf
-    if sys.platform.startswith('linux'):
-        try:
-            x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11'))
-            x11.XInitThreads()
-        except Exception as x_init_threads_ex:
-            print("XInitThreads() call failed:", x_init_threads_ex)
-else:
-    app = wx.App(True)
-    wx.MessageBox("Your operating system is not recognized, please open the source code and support it.\n"
-                  "This should not be hard if you already read this.",
-                  "Unknown OS", wx.OK | wx.ICON_ERROR)  # FIXME
-    exit()
-
-vsnprintf.restype = ctypes.c_int
-vsnprintf.argtypes = (
-    ctypes.c_char_p,
-    ctypes.c_size_t,
-    ctypes.c_char_p,
-    ctypes.c_void_p,
-)
-
-
-@vlc.CallbackDecorators.LogCb
-def vlc_log_callback(data, level, ctx, fmt, args):
-    if level == vlc.LogLevel.DEBUG:
-        return
-    buf_len = 1024
-    out_buf = ctypes.create_string_buffer(buf_len)
-    vsnprintf(out_buf, buf_len, fmt, args)
-
-    msg = out_buf.raw[:out_buf.raw.find(b'\x00')].decode('utf-8')
-    level = {0: 'DEBUG', 2: 'NOTICE', 3: 'WARNING', 4: 'ERROR'}[level]
-
-    self_logger = ctypes.cast(data, ctypes.POINTER(ctypes.py_object)).contents.value  # Dark magic, Never repeat at home
-    self_logger.log('[VLC %s] %s' % (level, msg))
+if sys.platform.startswith('linux'):
+    try:
+        import ctypes
+        x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11'))
+        x11.XInitThreads()
+    except Exception as x_init_threads_ex:
+        print("XInitThreads() call failed:", x_init_threads_ex)
 
 
 parser = argparse.ArgumentParser()
@@ -180,9 +146,9 @@ class MainFrame(wx.Frame):
 
         menu_item.AppendSeparator()
 
-        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(False),
+        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(False, "До конца перерыва"),
                   menu_item.Append(wx.ID_ANY, "&Add intermission (countdown) above"))
-        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(True),
+        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(True, "До конца перерыва"),
                   menu_item.Append(wx.ID_ANY, "&Add intermission (countdown) below"))
 
         menu_bar.Append(menu_item, "&Item")
@@ -253,9 +219,8 @@ class MainFrame(wx.Frame):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.toolbar = wx.BoxSizer(wx.HORIZONTAL)
-        toolbar_base_height = 20
-        if sys.platform.startswith('linux'):
-            toolbar_base_height += 5
+        win = sys.platform.startswith('win')
+        toolbar_base_height = 20 if win else 30
 
         # self.status_color_box = wx.Panel(self, size=(toolbar_base_height, toolbar_base_height))
         # self.toolbar.Add(self.status_color_box, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=1)
@@ -263,22 +228,22 @@ class MainFrame(wx.Frame):
         # TODO: #9
 
         self.toolbar.Add(wx.StaticText(self, label=' VOL '), 0, wx.ALIGN_CENTER_VERTICAL)
-        self.vol_control = wx.SpinCtrl(self, value='-1', size=(50, toolbar_base_height))
+        self.vol_control = wx.SpinCtrl(self, value='-1', size=(50 if win else 70, toolbar_base_height))
         self.toolbar.Add(self.vol_control, 0, wx.ALIGN_CENTER_VERTICAL)
         self.vol_control.SetRange(-1, 200)
         self.vol_control.Bind(wx.EVT_SPINCTRL, self.set_vol, self.vol_control)
 
-        self.fade_out_btn = wx.Button(self, label="Fade out", size=(70, toolbar_base_height + 2))
+        self.fade_out_btn = wx.Button(self, label="Fade out", size=(-1, toolbar_base_height + 2))
         self.fade_out_btn.Enable(False)
         self.toolbar.Add(self.fade_out_btn, 0)
         self.fade_out_btn.Bind(wx.EVT_BUTTON, self.stop_async)
 
         self.time_bar = wx.Gauge(self, range=1, size=(-1, toolbar_base_height))
         self.toolbar.Add(self.time_bar, 1, wx.ALIGN_CENTER_VERTICAL)
-        self.time_label = wx.StaticText(self, label='Stop', size=(50, -1), style=wx.ALIGN_CENTER)
+        self.time_label = wx.StaticText(self, label='Stop', style=wx.ALIGN_CENTER)
         self.toolbar.Add(self.time_label, 0, wx.ALIGN_CENTER_VERTICAL)
 
-        self.search_box = wx.TextCtrl(self, size=(40, toolbar_base_height), value='Find', style=wx.TE_PROCESS_ENTER)
+        self.search_box = wx.TextCtrl(self, size=(50, toolbar_base_height), value='Find', style=wx.TE_PROCESS_ENTER)
         self.search_box.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
         self.toolbar.Add(self.search_box, 0, wx.ALIGN_CENTER_VERTICAL)
 
@@ -294,8 +259,8 @@ class MainFrame(wx.Frame):
         self.search_box.SetToolTip('Right-click to quit search')
         self.search_box.Bind(wx.EVT_TEXT_ENTER, self.quit_search)
 
-        self.vid_btn = wx.ToggleButton(self, label='VID', size=(35, toolbar_base_height + 2))
-        self.zad_btn = wx.ToggleButton(self, label='ZAD', size=(35, toolbar_base_height + 2))
+        self.vid_btn = wx.ToggleButton(self, label='VID', size=(35 if win else 45, toolbar_base_height + 2))
+        self.zad_btn = wx.ToggleButton(self, label='ZAD', size=(35 if win else 45, toolbar_base_height + 2))
         self.vid_btn.Enable(False)
         self.zad_btn.Enable(False)
         self.toolbar.Add(self.vid_btn, 0)
@@ -332,9 +297,6 @@ class MainFrame(wx.Frame):
         # ----------------------- VLC ---------------------
 
         self.vlc_instance = vlc.Instance("--file-caching=1000 --no-drop-late-frames --no-skip-frames")
-
-        log_func_ptr = ctypes.cast(ctypes.pointer(ctypes.py_object(self.logger)), ctypes.POINTER(ctypes.c_void_p))
-        self.vlc_instance.log_set(vlc_log_callback, log_func_ptr)
 
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(100)
@@ -563,6 +525,7 @@ class MainFrame(wx.Frame):
             match = re.search(self.filename_re, name)
             if not match:
                 self.logger.log("[WARNING] File %s does not match filename_re" % file_path)
+                continue
             num = match.group('num')
 
             if num not in self.data:
