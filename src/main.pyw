@@ -228,7 +228,7 @@ class MainFrame(wx.Frame):
         # TODO: #9
 
         self.toolbar.Add(wx.StaticText(self, label=' VOL '), 0, wx.ALIGN_CENTER_VERTICAL)
-        self.vol_control = wx.SpinCtrl(self, value='-1', size=(50 if win else 70, toolbar_base_height))
+        self.vol_control = wx.SpinCtrl(self, value='-1', size=(50 if win else 83, toolbar_base_height))
         self.toolbar.Add(self.vol_control, 0, wx.ALIGN_CENTER_VERTICAL)
         self.vol_control.SetRange(-1, 200)
         self.vol_control.Bind(wx.EVT_SPINCTRL, self.set_vol, self.vol_control)
@@ -259,8 +259,8 @@ class MainFrame(wx.Frame):
         self.search_box.SetToolTip('Right-click to quit search')
         self.search_box.Bind(wx.EVT_TEXT_ENTER, self.quit_search)
 
-        self.vid_btn = wx.ToggleButton(self, label='VID', size=(35 if win else 45, toolbar_base_height + 2))
-        self.zad_btn = wx.ToggleButton(self, label='ZAD', size=(35 if win else 45, toolbar_base_height + 2))
+        self.vid_btn = wx.ToggleButton(self, label='VID', size=(35, toolbar_base_height + 2))
+        self.zad_btn = wx.ToggleButton(self, label='ZAD', size=(35, toolbar_base_height + 2))
         self.vid_btn.Enable(False)
         self.zad_btn.Enable(False)
         self.toolbar.Add(self.vid_btn, 0)
