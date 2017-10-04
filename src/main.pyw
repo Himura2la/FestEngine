@@ -180,9 +180,9 @@ class MainFrame(wx.Frame):
 
         menu_item.AppendSeparator()
 
-        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(False),
+        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(False, "До конца перерыва"),
                   menu_item.Append(wx.ID_ANY, "&Add intermission (countdown) above"))
-        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(True),
+        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(True, "До конца перерыва"),
                   menu_item.Append(wx.ID_ANY, "&Add intermission (countdown) below"))
 
         menu_bar.Append(menu_item, "&Item")
