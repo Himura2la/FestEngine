@@ -240,7 +240,7 @@ class MainFrame(wx.Frame):
 
         self.time_bar = wx.Gauge(self, range=1, size=(-1, toolbar_base_height))
         self.toolbar.Add(self.time_bar, 1, wx.ALIGN_CENTER_VERTICAL)
-        self.time_label = wx.StaticText(self, label='Stop', style=wx.ALIGN_CENTER)
+        self.time_label = wx.StaticText(self, label='Stop', size=(50, -1), style=wx.ALIGN_CENTER)
         self.toolbar.Add(self.time_label, 0, wx.ALIGN_CENTER_VERTICAL)
 
         self.search_box = wx.TextCtrl(self, size=(50, toolbar_base_height), value='Find', style=wx.TE_PROCESS_ENTER)
