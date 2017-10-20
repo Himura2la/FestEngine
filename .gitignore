@@ -60,3 +60,9 @@ target/
 \.idea/
 
 bin/FestEngine/
+
+src/last_fest\.txt
+
+*.fest
+
+*.fest_bkp
