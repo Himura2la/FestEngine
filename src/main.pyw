@@ -119,7 +119,11 @@ class MainFrame(wx.Frame):
                         json.dump(self.config, open(self.session_file_path, 'w', encoding='utf-8'),
                                   ensure_ascii=False, indent=4)
                     elif action == wx.ID_OPEN:
-                        self.config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
+                        try:
+                            self.config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
+                        except FileNotFoundError:
+                            json.dump(self.config, open(self.session_file_path, 'w', encoding='utf-8'),
+                                      ensure_ascii=False, indent=4)  # User has no choice...
                         self.config_ok = True
 
             if prev_config != self.config:  # Safety is everything!
