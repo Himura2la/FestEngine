@@ -332,12 +332,13 @@ class MainFrame(wx.Frame):
         self.Show(True)
         self.grid.SetFocus()
 
-        if not self.config_ok:
-            on_settings()
-        else:
-            self.load_files()
-            self.on_bg_load_files()
-
+        def init():
+            if not self.config_ok:
+                on_settings()
+            else:
+                self.load_files()
+                self.on_bg_load_files()
+        wx.CallAfter(init)
 
 # ------------------------------------------------------------------------------------------------------------------
 

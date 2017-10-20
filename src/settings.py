@@ -124,7 +124,7 @@ class SettingsDialog(wx.Dialog):
         panel.SetSizerAndFit(top_sizer)
         self.Fit()
 
-        self.SetSize((800, self.GetSize()[1] + 30))
+        self.SetSize((800, self.GetSize()[1]))
 
     def on_ok(self, e):
         self.session_file_path = self.session_picker.GetPath()
