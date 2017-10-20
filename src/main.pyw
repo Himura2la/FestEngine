@@ -23,7 +23,6 @@ from projector import ProjectorWindow
 from settings import SettingsDialog
 from logger import Logger
 
-app_name = 'Fest Engine'
 
 if sys.platform.startswith('linux'):
     try:
@@ -43,17 +42,16 @@ class MainFrame(wx.Frame):
         self.player_time_update_interval_ms = 300
         self.fade_out_delays_ms = 10
 
-        self.session_file_path = os.path.abspath("yno16.fest")
-
         self.config_ok = False
-        if os.path.isfile(self.session_file_path):
-            try:
+        if os.path.isfile(Config.LAST_SESSION_PATH):
+            self.session_file_path = open(Config.LAST_SESSION_PATH, 'r').read()
+
+            if os.path.isfile(self.session_file_path):
                 self.config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
                 self.config_ok = True
-            except Exception as e:
-                print(type(e), e)
 
         if not self.config_ok:
+            self.session_file_path = ""
             self.config = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1,  # The last one
                            Config.VLC_ARGUMENTS: "--file-caching=1000 --no-drop-late-frames --no-skip-frames",
                            Config.FILENAME_RE: "^(?P<num>\d{3})(?P<name>.*)$",
@@ -89,9 +87,10 @@ class MainFrame(wx.Frame):
 
         menu_file.AppendSeparator()
 
-        session_folder, session_file = os.path.split(self.session_file_path)
-        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(session_folder)),
-                  menu_file.Append(wx.ID_ANY, "Open &Folder with '%s'" % session_file))
+        if self.session_file_path:
+            session_folder, session_file = os.path.split(self.session_file_path)
+            self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(session_folder)),
+                      menu_file.Append(wx.ID_ANY, "Open &Folder with '%s'" % session_file))
 
         for folder in self.config[Config.FILES_DIRS]:
             self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(folder)),
@@ -103,13 +102,22 @@ class MainFrame(wx.Frame):
         menu_file.AppendSeparator()
 
         def on_settings(e=None):
+            json.dump(self.config, open(self.session_file_path + "_bkp", 'w', encoding='utf-8'),
+                      ensure_ascii=False, indent=4)
             with SettingsDialog(self.session_file_path, self.config, self) as settings_dialog:
-                if settings_dialog.ShowModal() == wx.ID_OK:
-                    self.session_file_path = settings_dialog.session_file_path
-                    self.config = settings_dialog.config
+                action = settings_dialog.ShowModal()
 
-                    json.dump(self.config, open(self.session_file_path, 'w', encoding='utf-8'),
-                              ensure_ascii=False, indent=4)
+                if action in {wx.ID_SAVE, wx.ID_OPEN}:
+                    self.session_file_path = settings_dialog.session_file_path
+                    with open(Config.LAST_SESSION_PATH, 'w') as f:
+                        f.write(self.session_file_path)
+
+                    if action == wx.ID_SAVE:
+                        # No need to fetch settings_dialog.config, because it was passed by reference
+                        json.dump(self.config, open(self.session_file_path, 'w', encoding='utf-8'),
+                                  ensure_ascii=False, indent=4)
+                    elif action == wx.ID_OPEN:
+                        self.config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
 
         self.Bind(wx.EVT_MENU, on_settings, menu_file.Append(wx.ID_ANY, "&Settings"))
 
@@ -574,7 +582,7 @@ class MainFrame(wx.Frame):
 
         self.add_countdown_row(False, 0, Strings.TIMER_FIRST_TEXT)
 
-        self.SetLabel("%s: %s" % (app_name, self.session_file_path))
+        self.SetLabel("%s: %s" % (Strings.APP_NAME, self.session_file_path))
 
         self.load_data_item.Enable(False)  # Safety is everything!
         self.replace_file_item.Enable(True)
@@ -1107,5 +1115,5 @@ class MainFrame(wx.Frame):
 
 if __name__ == "__main__":
     app = wx.App(True)
-    frame = MainFrame(None, app_name)
+    frame = MainFrame(None, Strings.APP_NAME)
     app.MainLoop()

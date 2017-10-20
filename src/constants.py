@@ -2,6 +2,7 @@
 
 
 class Config:
+    LAST_SESSION_PATH = "last_fest.txt"
     PROJECTOR_SCREEN = "Projector Screen"
     FILENAME_RE = "Filename RegEx"
     BG_TRACKS_DIR = "Background Tracks Dir"
@@ -18,6 +19,7 @@ class Columns:
 
 
 class Strings:
+    APP_NAME = "Fest Engine"
     TIMER_EXACT_TIME_FMT = "Ждём Вас в %s ^_^"
     TIMER_FIRST_TEXT = "До начала фестиваля"
     TIMER_DEFAULT_TEXT = "До конца перерыва"

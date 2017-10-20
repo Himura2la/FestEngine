@@ -108,9 +108,15 @@ class SettingsDialog(wx.Dialog):
         top_sizer.Add(wx.StaticLine(panel), 0, wx.ALL | wx.EXPAND, 5)
 
         buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        button_ok = wx.Button(panel, wx.ID_OK, "OK")
-        buttons_sizer.Add(button_ok, 1)
-        button_ok.Bind(wx.EVT_BUTTON, self.on_ok)
+
+        button_load = wx.Button(panel, wx.ID_OPEN, "Load")
+        buttons_sizer.Add(button_load, 1)
+        button_load.Bind(wx.EVT_BUTTON, self.on_ok)
+
+        button_save = wx.Button(panel, wx.ID_SAVE, "Save")
+        buttons_sizer.Add(button_save, 1)
+        button_save.Bind(wx.EVT_BUTTON, self.on_ok)
+
         button_cancel = wx.Button(panel, wx.ID_CANCEL, "Cancel")
         buttons_sizer.Add(button_cancel, 1)
 
@@ -129,5 +135,5 @@ class SettingsDialog(wx.Dialog):
         self.config[Config.BG_ZAD_PATH] = self.bg_zad.GetPath()
         self.config[Config.FILES_DIRS] = [picker.GetPath() for picker in self.dir_pickers]
 
-        self.EndModal(wx.ID_OK)
+        self.EndModal(e.Id)
 

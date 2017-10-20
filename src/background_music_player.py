@@ -47,7 +47,7 @@ class BackgroundMusicPlayer(object):
         self.playlist = [{'title': f.rsplit('.', 1)[0],
                           'path': os.path.join(bg_music_dir, f),
                           'color': Colors.BG_NEVER_PLAYED}
-                         for f in file_names if f.rsplit('.', 1)[1] in FileTypes.audio_extensions]
+                         for f in file_names if os.path.isfile(f) and f.rsplit('.', 1)[1] in FileTypes.audio_extensions]
         if self.window_exists():
             self.load_playlist_to_grid()
 
