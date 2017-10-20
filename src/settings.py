@@ -4,12 +4,25 @@ from constants import Config
 
 
 class SettingsDialog(wx.Dialog):
-    def __init__(self, settings, parent):
+    def __init__(self, settings_path, settings, parent):
         wx.Dialog.__init__(self, parent, title="Settings", style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+        self.settings_path = settings_path
         self.settings = settings
 
         top_sizer = wx.BoxSizer(wx.VERTICAL)
         panel = wx.Panel(self)
+
+        session_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        session_sizer.Add(wx.StaticText(panel, label="Current Fest"), 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 5)
+        self.session_picker = wx.FilePickerCtrl(panel, style=wx.FLP_OPEN | wx.FLP_USE_TEXTCTRL, wildcard="*.fest")
+        self.session_picker.SetPath(self.settings_path)
+        session_sizer.Add(self.session_picker, 1, wx.EXPAND | wx.ALL, 5)
+        top_sizer.Add(session_sizer, 0, wx.EXPAND)
+
+        # Grid
+
+        top_sizer.Add(wx.StaticLine(panel), 0, wx.ALL | wx.EXPAND, 5)
+
         configs_grid = wx.FlexGridSizer(rows=5, cols=2, hgap=5, vgap=5)
         configs_grid.AddGrowableCol(1)
 
@@ -108,6 +121,8 @@ class SettingsDialog(wx.Dialog):
         self.SetSize((800, self.GetSize()[1]))
 
     def on_ok(self, e):
+        self.settings_path = self.session_picker.GetPath()
+
         self.settings[Config.PROJECTOR_SCREEN] = self.screens_combobox.GetSelection()
         self.settings[Config.FILENAME_RE] = self.filename_re.GetValue()
         self.settings[Config.BG_TRACKS_DIR] = self.bg_tracks.GetPath()

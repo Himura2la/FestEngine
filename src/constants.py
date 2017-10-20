@@ -7,6 +7,7 @@ class Config:
     BG_TRACKS_DIR = "Background Tracks Dir"
     BG_ZAD_PATH = "Background ZAD Path"
     FILES_DIRS = "Files Dirs"
+    VLC_ARGUMENTS = "VLC CLI Arguments"
 
 
 class Columns:

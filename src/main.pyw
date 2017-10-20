@@ -68,7 +68,9 @@ class MainFrame(wx.Frame):
 
         self.player_time_update_interval_ms = 300
         self.fade_out_delays_ms = 10
-        self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1, # The last one
+        self.settings_path = os.path.abspath("yno16.fest")
+        self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1,  # The last one
+                         Config.VLC_ARGUMENTS: "--file-caching=1000 --no-drop-late-frames --no-skip-frames",
                          Config.FILENAME_RE: filename_re,
                          Config.BG_TRACKS_DIR: background_tracks_dir,
                          Config.BG_ZAD_PATH: background_zad_path,
@@ -112,8 +114,9 @@ class MainFrame(wx.Frame):
         menu_file.AppendSeparator()
 
         def on_settings(e):
-            with SettingsDialog(self.settings, self) as settings_dialog:
+            with SettingsDialog(self.settings_path, self.settings, self) as settings_dialog:
                 if settings_dialog.ShowModal() == wx.ID_OK:
+                    self.settings_path = settings_dialog.settings_path
                     self.settings = settings_dialog.settings
         self.Bind(wx.EVT_MENU, on_settings, menu_file.Append(wx.ID_ANY, "&Settings"))
 
@@ -298,7 +301,7 @@ class MainFrame(wx.Frame):
 
         # ----------------------- VLC ---------------------
 
-        self.vlc_instance = vlc.Instance("--file-caching=1000 --no-drop-late-frames --no-skip-frames")
+        self.vlc_instance = vlc.Instance(self.settings[Config.VLC_ARGUMENTS])
 
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(100)
