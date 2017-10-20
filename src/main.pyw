@@ -1125,6 +1125,6 @@ class MainFrame(wx.Frame):
 
 
 if __name__ == "__main__":
-    app = wx.App(True)
+    app = wx.App(False if len(sys.argv) > 1 and sys.argv[1] == '-v' else True)
     frame = MainFrame(None, Strings.APP_NAME)
     app.MainLoop()
