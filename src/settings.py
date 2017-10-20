@@ -47,16 +47,16 @@ class SettingsDialog(wx.Dialog):
         self.dir_pickers = []
 
         def add_dir(path=None):
-            file_picker = wx.FilePickerCtrl(panel)
-            pickers_sizer.Add(file_picker, 0, wx.EXPAND)
+            dir_picker = wx.DirPickerCtrl(panel)
+            pickers_sizer.Add(dir_picker, 0, wx.EXPAND)
             if isinstance(path, str):  # Assuming initial calls
-                file_picker.SetPath(path)
+                dir_picker.SetPath(path)
             else:   # Assuming manual adding
                 top_sizer.Layout()
                 size = self.GetSize()
-                size[1] += file_picker.GetSize()[1]
+                size[1] += dir_picker.GetSize()[1]
                 self.SetSize(size)
-            self.dir_pickers.append(file_picker)
+            self.dir_pickers.append(dir_picker)
 
         for path in self.settings[Config.FILES_DIRS]:
             add_dir(path)
@@ -109,6 +109,10 @@ class SettingsDialog(wx.Dialog):
 
     def on_ok(self, e):
         self.settings[Config.PROJECTOR_SCREEN] = self.screens_combobox.GetSelection()
+        self.settings[Config.FILENAME_RE] = self.filename_re.GetValue()
+        self.settings[Config.BG_TRACKS_DIR] = self.bg_tracks.GetPath()
+        self.settings[Config.BG_ZAD_PATH] = self.bg_zad.GetPath()
+        self.settings[Config.FILES_DIRS] = [picker.GetPath() for picker in self.dir_pickers]
 
         self.EndModal(wx.ID_OK)
 
