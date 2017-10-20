@@ -19,6 +19,7 @@ class Columns:
 
 class Strings:
     TIMER_EXACT_TIME_FMT = "Ждём Вас в %s ^_^"
+    TIMER_FIRST_TEXT = "До начала фестиваля"
     TIMER_DEFAULT_TEXT = "До конца перерыва"
     COUNTDOWN_ROW_TEXT_FULL = "break"
     COUNTDOWN_ROW_TEXT_SHORT = "brk"

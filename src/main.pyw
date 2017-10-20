@@ -23,6 +23,7 @@ from projector import ProjectorWindow
 from settings import SettingsDialog
 from logger import Logger
 
+app_name = 'Fest Engine'
 
 if sys.platform.startswith('linux'):
     try:
@@ -31,34 +32,6 @@ if sys.platform.startswith('linux'):
         x11.XInitThreads()
     except Exception as x_init_threads_ex:
         print("XInitThreads() call failed:", x_init_threads_ex)
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--filename_re", dest="filename_re", help='Regular expression that parses your filenames. '
-                                                              'Do not add file extension to this RegEx. '
-                                                              'Named groups will be displayed as rows. '
-                                                              "The obligatory named groups are 'num' and '%s'. "
-                                                              'Example: ^(?P<num>\d{3})(?P<name>.*)' % Columns.NAME)
-
-parser.add_argument("--background_tracks_dir", dest="background_tracks_dir", help='Path to a directory with background '
-                                                                                  'tracks, that will sound on F3')
-parser.add_argument("--background_zad_path", dest="background_zad_path", help='Path to a base image that will be shown '
-                                                                              'when nothing else is showing (optional)')
-parser.add_argument("--auto_load_files", dest="auto_load_files", action='store_true')
-parser.add_argument("--auto_load_bg", dest="auto_load_bg", action='store_true')
-
-parser.add_argument('files_dir', nargs='*', help='Path to a directory with tracks, '
-                                                 'zad images or other files.', default=[])
-
-args = parser.parse_args()
-
-filename_re = args.filename_re
-background_zad_path = args.background_zad_path
-background_tracks_dir = args.background_tracks_dir
-auto_load_files = args.auto_load_files
-auto_load_bg = args.auto_load_bg
-
-dirs = args.files_dir
 
 
 class MainFrame(wx.Frame):
@@ -70,23 +43,23 @@ class MainFrame(wx.Frame):
         self.player_time_update_interval_ms = 300
         self.fade_out_delays_ms = 10
 
-        self.settings_path = os.path.abspath("yno17.fest")
+        self.session_file_path = os.path.abspath("yno16.fest")
 
-        self.settings_loaded = False
-        if os.path.isfile(self.settings_path):
+        self.config_ok = False
+        if os.path.isfile(self.session_file_path):
             try:
-                self.settings = json.load(open(self.settings_path, 'r', encoding='utf-8'))
-                self.settings_loaded = True
+                self.config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
+                self.config_ok = True
             except Exception as e:
                 print(type(e), e)
 
-        if not self.settings_loaded:
-            self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1,  # The last one
-                             Config.VLC_ARGUMENTS: "--file-caching=1000 --no-drop-late-frames --no-skip-frames",
-                             Config.FILENAME_RE: "^(?P<num>\d{3})(?P<name>.*)$",
-                             Config.BG_TRACKS_DIR: "",
-                             Config.BG_ZAD_PATH: "",
-                             Config.FILES_DIRS: []}
+        if not self.config_ok:
+            self.config = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1,  # The last one
+                           Config.VLC_ARGUMENTS: "--file-caching=1000 --no-drop-late-frames --no-skip-frames",
+                           Config.FILENAME_RE: "^(?P<num>\d{3})(?P<name>.*)$",
+                           Config.BG_TRACKS_DIR: "",
+                           Config.BG_ZAD_PATH: "",
+                           Config.FILES_DIRS: []}
 
         self.logger = Logger(self)
         self.proj_win = None
@@ -116,22 +89,26 @@ class MainFrame(wx.Frame):
 
         menu_file.AppendSeparator()
 
-        for folder in dirs:
+        session_folder, session_file = os.path.split(self.session_file_path)
+        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(session_folder)),
+                  menu_file.Append(wx.ID_ANY, "Open &Folder with '%s'" % session_file))
+
+        for folder in self.config[Config.FILES_DIRS]:
             self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(folder)),
                       menu_file.Append(wx.ID_ANY, "Open '%s' Folder" % os.path.basename(folder)))
 
-        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(background_tracks_dir)),
+        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(self.config[Config.BG_TRACKS_DIR])),
                   menu_file.Append(wx.ID_ANY, "Open &Background Music Folder"))
 
         menu_file.AppendSeparator()
 
         def on_settings(e=None):
-            with SettingsDialog(self.settings_path, self.settings, self) as settings_dialog:
+            with SettingsDialog(self.session_file_path, self.config, self) as settings_dialog:
                 if settings_dialog.ShowModal() == wx.ID_OK:
-                    self.settings_path = settings_dialog.settings_path
-                    self.settings = settings_dialog.settings
+                    self.session_file_path = settings_dialog.session_file_path
+                    self.config = settings_dialog.config
 
-                    json.dump(self.settings, open(self.settings_path, 'w', encoding='utf-8'),
+                    json.dump(self.config, open(self.session_file_path, 'w', encoding='utf-8'),
                               ensure_ascii=False, indent=4)
 
         self.Bind(wx.EVT_MENU, on_settings, menu_file.Append(wx.ID_ANY, "&Settings"))
@@ -317,7 +294,7 @@ class MainFrame(wx.Frame):
 
         # ----------------------- VLC ---------------------
 
-        self.vlc_instance = vlc.Instance(self.settings[Config.VLC_ARGUMENTS])
+        self.vlc_instance = vlc.Instance(self.config[Config.VLC_ARGUMENTS])
 
         self.player = self.vlc_instance.media_player_new()
         self.player.audio_set_volume(100)
@@ -336,16 +313,14 @@ class MainFrame(wx.Frame):
         self.Show(True)
         self.grid.SetFocus()
 
-        if auto_load_files:
+        if not self.config_ok:
+            on_settings()
+        else:
             self.load_files()
-        if auto_load_bg:
             self.on_bg_load_files()
 
-        if not self.settings_loaded:
-            on_settings()
 
-
-    # ------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------
 
     def on_close(self, e):
         self.player.stop()
@@ -411,7 +386,7 @@ class MainFrame(wx.Frame):
     def ensure_proj_win(self, e=None):
         no_window = not self.proj_win_exists()
         if no_window:
-            self.proj_win = ProjectorWindow(self, self.settings[Config.PROJECTOR_SCREEN])
+            self.proj_win = ProjectorWindow(self, self.config[Config.PROJECTOR_SCREEN])
 
             self.vid_btn.Bind(wx.EVT_TOGGLEBUTTON, self.switch_to_vid)
             self.zad_btn.Bind(wx.EVT_TOGGLEBUTTON, self.switch_to_zad)
@@ -487,8 +462,8 @@ class MainFrame(wx.Frame):
         if not self.proj_win_exists():
             return
         self.proj_win.switch_to_images()
-        if background_zad_path and not no_show:
-            self.proj_win.load_zad(background_zad_path, True)
+        if self.config[Config.BG_ZAD_PATH] and not no_show:
+            self.proj_win.load_zad(self.config[Config.BG_ZAD_PATH], True)
             self.image_status("Background")
         else:
             self.proj_win.no_show()
@@ -510,10 +485,12 @@ class MainFrame(wx.Frame):
     # -------------------------------------------------- Data --------------------------------------------------
 
     def load_files(self, e=None):
+        dirs = self.config[Config.FILES_DIRS]
+        filename_re = self.config[Config.FILENAME_RE]
         if not dirs or not all([os.path.isdir(d) for d in dirs]) or not filename_re:
             msg = "No filename regular expression or ZAD path is invalid or MP3 path is invalid.\n" \
-                  "Please specify valid paths to folders with your files as command line arguments,\n" \
-                  "and regular expression that parses your filenames in '--filename_re' command line argument.\n\n" \
+                  "Please specify valid paths to folders with your files, and regular\n" \
+                  "expression that parses your filenames in settings or .fest file.\n\n" \
                   "Directories: %s\n" \
                   "Filename RegEx: %s" % (", ".join(dirs), filename_re)
             wx.MessageBox(msg, "Path Error", wx.OK | wx.ICON_ERROR, self)
@@ -595,22 +572,9 @@ class MainFrame(wx.Frame):
         self.grid.AutoSizeColumns()
         self.status("Loaded %d items" % i)
 
-        self.add_countdown_row(False, 0, "До начала фестиваля")
+        self.add_countdown_row(False, 0, Strings.TIMER_FIRST_TEXT)
 
-        def longest_substring(strings):
-            """ https://stackoverflow.com/questions/2892931/ """
-            ret = ''
-            if len(strings) > 1 and len(strings[0]) > 0:
-                for i in range(len(strings[0])):
-                    for j in range(len(strings[0]) - i + 1):
-                        if j > len(ret) and all(strings[0][i:i + j] in x for x in strings):
-                            ret = strings[0][i:i + j]
-            return ret
-
-        common_path = longest_substring(sorted(list(dirs)))
-        win_label = "%s{%s}" % (common_path, ", ".join([p.replace(common_path, '') for p in dirs]))
-
-        self.SetLabel("%s: %s" % (self.GetLabel(), win_label))
+        self.SetLabel("%s: %s" % (app_name, self.session_file_path))
 
         self.load_data_item.Enable(False)  # Safety is everything!
         self.replace_file_item.Enable(True)
@@ -1037,15 +1001,14 @@ class MainFrame(wx.Frame):
     # -------------------------------------------- Background Music Player --------------------------------------------
 
     def on_bg_load_files(self, e=None):
-        if not background_tracks_dir or not os.path.isdir(background_tracks_dir):
-            msg = "Background MP3 path is invalid.\n" \
-                  "Please specify valid path with your background tracks\n" \
-                  "in '--background_tracks_dir' command line argument.\n\n" \
-                  "Found path: %s" % background_tracks_dir
+        if not self.config[Config.BG_TRACKS_DIR] or not os.path.isdir(self.config[Config.BG_TRACKS_DIR]):
+            msg = "Background MP3 path is invalid. Please specify a\n" \
+                  "valid path with your background tracks in settings.\n\n" \
+                  "Found path: %s" % self.config[Config.BG_TRACKS_DIR]
             d = wx.MessageBox(msg, "Path Error", wx.OK | wx.ICON_ERROR, self)
             return
 
-        self.bg_player.load_files(background_tracks_dir)
+        self.bg_player.load_files(self.config[Config.BG_TRACKS_DIR])
         self.bg_play_item.Enable(True)
 
     def fade_switched(self, e):
@@ -1144,5 +1107,5 @@ class MainFrame(wx.Frame):
 
 if __name__ == "__main__":
     app = wx.App(True)
-    frame = MainFrame(None, 'Fest Engine')
+    frame = MainFrame(None, app_name)
     app.MainLoop()

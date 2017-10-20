@@ -4,10 +4,10 @@ from constants import Config
 
 
 class SettingsDialog(wx.Dialog):
-    def __init__(self, settings_path, settings, parent):
+    def __init__(self, session_file_path, config, parent):
         wx.Dialog.__init__(self, parent, title="Settings", style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
-        self.settings_path = settings_path
-        self.settings = settings
+        self.session_file_path = session_file_path
+        self.config = config
 
         top_sizer = wx.BoxSizer(wx.VERTICAL)
         panel = wx.Panel(self)
@@ -15,7 +15,7 @@ class SettingsDialog(wx.Dialog):
         session_sizer = wx.BoxSizer(wx.HORIZONTAL)
         session_sizer.Add(wx.StaticText(panel, label="Current Fest"), 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 5)
         self.session_picker = wx.FilePickerCtrl(panel, style=wx.FLP_OPEN | wx.FLP_USE_TEXTCTRL, wildcard="*.fest")
-        self.session_picker.SetPath(self.settings_path)
+        self.session_picker.SetPath(self.session_file_path)
         session_sizer.Add(self.session_picker, 1, wx.EXPAND | wx.ALL, 5)
         top_sizer.Add(session_sizer, 0, wx.EXPAND)
 
@@ -30,22 +30,22 @@ class SettingsDialog(wx.Dialog):
         screen_names = ["%d: %s (%d,%d) %dx%d" % ((i, wx.Display(i).GetName()) + wx.Display(i).GetGeometry().Get())
                         for i in range(wx.Display.GetCount())]
         self.screens_combobox.SetItems(screen_names)
-        self.screens_combobox.SetSelection(self.settings[Config.PROJECTOR_SCREEN])
+        self.screens_combobox.SetSelection(self.config[Config.PROJECTOR_SCREEN])
         configs_grid.Add(wx.StaticText(panel, label=Config.PROJECTOR_SCREEN), 0, wx.ALIGN_CENTER_VERTICAL)
         configs_grid.Add(self.screens_combobox, 1, wx.EXPAND)
 
         self.filename_re = wx.TextCtrl(panel)
-        self.filename_re.SetValue(self.settings[Config.FILENAME_RE])
+        self.filename_re.SetValue(self.config[Config.FILENAME_RE])
         configs_grid.Add(wx.StaticText(panel, label=Config.FILENAME_RE), 0, wx.ALIGN_CENTER_VERTICAL)
         configs_grid.Add(self.filename_re, 1, wx.EXPAND)
 
         self.bg_tracks = wx.DirPickerCtrl(panel)
-        self.bg_tracks.SetPath(self.settings[Config.BG_TRACKS_DIR])
+        self.bg_tracks.SetPath(self.config[Config.BG_TRACKS_DIR])
         configs_grid.Add(wx.StaticText(panel, label=Config.BG_TRACKS_DIR), 0, wx.ALIGN_CENTER_VERTICAL)
         configs_grid.Add(self.bg_tracks, 1, wx.EXPAND)
 
         self.bg_zad = wx.FilePickerCtrl(panel)
-        self.bg_zad.SetPath(self.settings[Config.BG_ZAD_PATH])
+        self.bg_zad.SetPath(self.config[Config.BG_ZAD_PATH])
         configs_grid.Add(wx.StaticText(panel, label=Config.BG_ZAD_PATH), 0, wx.ALIGN_CENTER_VERTICAL)
         configs_grid.Add(self.bg_zad, 1, wx.EXPAND)
 
@@ -71,7 +71,7 @@ class SettingsDialog(wx.Dialog):
                 self.SetSize(size)
             self.dir_pickers.append(dir_picker)
 
-        for path in self.settings[Config.FILES_DIRS]:
+        for path in self.config[Config.FILES_DIRS]:
             add_dir(path)
 
         # Add / Remove
@@ -121,13 +121,13 @@ class SettingsDialog(wx.Dialog):
         self.SetSize((800, self.GetSize()[1]))
 
     def on_ok(self, e):
-        self.settings_path = self.session_picker.GetPath()
+        self.session_file_path = self.session_picker.GetPath()
 
-        self.settings[Config.PROJECTOR_SCREEN] = self.screens_combobox.GetSelection()
-        self.settings[Config.FILENAME_RE] = self.filename_re.GetValue()
-        self.settings[Config.BG_TRACKS_DIR] = self.bg_tracks.GetPath()
-        self.settings[Config.BG_ZAD_PATH] = self.bg_zad.GetPath()
-        self.settings[Config.FILES_DIRS] = [picker.GetPath() for picker in self.dir_pickers]
+        self.config[Config.PROJECTOR_SCREEN] = self.screens_combobox.GetSelection()
+        self.config[Config.FILENAME_RE] = self.filename_re.GetValue()
+        self.config[Config.BG_TRACKS_DIR] = self.bg_tracks.GetPath()
+        self.config[Config.BG_ZAD_PATH] = self.bg_zad.GetPath()
+        self.config[Config.FILES_DIRS] = [picker.GetPath() for picker in self.dir_pickers]
 
         self.EndModal(wx.ID_OK)
 
