@@ -102,8 +102,7 @@ class MainFrame(wx.Frame):
         menu_file.AppendSeparator()
 
         def on_settings(e=None):
-            json.dump(self.config, open(self.session_file_path + "_bkp", 'w', encoding='utf-8'),
-                      ensure_ascii=False, indent=4)
+            prev_config = self.config
             with SettingsDialog(self.session_file_path, self.config, self) as settings_dialog:
                 action = settings_dialog.ShowModal()
 
@@ -112,12 +111,20 @@ class MainFrame(wx.Frame):
                     with open(Config.LAST_SESSION_PATH, 'w') as f:
                         f.write(self.session_file_path)
 
+                    if not self.config_ok and os.path.isfile(self.session_file_path):
+                        action = wx.ID_OPEN  # User wants to open! I feel it!
+
                     if action == wx.ID_SAVE:
                         # No need to fetch settings_dialog.config, because it was passed by reference
                         json.dump(self.config, open(self.session_file_path, 'w', encoding='utf-8'),
                                   ensure_ascii=False, indent=4)
                     elif action == wx.ID_OPEN:
                         self.config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
+                        self.config_ok = True
+
+            if prev_config != self.config:  # Safety is everything!
+                json.dump(prev_config, open(self.session_file_path + "_bkp", 'w', encoding='utf-8'),
+                      ensure_ascii=False, indent=4)
 
         self.Bind(wx.EVT_MENU, on_settings, menu_file.Append(wx.ID_ANY, "&Settings"))
 
