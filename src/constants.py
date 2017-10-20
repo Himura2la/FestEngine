@@ -3,6 +3,10 @@
 
 class Config:
     PROJECTOR_SCREEN = "Projector Screen"
+    FILENAME_RE = "Filename RegEx"
+    BG_TRACKS_DIR = "Background Tracks Dir"
+    BG_ZAD_PATH = "Background ZAD Path"
+    FILES_DIRS = "Files Dirs"
 
 
 class Columns:
@@ -11,10 +15,13 @@ class Columns:
     NOTES = 'notes'
     NAME = 'name'
 
+
 class Strings:
     TIMER_EXACT_TIME_FMT = "Ждём Вас в %s ^_^"
+    TIMER_DEFAULT_TEXT = "До конца перерыва"
     COUNTDOWN_ROW_TEXT_FULL = "break"
     COUNTDOWN_ROW_TEXT_SHORT = "brk"
+
 
 class Colors:
     DUP_ROW = (255, 128, 255, 255)
@@ -27,6 +34,7 @@ class Colors:
     BG_SKIPPED = (255, 128, 128, 255)
 
     COUNTDOWN_TEXT_COLOR = (255, 255, 255, 255)
+
 
 class FileTypes:
     # TODO: Move this to settings

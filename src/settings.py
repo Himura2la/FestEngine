@@ -20,13 +20,35 @@ class SettingsDialog(wx.Dialog):
         self.screens_combobox.SetItems(screen_names)
         self.screens_combobox.SetSelection(self.settings[Config.PROJECTOR_SCREEN])
 
+        self.filename_re = wx.TextCtrl(panel)
+        self.filename_re.SetValue(self.settings[Config.FILENAME_RE])
+
+        self.bg_tracks = wx.DirPickerCtrl(panel)
+        self.bg_tracks.SetPath(self.settings[Config.BG_TRACKS_DIR])
+
+        self.bg_zad = wx.FilePickerCtrl(panel)
+        self.bg_zad.SetPath(self.settings[Config.BG_ZAD_PATH])
+
+
+
         # --- Layout ---
 
         # Grid
-        configs_grid = wx.GridSizer(rows=1, cols=2, hgap=5, vgap=5)
+        configs_grid = wx.FlexGridSizer(rows=5, cols=2, hgap=5, vgap=5)
 
         configs_grid.Add(wx.StaticText(panel, label=Config.PROJECTOR_SCREEN), 0, wx.ALIGN_CENTER_VERTICAL)
-        configs_grid.Add(self.screens_combobox)
+        configs_grid.Add(self.screens_combobox, 1, wx.EXPAND)
+
+        configs_grid.Add(wx.StaticText(panel, label=Config.FILENAME_RE), 0, wx.ALIGN_CENTER_VERTICAL)
+        configs_grid.Add(self.filename_re, 1, wx.EXPAND)
+
+        configs_grid.Add(wx.StaticText(panel, label=Config.BG_TRACKS_DIR), 0, wx.ALIGN_CENTER_VERTICAL)
+        configs_grid.Add(self.bg_tracks, 1, wx.EXPAND)
+
+        configs_grid.Add(wx.StaticText(panel, label=Config.BG_ZAD_PATH), 0, wx.ALIGN_CENTER_VERTICAL)
+        configs_grid.Add(self.bg_zad, 1, wx.EXPAND)
+
+
 
         # OK / Cancel
         buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)

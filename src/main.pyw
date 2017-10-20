@@ -43,7 +43,6 @@ parser.add_argument("--background_tracks_dir", dest="background_tracks_dir", hel
                                                                                   'tracks, that will sound on F3')
 parser.add_argument("--background_zad_path", dest="background_zad_path", help='Path to a base image that will be shown '
                                                                               'when nothing else is showing (optional)')
-parser.add_argument("--debug_output", dest="debug_output", action='store_true')
 parser.add_argument("--auto_load_files", dest="auto_load_files", action='store_true')
 parser.add_argument("--auto_load_bg", dest="auto_load_bg", action='store_true')
 
@@ -55,7 +54,6 @@ args = parser.parse_args()
 filename_re = args.filename_re
 background_zad_path = args.background_zad_path
 background_tracks_dir = args.background_tracks_dir
-debug_output = args.debug_output
 auto_load_files = args.auto_load_files
 auto_load_bg = args.auto_load_bg
 
@@ -70,7 +68,11 @@ class MainFrame(wx.Frame):
 
         self.player_time_update_interval_ms = 300
         self.fade_out_delays_ms = 10
-        self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1}  # The last one
+        self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1, # The last one
+                         Config.FILENAME_RE: filename_re,
+                         Config.BG_TRACKS_DIR: background_tracks_dir,
+                         Config.BG_ZAD_PATH: background_zad_path,
+                         Config.FILES_DIRS: dirs}
 
         self.logger = Logger(self)
         self.proj_win = None
@@ -146,9 +148,9 @@ class MainFrame(wx.Frame):
 
         menu_item.AppendSeparator()
 
-        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(False, "До конца перерыва"),
+        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(False, message=Strings.TIMER_DEFAULT_TEXT),
                   menu_item.Append(wx.ID_ANY, "&Add intermission (countdown) above"))
-        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(True, "До конца перерыва"),
+        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(True, message=Strings.TIMER_DEFAULT_TEXT),
                   menu_item.Append(wx.ID_ANY, "&Add intermission (countdown) below"))
 
         menu_bar.Append(menu_item, "&Item")
@@ -673,7 +675,7 @@ class MainFrame(wx.Frame):
 
         class FileReplacer(wx.Dialog):
             def __init__(self, parent, num):
-                wx.Dialog.__init__(self, parent, title=u"Replace File For №%s" % num)
+                wx.Dialog.__init__(self, parent, title=u"Replace File for №%s" % num)
                 top_sizer = wx.BoxSizer(wx.VERTICAL)
 
                 files = [path for ext, path in parent.data[num]['files'].items()]
@@ -893,11 +895,9 @@ class MainFrame(wx.Frame):
             state = self.player.get_state()
             status = "%s [%.3fs]" % (self.player_state_parse(state), (time.time() - start))
             wx.CallAfter(lambda: self.set_player_status(status))
-            if debug_output:
-                self.logger.log(status)
+            self.logger.log(status)
             time.sleep(0.007)
-        if debug_output:
-            self.logger.log("Started playback in %.0fms" % ((time.time() - start) * 1000))
+        self.logger.log("Started playback in %.0fms" % ((time.time() - start) * 1000))
 
         if not sound_only:
             wx.CallAfter(lambda: self.proj_win.Layout())
@@ -912,10 +912,9 @@ class MainFrame(wx.Frame):
             self.player.audio_set_volume(target_vol)
             status = "Trying to unmute... [%.3fs]" % (time.time() - start)
             wx.CallAfter(lambda: self.set_player_status(status))
-            if debug_output:
-                self.logger.log(status)
+            self.logger.log(status)
             time.sleep(0.001)
-        if debug_output and status[0] == 'T':
+        if status[0] == 'T':
             self.logger.log("Unmuted in %.0fms" % ((time.time() - start) * 1000))
 
         def ui_upd():
