@@ -57,7 +57,7 @@ class MainFrame(wx.Frame):
                            Config.FILENAME_RE: "^(?P<num>\d{3})(?P<name>.*)$",
                            Config.BG_TRACKS_DIR: "",
                            Config.BG_ZAD_PATH: "",
-                           Config.FILES_DIRS: []}
+                           Config.FILES_DIRS: [""]}
 
         self.logger = Logger(self)
         self.proj_win = None

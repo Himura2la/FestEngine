@@ -98,8 +98,8 @@ class SettingsDialog(wx.Dialog):
         rm_dir_btn.Bind(wx.EVT_BUTTON, rm_dir)
         dir_buttons_sizer.Add(rm_dir_btn, 1)
 
-        dirs_box_sizer.Add(pickers_sizer, 0, wx.EXPAND)
-        dirs_box_sizer.Add(dir_buttons_sizer, 0, wx.EXPAND)
+        dirs_box_sizer.Add(pickers_sizer, 0, wx.EXPAND | wx.ALL, 5)
+        dirs_box_sizer.Add(dir_buttons_sizer, 0, wx.EXPAND | wx.BOTTOM | wx.LEFT | wx.RIGHT, 5)
 
         top_sizer.Add(dirs_box_sizer, 0, wx.ALL | wx.EXPAND, 5)
 
@@ -124,7 +124,7 @@ class SettingsDialog(wx.Dialog):
         panel.SetSizerAndFit(top_sizer)
         self.Fit()
 
-        self.SetSize((800, self.GetSize()[1]))
+        self.SetSize((800, self.GetSize()[1] + 30))
 
     def on_ok(self, e):
         self.session_file_path = self.session_picker.GetPath()
