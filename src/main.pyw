@@ -10,6 +10,7 @@ import sys
 import threading
 import time
 import webbrowser
+import json
 
 import functools
 import vlc
@@ -68,13 +69,24 @@ class MainFrame(wx.Frame):
 
         self.player_time_update_interval_ms = 300
         self.fade_out_delays_ms = 10
-        self.settings_path = os.path.abspath("yno16.fest")
-        self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1,  # The last one
-                         Config.VLC_ARGUMENTS: "--file-caching=1000 --no-drop-late-frames --no-skip-frames",
-                         Config.FILENAME_RE: filename_re,
-                         Config.BG_TRACKS_DIR: background_tracks_dir,
-                         Config.BG_ZAD_PATH: background_zad_path,
-                         Config.FILES_DIRS: dirs}
+
+        self.settings_path = os.path.abspath("yno17.fest")
+
+        self.settings_loaded = False
+        if os.path.isfile(self.settings_path):
+            try:
+                self.settings = json.load(open(self.settings_path, 'r', encoding='utf-8'))
+                self.settings_loaded = True
+            except Exception as e:
+                print(type(e), e)
+
+        if not self.settings_loaded:
+            self.settings = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1,  # The last one
+                             Config.VLC_ARGUMENTS: "--file-caching=1000 --no-drop-late-frames --no-skip-frames",
+                             Config.FILENAME_RE: "^(?P<num>\d{3})(?P<name>.*)$",
+                             Config.BG_TRACKS_DIR: "",
+                             Config.BG_ZAD_PATH: "",
+                             Config.FILES_DIRS: []}
 
         self.logger = Logger(self)
         self.proj_win = None
@@ -113,11 +125,15 @@ class MainFrame(wx.Frame):
 
         menu_file.AppendSeparator()
 
-        def on_settings(e):
+        def on_settings(e=None):
             with SettingsDialog(self.settings_path, self.settings, self) as settings_dialog:
                 if settings_dialog.ShowModal() == wx.ID_OK:
                     self.settings_path = settings_dialog.settings_path
                     self.settings = settings_dialog.settings
+
+                    json.dump(self.settings, open(self.settings_path, 'w', encoding='utf-8'),
+                              ensure_ascii=False, indent=4)
+
         self.Bind(wx.EVT_MENU, on_settings, menu_file.Append(wx.ID_ANY, "&Settings"))
 
         show_log_menu_item = menu_file.Append(wx.ID_ANY, "&Show Log")
@@ -324,6 +340,10 @@ class MainFrame(wx.Frame):
             self.load_files()
         if auto_load_bg:
             self.on_bg_load_files()
+
+        if not self.settings_loaded:
+            on_settings()
+
 
     # ------------------------------------------------------------------------------------------------------------------
 
