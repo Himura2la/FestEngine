@@ -5,7 +5,7 @@ environment:
       PYTHON_VERSION: "3.6"
       PYTHON_ARCH: "32"
       VLC_INSTALL_FLAGS: "--x86"
-      BUILD_FLAGS: ""
+      BUILD_FLAGS: "%PROGRAMFILES(X86)%\\VideoLAN\\VLC"
     - PYTHON: "C:\\Python36"
       PYTHON_VERSION: "3.6"
       PYTHON_ARCH: "64"
