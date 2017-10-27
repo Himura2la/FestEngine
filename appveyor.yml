@@ -10,7 +10,7 @@ environment:
       PYTHON_VERSION: "3.6"
       PYTHON_ARCH: "64"
       VLC_INSTALL_FLAGS: ""
-      BUILD_FLAGS: "%PROGRAMFILES%\VideoLAN\VLC"
+      BUILD_FLAGS: "%PROGRAMFILES%\\VideoLAN\\VLC"
       
 install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
