@@ -5,7 +5,6 @@ environment:
       PYTHON_VERSION: "3.6"
       PYTHON_ARCH: "32"
       VLC_INSTALL_FLAGS: "--x86"
-  matrix:
     - PYTHON: "C:\\Python36"
       PYTHON_VERSION: "3.6"
       PYTHON_ARCH: "64"
