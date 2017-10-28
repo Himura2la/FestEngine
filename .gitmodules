@@ -1,3 +1,0 @@
-[submodule "etc/python-vlc"]
-	path = etc/python-vlc
-	url = https://github.com/oaubert/python-vlc
