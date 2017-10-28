@@ -1,31 +1,31 @@
 skip_non_tags: true
 environment:
-  matrix:
-    - PYTHON: "C:\\Python36"
-      PYTHON_VERSION: "3.6"
-      PYTHON_ARCH: "32"
-      VLC_INSTALL_FLAGS: "--x86"
-      BUILD_FLAGS: "%PROGRAMFILES(X86)%\\VideoLAN\\VLC"
-    - PYTHON: "C:\\Python36"
-      PYTHON_VERSION: "3.6"
-      PYTHON_ARCH: "64"
-      VLC_INSTALL_FLAGS: ""
-      BUILD_FLAGS: "%PROGRAMFILES%\\VideoLAN\\VLC"
-      
+#    APPVEYOR_RDP_PASSWORD:
+#        secure: KyDeEKZX+ICLjbuRvb6p34x45RZwzkyeEps+snuVUek=
+
+    matrix:
+      - PYTHON_PATH: C:\Python36
+        VLC_INSTALL_FLAGS: '--x86'
+
+      - PYTHON_PATH: C:\Python36-x64
+        VLC_INSTALL_FLAGS: ''
+
+#init:
+#    - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
 install:
-  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - ps: pip install pyinstaller
-  - ps: pip install wxpython
-  - ps: pip install python-vlc
-  - ps: choco install vlc $env:VLC_INSTALL_FLAGS -y --no-progress
+    - "SET PATH=%PYTHON_PATH%;%PYTHON_PATH%\\Scripts;%PATH%"
+    - cmd: pip install pyinstaller wxpython python-vlc
+    - cmd: choco install vlc %VLC_INSTALL_FLAGS% -y --no-progress
 
 build_script:
-  - ps: cd "$env:APPVEYOR_BUILD_FOLDER\bin"
-  - ps: .\build.ps1 -vlc "$env:BUILD_FLAGS"
+    - cmd: cd "%APPVEYOR_BUILD_FOLDER%\bin"
+    - cmd: python build.py
 
 after_build:
-  - ps: 7z a bin\FestEngine.zip $env:APPVEYOR_BUILD_FOLDER\bin\FestEngine\*
+    - cmd: cd "%APPVEYOR_BUILD_FOLDER%\bin"
+    - cmd: 7z a FestEngine.zip FestEngine\*
 
 artifacts:
-  - path: bin\FestEngine.zip
-    name: FestEngine
+    - path: bin\FestEngine.zip
+      name: FestEngine
