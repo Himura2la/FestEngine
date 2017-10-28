@@ -13,7 +13,6 @@ vlc_binaries = {'libvlc.dll': '.',
                 'libvlccore.dll': '.',
                 'plugins': 'plugins'}
 
-
 self_name = os.path.basename(sys.argv[0])
 print("--------------- %s started! ---------------" % self_name)
 
