@@ -28,11 +28,9 @@ after_build:
     - cmd: cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine"
     - cmd: echo --- Packing a Full version ---
     - cmd: 7z a ..\full.zip *
-    - cmd: echo --- Cleaning ---
-    - cmd: del MSVCP140.dll VCRUNTIME140.dll
-    - cmd: del api-ms-*
-    - cmd: del libvlc*
-    - cmd: rd /S /Q plugins
+    - cmd: echo --- Minimalizing ---
+    - cmd: cd ..
+    - cmd: .\minimalize.bat
     - cmd: echo --- Packing a Minimal version ---
     - cmd: 7z a ..\minimal.zip *
 
