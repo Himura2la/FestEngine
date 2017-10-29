@@ -9,6 +9,13 @@ class SettingsDialog(wx.Dialog):
         self.session_file_path = session_file_path
         self.config = config
 
+        if not session_file_path:
+            wx.MessageBox("Привет! Для начала, выбери новый или существующий файл феста в поле Current Fest.\n"
+                          "Он будет автоматически загружаться при запуске пока его не сменишь.\n"
+                          "Загрузку файлов можно произвести лишь однажды, поcему лучше перезапускать приложение"
+                          "при изменении состава папок Files Dirs",
+                          "Welcome to Fest Engine", wx.OK | wx.ICON_INFORMATION, self)
+
         top_sizer = wx.BoxSizer(wx.VERTICAL)
         panel = wx.Panel(self)
 
