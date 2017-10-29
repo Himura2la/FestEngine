@@ -14,6 +14,7 @@ print("--------------- %s started! ---------------" % self_name)
 
 vlc_path = None
 
+
 if sys.platform.startswith('linux'):  # Linux
     vlc_plugins_path = subprocess.check_output(['locate', '-n', '1', 'vlc/plugins']).strip()
     libvlc_path = subprocess.check_output(['locate', '-n', '1', 'libvlc.so']).strip()
