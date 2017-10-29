@@ -11,6 +11,6 @@ if [ ! -d $VLC_PLUGIN_PATH ]; then
     exit 1
 fi
 
-echo "VLC_PLUGIN_PATH="$VLC_PLUGIN_PATH" $BIN_DIR/FestEngine" > "FestEngine Start.sh"
-chmod +x "FestEngine Start.sh"
-echo 'Use "FestEngine Start.sh" to run Fest Engine'
+echo "VLC_PLUGIN_PATH="$VLC_PLUGIN_PATH" $BIN_DIR/FestEngine" > "FestEngineStart.sh"
+chmod +x "FestEngineStart.sh"
+echo 'Use "FestEngineStart.sh" to run Fest Engine. You can move it anywhere you like.'
