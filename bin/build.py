@@ -12,8 +12,10 @@ pyinst_flags = ['--clean', '--windowed', '-y', main_file]
 self_name = os.path.basename(sys.argv[0])
 print("--------------- %s started! ---------------" % self_name)
 
+pyinst_addbinary_sep = ';'
 
 if sys.platform.startswith('linux'):
+    pyinst_addbinary_sep = ':'
     try:
         vlc_plugins_path = subprocess.check_output(['locate', '-n', '1', 'vlc/plugins']).strip()
         libvlc_path = subprocess.check_output(['locate', '-n', '1', 'libvlc.so']).strip()
@@ -61,7 +63,7 @@ elif sys.platform == "win32":
             exit(1)
     print("Using VLC installation: %s" % vlc_path)
 
-vlc_binaries = sum([['--add-binary', '%s:%s' % (src_path, tgt_path)]
+vlc_binaries = sum([['--add-binary', '%s%s%s' % (src_path, pyinst_addbinary_sep, tgt_path)]
                 for src_path, tgt_path in vlc_binaries.items()], [])
 
 dist_path = os.path.abspath(os.curdir)
