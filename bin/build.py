@@ -12,18 +12,18 @@ pyinst_flags = ['--clean', '--windowed', '-y', main_file]
 self_name = os.path.basename(sys.argv[0])
 print("--------------- %s started! ---------------" % self_name)
 
-vlc_path = None
 
-
-if sys.platform.startswith('linux'):  # Linux
-    vlc_plugins_path = subprocess.check_output(['locate', '-n', '1', 'vlc/plugins']).strip()
-    libvlc_path = subprocess.check_output(['locate', '-n', '1', 'libvlc.so']).strip()
-    libvlccore_path = subprocess.check_output(['locate', '-n', '1', 'libvlccore.so']).strip()
+if sys.platform.startswith('linux'):
+    try:
+        vlc_plugins_path = subprocess.check_output(['locate', '-n', '1', 'vlc/plugins']).strip()
+        libvlc_path = subprocess.check_output(['locate', '-n', '1', 'libvlc.so']).strip()
+        libvlccore_path = subprocess.check_output(['locate', '-n', '1', 'libvlccore.so']).strip()
+    except subprocess.CalledProcessError:
+        vlc_plugins_path = ""
 
     if not os.path.isdir(vlc_plugins_path) or \
             not os.path.isfile(libvlc_path) or \
             not os.path.isfile(libvlccore_path):
-        vlc_path = None
         print("VLC not found. Try to run 'sudo updatedb' if you just installed it.")
         exit(1)
 
@@ -36,7 +36,7 @@ if sys.platform.startswith('linux'):  # Linux
 
     print("Discovered VLC: \n- %s\n- %s\n- %s" % (libvlc_path, libvlccore_path, vlc_plugins_path))
 
-elif sys.platform == "win32":  # Windows
+elif sys.platform == "win32":
     if len(sys.argv) == 2:
         vlc_path = sys.argv[1]
     elif len(sys.argv) > 2:
