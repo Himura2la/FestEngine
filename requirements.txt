@@ -1,0 +1,3 @@
+pyinstaller
+python-vlc
+wxpython

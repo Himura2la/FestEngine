@@ -1,0 +1,18 @@
+os: linux
+dist: trusty
+sudo: required
+
+language: python
+python:
+  - 3.6
+
+
+install:
+  - pip install pyinstaller python-vlc
+  - pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-14.04 wxPython
+  - sudo apt-get install vlc
+
+script:
+  - cd bin
+  - python build.py
+  - cp FestEngineInstall.sh FestEngine
