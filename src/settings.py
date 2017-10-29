@@ -14,7 +14,7 @@ class SettingsDialog(wx.Dialog):
 
         session_sizer = wx.BoxSizer(wx.HORIZONTAL)
         session_sizer.Add(wx.StaticText(panel, label="Current Fest"), 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 5)
-        self.session_picker = wx.FilePickerCtrl(panel, style=wx.FLP_OPEN | wx.FLP_USE_TEXTCTRL, wildcard="*.fest")
+        self.session_picker = wx.FilePickerCtrl(panel, style=wx.FLP_SAVE | wx.FLP_USE_TEXTCTRL, wildcard="*.fest")
         self.session_picker.SetPath(self.session_file_path)
         session_sizer.Add(self.session_picker, 1, wx.EXPAND | wx.ALL, 5)
         top_sizer.Add(session_sizer, 0, wx.EXPAND)
@@ -128,6 +128,9 @@ class SettingsDialog(wx.Dialog):
 
     def on_ok(self, e):
         self.session_file_path = self.session_picker.GetPath()
+        if not self.session_file_path:
+            wx.MessageBox("Please specify the Current Fest file.", "No Fest File", wx.OK | wx.ICON_ERROR, self)
+            return
 
         self.config[Config.PROJECTOR_SCREEN] = self.screens_combobox.GetSelection()
         self.config[Config.FILENAME_RE] = self.filename_re.GetValue()
