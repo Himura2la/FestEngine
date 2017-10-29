@@ -11,9 +11,13 @@ install:
   - pip install pyinstaller python-vlc
   - pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-14.04 wxPython
   - sudo apt-get install vlc
-  - sudo updatedb
+  - sudo updatedb  # TODO: accept paths as arguments
 
 script:
   - cd bin
   - python build.py
+  - chmod +x FestEngineInstall.sh
   - cp FestEngineInstall.sh FestEngine
+  - tar -zcvf FestEngine-full.tar.gz FestEngine
+  - rm -rf FestEngine/plugins
+  - tar -zcvf FestEngine-minimal.tar.gz FestEngine
