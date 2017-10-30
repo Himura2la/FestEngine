@@ -1,10 +1,10 @@
 skip_non_tags: true
 environment:
     matrix:
-      - ARCH: 'x86'
+      - ARCH: '86'
         PYTHON_PATH: C:\Python36
         VLC_INSTALL_FLAGS: '--x86'
-      - ARCH: 'x64'
+      - ARCH: '64'
         PYTHON_PATH: C:\Python36-x64
         VLC_INSTALL_FLAGS: ''
 
@@ -21,15 +21,27 @@ after_build:
     - cmd: cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine"
     - cmd: del MSVCP140.dll VCRUNTIME140.dll api-ms-*  # GPL does not allow...
     - cmd: echo --- Packing a Full version ---
-    - cmd: 7z a ..\full.zip *
+    - cmd: 7z a ..\festengine-win%ARCH%-full.zip *
     - cmd: echo --- Minimalizing ---
     - cmd: cd ..
     - cmd: .\minimalize.bat
     - cmd: echo --- Packing a Minimal version ---
-    - cmd: 7z a ..\minimal.zip *
+    - cmd: 7z a ..\festengine-win%ARCH%-minimal.zip *
 
 artifacts:
-    - path: bin\full.zip
-      name: FestEngine $(arch) Full
-    - path: bin\minimal.zip
-      name: FestEngine $(arch) Minimal
+    - path: bin\festengine-win$(arch)-full.zip
+      name: FestEngine Windows x$(arch) Full
+    - path: bin\festengine-win$(arch)-minimal.zip
+      name: FestEngine Windows x$(arch) Minimal
+
+deploy:
+    description: 'Auto-created Release'
+    provider: GitHub
+    auth_token:
+        secure: tpurZq/nyMadA/DqWepPmvcxhxfUL25cfvmFEDOUPUvOfNdUP4SpBH1QJm1yt06T
+    artifact: bin\*.zip
+    draft: true
+    prerelease: true
+    on:
+        branch: master
+        appveyor_repo_tag: true
