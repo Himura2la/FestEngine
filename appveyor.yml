@@ -1,19 +1,12 @@
 skip_non_tags: true
 environment:
-#    APPVEYOR_RDP_PASSWORD:
-#        secure: KyDeEKZX+ICLjbuRvb6p34x45RZwzkyeEps+snuVUek=
-
     matrix:
       - ARCH: 'x86'
         PYTHON_PATH: C:\Python36
         VLC_INSTALL_FLAGS: '--x86'
-
       - ARCH: 'x64'
         PYTHON_PATH: C:\Python36-x64
         VLC_INSTALL_FLAGS: ''
-
-#init:
-#    - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
     - "SET PATH=%PYTHON_PATH%;%PYTHON_PATH%\\Scripts;%PATH%"
@@ -26,6 +19,7 @@ build_script:
 
 after_build:
     - cmd: cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine"
+    - cmd: del MSVCP140.dll VCRUNTIME140.dll api-ms-*  # GPL does not allow...
     - cmd: echo --- Packing a Full version ---
     - cmd: 7z a ..\full.zip *
     - cmd: echo --- Minimalizing ---
