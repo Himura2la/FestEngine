@@ -5,4 +5,4 @@ del api-ms-*
 del libvlc*
 rd /S /Q plugins
 
-copy "..\FestEngine Minimal Install.bat" "FestEngine Minimal Install.bat"
+copy "..\FestEngine Install.bat" "FestEngine Install.bat"
