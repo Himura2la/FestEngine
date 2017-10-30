@@ -1,7 +1,7 @@
 skip_non_tags: true
 environment:
     matrix:
-      - ARCH: '86'
+      - ARCH: '32'
         PYTHON_PATH: C:\Python36
         VLC_INSTALL_FLAGS: '--x86'
       - ARCH: '64'
@@ -30,16 +30,16 @@ after_build:
 
 artifacts:
     - path: bin\festengine-win$(arch)-full.zip
-      name: FestEngine Windows x$(arch) Full
+      name: FestEngine Windows $(arch)bit Full
     - path: bin\festengine-win$(arch)-minimal.zip
-      name: FestEngine Windows x$(arch) Minimal
+      name: FestEngine Windows $(arch)bit Minimal
 
 deploy:
     description: 'Auto-created Release'
     provider: GitHub
     auth_token:
         secure: tpurZq/nyMadA/DqWepPmvcxhxfUL25cfvmFEDOUPUvOfNdUP4SpBH1QJm1yt06T
-    artifact: /bin\\.*\.zip/
+    artifact: bin\festengine-win$(arch)-minimal.zip,bin\festengine-win$(arch)-full.zip
     draft: true
     prerelease: true
     on:
