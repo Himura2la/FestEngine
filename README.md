@@ -92,7 +92,7 @@
 - Открыть консоль или PowerShell от администратора и установить **wxPython** и [VLC Python Bindings](https://wiki.videolan.org/python_bindings) (библиотека для управления плеером VLC)
    ```ps
    pip install --upgrade setuptools pip
-   pip install wxpython https://github.com/oaubert/python-vlc/archive/master.zip
+   pip install wxpython python-vlc
    ```
 - Установить последний [VLC](https://www.videolan.org/vlc/index.ru.html) **выбранной разядности** (если у вас ничего не запускается, проверьте разрядность VLC. Это common issue)
 - Установить [Git](https://git-scm.com/), [GitKraken](https://www.gitkraken.com/), [SourceTree](https://www.sourcetreeapp.com/) или [GitHub](https://desktop.github.com/) и cклонировать репозиторий: `git clone https://github.com/Himura2la/FestEngine.git`
@@ -103,14 +103,15 @@
 
 ## Debian-based
 
-Внимание! `wxpython` при установке из `pip` очень любит компилироваться из исходников. Это безнадежное занятие, если он начинает компилироваться, надо начинать искать `.whl` для своей архитектуры у них на FTP. Удачи!
+**Внимание!** `wxPython` при установке из `pip` обожает начинать компилироваться из исходников. Это безнадежное занятие, ему надо явно указать `.whl` наиболее подходящий для вашей системы (желательно, конечно, совсем подходящий, но вроде бы билды для чужих систем иногда работает). [Официальная инструкция](https://wxpython.org/pages/downloads/index.html), самый интересный раздел -- **Yes, we have Linux Wheels. Sort of.**
 
 ```sh
 sudo apt install git python3 vlc -y
 git clone https://github.com/Himura2la/FestEngine.git
 sudo -H pip3 install --upgrade setuptools pip
-sudo -H pip3 install wxpython https://github.com/oaubert/python-vlc/archive/master.zip
-python3 main.pyw # pass arguments to configure your paths
+sudo -H pip3 install python-vlc
+sudo -H pip3 install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-16.04 wxPython
+python3 ./FestEngine/src/main.pyw
 ```
 
 # Кто это использует?
