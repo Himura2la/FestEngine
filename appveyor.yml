@@ -39,7 +39,7 @@ deploy:
     provider: GitHub
     auth_token:
         secure: tpurZq/nyMadA/DqWepPmvcxhxfUL25cfvmFEDOUPUvOfNdUP4SpBH1QJm1yt06T
-    artifact: bin\*.zip
+    artifact: /bin\\.*\.zip/
     draft: true
     prerelease: true
     on:
