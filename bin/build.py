@@ -22,8 +22,8 @@ if sys.platform.startswith('linux'):
         try:
             vlc_plugins_path = subprocess.check_output(['locate', '-n', '1', 'vlc/plugins']).strip()
             vlc_plugins_path = vlc_plugins_path.decode().split('plugins', 1)[0] + 'plugins'
-            libvlc_path = subprocess.check_output(['locate', '-n', '1', 'libvlc.so']).strip()
-            libvlccore_path = subprocess.check_output(['locate', '-n', '1', 'libvlccore.so']).strip()
+            libvlc_path = subprocess.check_output(['locate', '-n', '1', 'libvlc.so']).strip().decode()
+            libvlccore_path = subprocess.check_output(['locate', '-n', '1', 'libvlccore.so']).strip().decode()
         except subprocess.CalledProcessError:
             vlc_plugins_path = ""
 
@@ -32,14 +32,11 @@ if sys.platform.startswith('linux'):
             not os.path.isfile(libvlccore_path):
         print("VLC not found. Try to run 'sudo updatedb' if you just installed it or pass the correct paths in arguments (%s [libvlc-path libvlccore-path vlc-plugins-dir])." % self_name)
 
-    libvlc_path = libvlc_path.decode()
-    libvlccore_path = libvlccore_path.decode()
     vlc_binaries = {libvlc_path: '.',
                     libvlccore_path: '.',
                     vlc_plugins_path: 'vlc/plugins'}
 
     print("Discovered VLC: \n- %s\n- %s\n- %s" % (libvlc_path, libvlccore_path, vlc_plugins_path))
-    exit(0)
 
 elif sys.platform == "win32":
     if len(sys.argv) == 2:
