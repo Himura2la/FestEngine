@@ -2,9 +2,10 @@ os: linux
 dist: trusty
 
 language: python
-cache: pip
 python:
   - 3.6
+
+cache: pip
 
 addons:
   apt:
@@ -17,6 +18,7 @@ install:
 
 script:
   - cd bin && python build.py /usr/lib/libvlc.so.5 /usr/lib/libvlccore.so.7 /usr/lib/vlc/plugins
+  - ./rm_extra_libs.sh
   - tar -zcvf festengine-linux-x64.tar.gz FestEngine
 
 deploy:
