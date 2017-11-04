@@ -9,19 +9,6 @@ main_file = 'main.pyw'
 
 pyinst_flags = ['--clean', '--windowed', '-y', main_file]
 
-linux_libs_local = ['libavcodec', 'libavformat', 'libavutil', 'libswscale', 'libvlccore', 'libvlc']  # /usr/local/lib/ or /usr/lib
-linux_libs_gnu = ['libx264', 'libmatroska', 'libebml', 'libmpeg2', 'libmpeg2convert', 'libvorbis', 'libvorbisenc', 'libFLAC', 'libva']  # /usr/lib/x86_64-linux-gnu/
-
-# /usr/(local/)lib/vlc/ -> ./vlc
-# /usr/(local/)lib/vlc/libvlc_vdpau.so.0.0.0 -> .
-
-
-def find_libs(names, base_path):
-    all_libs = os.listdir(base_path)
-    for name in names:
-        existing_libs = max(filter(lambda a: name in a, all_libs))
-    # TODO
-
 self_name = os.path.basename(sys.argv[0])
 print("--------------- %s started! ---------------" % self_name)
 
@@ -32,13 +19,27 @@ if sys.platform.startswith('linux'):
     pyinst_addbinary_sep = ':'
     pyinst_flags.insert(0, '--strip')
     if not no_vlc:
-                
-                
+        if len(sys.argv) == 4:
+            libvlc_path, libvlccore_path, vlc_plugins_path = sys.argv[1:4]
+        else:
+            try:
+                vlc_plugins_path = subprocess.check_output(['locate', '-n', '1', 'vlc/plugins']).strip()
+                vlc_plugins_path = vlc_plugins_path.decode().split('plugins', 1)[0] + 'plugins'
+                libvlc_path = subprocess.check_output(['locate', '-n', '1', 'libvlc.so']).strip().decode()
+                libvlccore_path = subprocess.check_output(['locate', '-n', '1', 'libvlccore.so']).strip().decode()
+            except subprocess.CalledProcessError:
+                vlc_plugins_path = ""
+
+        if not os.path.isdir(vlc_plugins_path) or \
+                not os.path.isfile(libvlc_path) or \
+                not os.path.isfile(libvlccore_path):
+            print("VLC not found. Try to run 'sudo updatedb' if you just installed it or pass the correct paths in arguments (%s [libvlc-path libvlccore-path vlc-plugins-dir])." % self_name)
 
         vlc_binaries = {libvlc_path: '.',
                         libvlccore_path: '.',
                         vlc_plugins_path: 'vlc/plugins'}
 
+        print("Discovered VLC: \n- %s\n- %s\n- %s" % (libvlc_path, libvlccore_path, vlc_plugins_path))
 
 elif sys.platform == "win32" and not no_vlc:
     if len(sys.argv) == 2:
