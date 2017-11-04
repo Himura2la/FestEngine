@@ -13,33 +13,35 @@ self_name = os.path.basename(sys.argv[0])
 print("--------------- %s started! ---------------" % self_name)
 
 pyinst_addbinary_sep = ';'
+no_vlc = len(sys.argv) == 2 and sys.argv[1] == '-novlc'
 
 if sys.platform.startswith('linux'):
     pyinst_addbinary_sep = ':'
-    pyinst_flags.append('--strip')
-    if len(sys.argv) == 4:
-        libvlc_path, libvlccore_path, vlc_plugins_path = sys.argv[1:4]
-    else:
-        try:
-            vlc_plugins_path = subprocess.check_output(['locate', '-n', '1', 'vlc/plugins']).strip()
-            vlc_plugins_path = vlc_plugins_path.decode().split('plugins', 1)[0] + 'plugins'
-            libvlc_path = subprocess.check_output(['locate', '-n', '1', 'libvlc.so']).strip().decode()
-            libvlccore_path = subprocess.check_output(['locate', '-n', '1', 'libvlccore.so']).strip().decode()
-        except subprocess.CalledProcessError:
-            vlc_plugins_path = ""
+    pyinst_flags.insert(0, '--strip')
+    if not no_vlc:
+        if len(sys.argv) == 4:
+            libvlc_path, libvlccore_path, vlc_plugins_path = sys.argv[1:4]
+        else:
+            try:
+                vlc_plugins_path = subprocess.check_output(['locate', '-n', '1', 'vlc/plugins']).strip()
+                vlc_plugins_path = vlc_plugins_path.decode().split('plugins', 1)[0] + 'plugins'
+                libvlc_path = subprocess.check_output(['locate', '-n', '1', 'libvlc.so']).strip().decode()
+                libvlccore_path = subprocess.check_output(['locate', '-n', '1', 'libvlccore.so']).strip().decode()
+            except subprocess.CalledProcessError:
+                vlc_plugins_path = ""
 
-    if not os.path.isdir(vlc_plugins_path) or \
-            not os.path.isfile(libvlc_path) or \
-            not os.path.isfile(libvlccore_path):
-        print("VLC not found. Try to run 'sudo updatedb' if you just installed it or pass the correct paths in arguments (%s [libvlc-path libvlccore-path vlc-plugins-dir])." % self_name)
+        if not os.path.isdir(vlc_plugins_path) or \
+                not os.path.isfile(libvlc_path) or \
+                not os.path.isfile(libvlccore_path):
+            print("VLC not found. Try to run 'sudo updatedb' if you just installed it or pass the correct paths in arguments (%s [libvlc-path libvlccore-path vlc-plugins-dir])." % self_name)
 
-    vlc_binaries = {libvlc_path: '.',
-                    libvlccore_path: '.',
-                    vlc_plugins_path: 'vlc/plugins'}
+        vlc_binaries = {libvlc_path: '.',
+                        libvlccore_path: '.',
+                        vlc_plugins_path: 'vlc/plugins'}
 
-    print("Discovered VLC: \n- %s\n- %s\n- %s" % (libvlc_path, libvlccore_path, vlc_plugins_path))
+        print("Discovered VLC: \n- %s\n- %s\n- %s" % (libvlc_path, libvlccore_path, vlc_plugins_path))
 
-elif sys.platform == "win32":
+elif sys.platform == "win32" and not no_vlc:
     if len(sys.argv) == 2:
         vlc_path = sys.argv[1]
     elif len(sys.argv) > 2:
@@ -64,9 +66,8 @@ elif sys.platform == "win32":
             exit(1)
     print("Using VLC installation: %s" % vlc_path)
 
-vlc_binaries = sum([['--add-binary', '%s%s%s' % (src_path, pyinst_addbinary_sep, tgt_path)]
-                for src_path, tgt_path in vlc_binaries.items()], [])
-
+vlc_binaries = [] if no_vlc else sum([['--add-binary', '%s%s%s' % (src_path, pyinst_addbinary_sep, tgt_path)]
+                                        for src_path, tgt_path in vlc_binaries.items()], []) 
 dist_path = os.path.abspath(os.curdir)
 os.chdir(sources_path)
 
