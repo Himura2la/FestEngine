@@ -19,7 +19,7 @@ install:
   - pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-14.04 wxPython
 
 script:
-  - cd bin && python build.py /usr/lib/libvlc.so.5 /usr/lib/libvlccore.so.7 /usr/lib/vlc/plugins
+  - cd bin && python build.py /usr/lib/libvlc.so.5 /usr/lib/libvlccore.so.8 /usr/lib/vlc/plugins
   - mv install.sh FestEngine/
   - tar -zcvf festengine-linux-x64.tar.gz FestEngine
 
