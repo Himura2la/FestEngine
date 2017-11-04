@@ -7,7 +7,7 @@ name = 'FestEngine'
 sources_path = os.path.join('..', 'src')
 main_file = 'main.pyw'
 
-pyinst_flags = ['--clean', '--windowed', '--strip', '-y', main_file]
+pyinst_flags = ['--clean', '--windowed', '-y', main_file]
 
 self_name = os.path.basename(sys.argv[0])
 print("--------------- %s started! ---------------" % self_name)
@@ -16,6 +16,7 @@ pyinst_addbinary_sep = ';'
 
 if sys.platform.startswith('linux'):
     pyinst_addbinary_sep = ':'
+    pyinst_flags.append('--strip')
     if len(sys.argv) == 4:
         libvlc_path, libvlccore_path, vlc_plugins_path = sys.argv[1:4]
     else:
