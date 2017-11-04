@@ -25,13 +25,13 @@
 
 # Как это теперь:
 
-![так](res/scr.png)
+![так](scr/scr.png)
 
 
 ## Как это работает?
 
 - Разворачиваемся по инструкии ниже или [качаем бинарик](https://github.com/Himura2la/FestEngine/releases).
-- Запускаем [src/main.pyw](src/main.pyw) через [Python 3](https://www.python.org/downloads/) или `FestEngine.exe` (для минимальной версии бинарика, нужно сначала запустить [FestEngine Minimal Install.bat](bin/FestEngine%20Minimal%20Install.bat) от админа). Открываются пустые настройки.
+- Запускаем [src/main.pyw](src/main.pyw) через [Python 3](https://www.python.org/downloads/) или `FestEngine.exe` (для минимальной версии бинарика, нужно сначала запустить [Install.bat](bin/Install.bat) от админа). Открываются пустые настройки.
 - Натравливаем FestEngine на свои материалы и тестируем что всё работает. Проверяем что все файлы на месте и воспроизводятся, если нужно, перекодируем.
 - Приходим на фест (с тем же ноутом).
 - Указываем в настройках какой из мониторов -- проектор.
@@ -45,7 +45,7 @@
 
 Пример настроек:
 
-![настройки](res/settings.png)
+![настройки](scr/settings.png)
 
 Регулярное выражение `Filename RegEx` должно покрывать название файла до точки расширения.
 
@@ -74,18 +74,16 @@
 - [#7](https://github.com/Himura2la/FestEngine/issues/7): Фоновая музыка на интермедии и удобный плеер к ней. Можно запускать и паузить одной кнопкой, а можно открыть полноценный плеер. В плеере можно включать конкретную композицию, смотреть какие отыграли а какие были скипануты, можно переходить к нужному времени в треке, есть Fade In/Out, [в планах Crossfade](https://github.com/Himura2la/FestEngine/issues/28).
 - [#29](https://github.com/Himura2la/FestEngine/issues/29): Можно сделать резервный трек без видео для тех у кого видео.
 - [#26](https://github.com/Himura2la/FestEngine/issues/26): Можно заменить трек или задник участника, особенно полезно для тех кто заменяет трек на репетиции. Но не забудьте заменить трек во всех резервных копиях или следить за тем [откуда воспроизвоядся файлы](https://github.com/Himura2la/FestEngine/issues/34)
-- [#5](https://github.com/Himura2la/FestEngine/issues/5): Аналог Cosplay2-Timer. Можно вывенсти на проектор обратный отсчет до начала фестиваля или до конца перерыва. С этой штукой задержать начало намного сложнее ^_^
+- [#5](https://github.com/Himura2la/FestEngine/issues/5): Аналог Cosplay2-Timer. Можно вывенсти на проектор обратный отсчет до начала фестиваля или до конца перерыва. С этой штукой задержать начало намного сложнее \^\_\^
 
 # [В планах](https://github.com/Himura2la/FestEngine/issues)
 
 Если ты чувствуешь в себе силу что-нибудь из этого запилить, будешь няшкой и сделаешь звук на фестах чуть лучше!
 
 
-# Как это поднять?
+# Как развернуть среду для разработки?
 
 ## Windows
-
-Мы пытаемся компилировать бинарики на AppVeyor, но пока они не очень протестированы, нарушают GPL 3, содержат много лишнего и вобщем на свой страх и риск. Если хотите потыкать AppVeyor, мы ждём Ваших идей и человеко-часов, добро пожаловать к нам в [уютный чатик](https://gitter.im/FestEngine/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link) \^\_\^
 
 - Выбрать разрядность (x32 или x64) и придерживаться этой разрядности во всех дальнейших установках
 - Установить последний [Python 3](https://www.python.org/downloads/windows/) выбранной разядности. При установке отметить чекбокс **Добавить python.exe в PATH** (если это единственный Python, который у вас будет).
@@ -97,7 +95,7 @@
 - Установить последний [VLC](https://www.videolan.org/vlc/index.ru.html) **выбранной разядности** (если у вас ничего не запускается, проверьте разрядность VLC. Это common issue)
 - Установить [Git](https://git-scm.com/), [GitKraken](https://www.gitkraken.com/), [SourceTree](https://www.sourcetreeapp.com/) или [GitHub](https://desktop.github.com/) и cклонировать репозиторий: `git clone https://github.com/Himura2la/FestEngine.git`
 - Можно запускать Fest Engine. Из папки **src** выполнить `py main.pyw`
-- Качнуть [тестовые данные](https://drive.google.com/file/d/0B4v9WFUhaeVvRmdXcXNaRHB0THc/view), отредактировать пути в [Debug-tulafest16.bat](https://github.com/Himura2la/FestEngine/blob/master/Debug-tulafest16.bat) и запустить Fest Engine с данными.
+- Качнуть [тестовые данные](https://drive.google.com/file/d/0B4v9WFUhaeVvRmdXcXNaRHB0THc/view) и запустить Fest Engine с данными.
 - Писать код в [PyCharm](https://www.jetbrains.com/pycharm/) или [Visual Studio Code](https://code.visualstudio.com/) и отправлять Pull-Request'ы.
 - Писать в [Gitter](https://gitter.im/FestEngine/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link), по поводу и без ))
 
