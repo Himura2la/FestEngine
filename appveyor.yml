@@ -24,7 +24,7 @@ after_build:
     - cmd: 7z a ..\festengine-win%ARCH%-full.zip *
     - cmd: echo --- Minimalizing ---
     - cmd: cd ..
-    - cmd: .\Minimalize.bat
+    - cmd: .\minimalize.bat
     - cmd: echo --- Packing a Minimal version ---
     - cmd: 7z a ..\festengine-win%ARCH%-minimal.zip *
 
