@@ -7,28 +7,21 @@ python:
 
 cache: pip
 
-addons:
-  apt:
-    sources:
-    - sourceline: 'ppa:mc3man/trusty-media'
-    packages:
-    - vlc
-
 install:
   - pip install pyinstaller python-vlc
   - pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-14.04 wxPython
 
 script:
-  - cd bin && python build.py /usr/lib/libvlc.so.5 /usr/lib/libvlccore.so.8 /usr/lib/vlc/plugins
+  - cd bin && python build.py -novlc
   - mv install.sh FestEngine/
-  - tar -zcvf festengine-linux-x64.tar.gz FestEngine
+  - tar -zcvf festengine-linux-x64-minimal.tar.gz FestEngine
 
 deploy:
   provider: releases
   api_key:
     secure: hND4F2oeIb54OZXDroP6ofe80G2pWZ2qWOSaED9PlS4CmuiTMpHtYuq1BEEiZrh00qwfPPdBdburRkbfnh7BEvNXqc+slSI3RDK1pAAasAKz8H/7EKN0UEOEG9q0Kh58PUnQC/op7SaweRY6SCP+QMV/FQygtxLS84VYNMI5N5oRDogAiKwdjPYqOJhHZK8N4vQXKGIn4v+qetOpoudpc/I11K6Q/bBRSYcV8zkoE7+uunQjE9wwzcyupLstSx9hbXcPTtInV9yt6o2Mb+AS+1ZUOSCGxb9sa2r2vJ03uVvMZ/XydL37vi3eZITNMR+JevtGzupVol3x/vmhb0ARnJIeyuL2k4LroMpTiUMKqP+buUmKmNWhQjlJhdkPZO1xUiZVfp50BlAEBHADGdeWK6W2/DpgsV15KQKP6Z9NIysRUNtzdoXcUKB4FYZWXDj0Qi/Vu/tQ+9QiovbNOnnhzmUbIVxynCYZKcC3LHNo0aVqfg+gd7OPvoIU+XthB/dJ6IRKyR0HOSQls3OH0dVDCVsKBr4Br3KxPdXU/Qwu2EZgVLKWgrg7hoUg7RisQI7uMdvYsbu995HZRcKMxI3oAnkksuuSyv/lQPtvqd1dssz4RK6wn4TDUnFUD17Bjon78w2a879TpXE4t9/p+oq0na7x2xWT9+XGXc0fj9MoDB8=
   file:
-    - $TRAVIS_BUILD_DIR/bin/festengine-linux-x64.tar.gz
+    - $TRAVIS_BUILD_DIR/bin/festengine-linux-x64-minimal.tar.gz
   skip_cleanup: true
   on:
     tags: true

@@ -4,7 +4,7 @@ if [[ ! $1 == "" ]]; then
     LIB_NAME=`basename $1`
     echo "$LIB_NAME: "
 
-    if [[ $LIB_NAME == *"wx"* || $LIB_NAME == *"vlc"* ]]; then
+    if [[ $LIB_NAME == *"wx"* || $LIB_NAME == *"python"* ]]; then
         echo Protected lib, skipping
         echo
         exit 0
