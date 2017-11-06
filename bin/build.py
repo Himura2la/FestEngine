@@ -4,6 +4,7 @@ import subprocess
 import time
 
 name = 'FestEngine'
+bin_path = os.getcwd()
 sources_path = os.path.join('..', 'src')
 main_file = 'main.pyw'
 
@@ -77,9 +78,7 @@ if p.poll() == 0 and sys.platform.startswith('linux'):
     import urllib.request
     exclude_libs = urllib.request.urlopen(appimage_excludelist_url).read()
     exclude_libs = [e.rsplit('.so', 1)[0] for e in exclude_libs.decode().split('\n') if e and e[0] != '#']
-    print(os.listdir())
-    print(os.getcwd())
-    os.chdir(name)
+    os.chdir(os.path.join(bin_path, name))
     all_files = os.listdir()
     libs_to_exclude = filter(lambda f: any([f.startswith(l) for l in exclude_libs]), all_files)
     print("--- Removing:", libs_to_exclude)
