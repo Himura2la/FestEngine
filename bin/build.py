@@ -14,13 +14,11 @@ appimage_excludelist_url = 'https://raw.githubusercontent.com/AppImage/AppImages
 self_name = os.path.basename(sys.argv[0])
 print("--------------- %s started! ---------------" % self_name)
 
-pyinst_addbinary_sep = ';'
 no_vlc = len(sys.argv) == 2 and sys.argv[1] == '-novlc'
 vlc_binaries = []
 vlc_path = None
 
 if sys.platform.startswith('linux'):
-    pyinst_addbinary_sep = ':'
     pyinst_flags.insert(0, '--strip')
 
 elif sys.platform == "win32" and not no_vlc:
@@ -50,7 +48,7 @@ elif sys.platform == "win32" and not no_vlc:
             exit(1)
     print("Using VLC installation: %s" % vlc_path)
 
-    vlc_binaries = sum([['--add-binary', '%s%s%s' % (src_path, pyinst_addbinary_sep, tgt_path)]
+    vlc_binaries = sum([['--add-binary', '%s;%s' % (src_path, tgt_path)]
                         for src_path, tgt_path in vlc_binaries.items()], [])
 else:
     print("Sorry, your platform is not supported")
