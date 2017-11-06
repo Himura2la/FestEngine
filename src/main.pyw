@@ -237,7 +237,7 @@ class MainFrame(wx.Frame):
 
         self.toolbar = wx.BoxSizer(wx.HORIZONTAL)
         win = sys.platform.startswith('win')
-        toolbar_base_height = 20 if win else 30
+        toolbar_base_height = 20 if win else 33
 
         # self.status_color_box = wx.Panel(self, size=(toolbar_base_height, toolbar_base_height))
         # self.toolbar.Add(self.status_color_box, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=1)
@@ -260,7 +260,7 @@ class MainFrame(wx.Frame):
         self.time_label = wx.StaticText(self, label='Stop', size=(50, -1), style=wx.ALIGN_CENTER)
         self.toolbar.Add(self.time_label, 0, wx.ALIGN_CENTER_VERTICAL)
 
-        self.search_box = wx.TextCtrl(self, size=(50, toolbar_base_height), value='Find', style=wx.TE_PROCESS_ENTER)
+        self.search_box = wx.TextCtrl(self, size=(60, toolbar_base_height), value='Find', style=wx.TE_PROCESS_ENTER)
         self.search_box.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
         self.toolbar.Add(self.search_box, 0, wx.ALIGN_CENTER_VERTICAL)
 
@@ -276,8 +276,8 @@ class MainFrame(wx.Frame):
         self.search_box.SetToolTip('Right-click to quit search')
         self.search_box.Bind(wx.EVT_TEXT_ENTER, self.quit_search)
 
-        self.vid_btn = wx.ToggleButton(self, label='VID', size=(35, toolbar_base_height + 2))
-        self.zad_btn = wx.ToggleButton(self, label='ZAD', size=(35, toolbar_base_height + 2))
+        self.vid_btn = wx.ToggleButton(self, label='VID', size=(35 if win else 50, toolbar_base_height + 2))
+        self.zad_btn = wx.ToggleButton(self, label='ZAD', size=(35 if win else 50, toolbar_base_height + 2))
         self.vid_btn.Enable(False)
         self.zad_btn.Enable(False)
         self.toolbar.Add(self.vid_btn, 0)
