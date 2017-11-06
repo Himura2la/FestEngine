@@ -9,7 +9,7 @@ cache: pip
 
 install:
   - pip install pyinstaller python-vlc
-  - pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-14.04 wxPython
+  - pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk2/ubuntu-14.04 wxPython
 
 script:
   - cd bin && python build.py -novlc
