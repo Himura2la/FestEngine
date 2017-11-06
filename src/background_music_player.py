@@ -27,7 +27,7 @@ class BackgroundMusicPlayer(object):
         self.pause_fade_speed = 0.01
 
     def window_exists(self):
-        return isinstance(self.window, BackgroundMusicFrame)
+        return bool(self.window)
 
     def show_window(self):
         if not self.window_exists():
@@ -43,11 +43,11 @@ class BackgroundMusicPlayer(object):
             self.window.lock_btn.Enable(True)
 
     def load_files(self, bg_music_dir):
-        file_names = sorted(os.listdir(bg_music_dir))
-        self.playlist = [{'title': f.rsplit('.', 1)[0],
-                          'path': os.path.join(bg_music_dir, f),
+        file_paths = [os.path.join(bg_music_dir, f) for f in sorted(os.listdir(bg_music_dir))]
+        self.playlist = [{'title': os.path.basename(p).rsplit('.', 1)[0],
+                          'path': p,
                           'color': Colors.BG_NEVER_PLAYED}
-                         for f in file_names if os.path.isfile(f) and f.rsplit('.', 1)[1] in FileTypes.audio_extensions]
+                         for p in file_paths if os.path.isfile(p) and os.path.basename(p).rsplit('.', 1)[1] in FileTypes.audio_extensions]
         if self.window_exists():
             self.load_playlist_to_grid()
 
@@ -271,6 +271,8 @@ class BackgroundMusicFrame(wx.Frame):
 
         self.SetSizer(main_sizer)
         self.Layout()
+
+        self.Bind(wx.EVT_CLOSE, parent.on_bg_player_win_close)
 
     def set_volume_from_slider(self, e=None):
         self.parent.background_volume = self.vol_slider.GetValue()  # Forwards to player

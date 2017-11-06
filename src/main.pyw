@@ -337,7 +337,8 @@ class MainFrame(wx.Frame):
                 on_settings()
             else:
                 self.load_files()
-                self.on_bg_load_files()
+                if self.config[Config.BG_TRACKS_DIR]:
+                    self.on_bg_load_files()
         wx.CallAfter(init)
 
 # ------------------------------------------------------------------------------------------------------------------
@@ -399,6 +400,10 @@ class MainFrame(wx.Frame):
         self.proj_win.countdown_panel.timer.Stop()
         self.proj_win.Destroy()
         self.proj_win = None
+
+    def on_bg_player_win_close(self, e):
+        self.bg_player.window.Destroy()
+        self.bg_player.window = None
 
     def proj_win_exists(self):
         return bool(self.proj_win)
