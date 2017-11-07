@@ -5,8 +5,8 @@ if [ -n "$1" ]; then
     printf "%s" "$LIB_NAME: "
 
     case "$LIB_NAME" in
-        *wx*) echo "Protected lib, skipping"; return 0 ;;
-        *python*) echo "Protected lib, skipping"; return 0 ;;
+        *wx*) echo "Protected lib, skipping"; exit 0 ;;
+        *python*) echo "Protected lib, skipping"; exit 0 ;;
         *) ;;
     esac
 
@@ -18,9 +18,6 @@ if [ -n "$1" ]; then
     else
         echo "$LIB_NAME not found, keeping the bundled one"
     fi
-
-    return 0
+else
+    find . -maxdepth 1 -type f -name 'lib*' -exec "$0" '{}' \;
 fi
-
-find . -maxdepth 1 -type f -name 'lib*' -exec "$0" '{}' \;
-exit 0
