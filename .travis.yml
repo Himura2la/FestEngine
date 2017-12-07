@@ -17,9 +17,9 @@ install:
   - pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk2/ubuntu-14.04 wxPython
 
 script:
-  - msgfmt -o ./src/locale/ru/LC_MESSAGES/main.mo ./src/locale/ru/LC_MESSAGES/main.po
   - cd bin && python build.py -novlc
   - mv install.sh FestEngine/
+  - mkdir -p ./locale/ru/LC_MESSAGES && msgfmt -o !$/main.mo ../src/locale/ru/LC_MESSAGES/main.po
   - tar -zcvf festengine-linux-x64-minimal.tar.gz FestEngine
 
 deploy:
