@@ -12,7 +12,6 @@ install:
     - |
         SET PATH=%PYTHON_PATH%;%PYTHON_PATH%\\Scripts;%PATH%
         pip install pyinstaller python-vlc wxpython
-        choco install -y --no-progress gettext
         choco install -y --no-progress %VLC_INSTALL_FLAGS% vlc
 
 build_script:
