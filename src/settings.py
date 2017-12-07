@@ -10,17 +10,22 @@ class SettingsDialog(wx.Dialog):
         self.config = config
 
         if not session_file_path:
-            wx.MessageBox("Привет! Для начала, выбери новый или существующий файл феста в поле Current Fest.\n"
-                          "Он будет автоматически загружаться при запуске пока его не сменишь.\n"
-                          "Загрузку файлов можно произвести лишь однажды, поcему лучше перезапускать приложение"
-                          "при изменении состава папок Files Dirs",
-                          "Welcome to Fest Engine", wx.OK | wx.ICON_INFORMATION, self)
+            wx.MessageBox(_("Hi ^_^ Please select a new or existing *.fest file in the 'Current Fest' field.\n"
+                            "It will load automatically on each start unless you change it.\n"
+                            "The load of files can be performed only once, thus it's better to restart the app"
+                            "after changing something files-related in settings. Do the best festival! \n"),
+                          "Welcome to the Fest Engine", wx.OK | wx.ICON_INFORMATION, self)
+            # wx.MessageBox("Привет! Для начала, выбери новый или существующий файл феста в поле Current Fest.\n"
+            #               "Он будет автоматически загружаться при запуске пока его не сменишь.\n"
+            #               "Загрузку файлов можно произвести лишь однажды, поcему лучше перезапускать приложение"
+            #               "при изменении состава папок Files Dirs",
+            #               "Welcome to Fest Engine", wx.OK | wx.ICON_INFORMATION, self)
 
         top_sizer = wx.BoxSizer(wx.VERTICAL)
         panel = wx.Panel(self)
 
         session_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        session_sizer.Add(wx.StaticText(panel, label="Current Fest"), 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 5)
+        session_sizer.Add(wx.StaticText(panel, label=_("Current Fest")), 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 5)
         self.session_picker = wx.FilePickerCtrl(panel, style=wx.FLP_SAVE | wx.FLP_USE_TEXTCTRL, wildcard="*.fest")
         self.session_picker.SetPath(self.session_file_path)
         session_sizer.Add(self.session_picker, 1, wx.EXPAND | wx.ALL, 5)
@@ -38,29 +43,29 @@ class SettingsDialog(wx.Dialog):
                         for i in range(wx.Display.GetCount())]
         self.screens_combobox.SetItems(screen_names)
         self.screens_combobox.SetSelection(self.config[Config.PROJECTOR_SCREEN])
-        configs_grid.Add(wx.StaticText(panel, label=Config.PROJECTOR_SCREEN), 0, wx.ALIGN_CENTER_VERTICAL)
+        configs_grid.Add(wx.StaticText(panel, label=_("Projector Screen")), 0, wx.ALIGN_CENTER_VERTICAL)
         configs_grid.Add(self.screens_combobox, 1, wx.EXPAND)
 
         self.filename_re = wx.TextCtrl(panel)
         self.filename_re.SetValue(self.config[Config.FILENAME_RE])
-        configs_grid.Add(wx.StaticText(panel, label=Config.FILENAME_RE), 0, wx.ALIGN_CENTER_VERTICAL)
+        configs_grid.Add(wx.StaticText(panel, label=_("Filename RegEx")), 0, wx.ALIGN_CENTER_VERTICAL)
         configs_grid.Add(self.filename_re, 1, wx.EXPAND)
 
         self.bg_tracks = wx.DirPickerCtrl(panel)
         self.bg_tracks.SetPath(self.config[Config.BG_TRACKS_DIR])
-        configs_grid.Add(wx.StaticText(panel, label=Config.BG_TRACKS_DIR), 0, wx.ALIGN_CENTER_VERTICAL)
+        configs_grid.Add(wx.StaticText(panel, label=_("Background Tracks Dir")), 0, wx.ALIGN_CENTER_VERTICAL)
         configs_grid.Add(self.bg_tracks, 1, wx.EXPAND)
 
         self.bg_zad = wx.FilePickerCtrl(panel)
         self.bg_zad.SetPath(self.config[Config.BG_ZAD_PATH])
-        configs_grid.Add(wx.StaticText(panel, label=Config.BG_ZAD_PATH), 0, wx.ALIGN_CENTER_VERTICAL)
+        configs_grid.Add(wx.StaticText(panel, label=_("Background ZAD Path")), 0, wx.ALIGN_CENTER_VERTICAL)
         configs_grid.Add(self.bg_zad, 1, wx.EXPAND)
 
         top_sizer.Add(configs_grid, 0, wx.EXPAND | wx.ALL, 5)
 
         # --- Dirs ---
 
-        dirs_box = wx.StaticBox(panel, label=Config.FILES_DIRS)
+        dirs_box = wx.StaticBox(panel, label=_("Files Dirs"))
         dirs_box_sizer = wx.StaticBoxSizer(dirs_box, wx.VERTICAL)
         pickers_sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -116,15 +121,15 @@ class SettingsDialog(wx.Dialog):
 
         buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        button_load = wx.Button(panel, wx.ID_OPEN, "Load")
+        button_load = wx.Button(panel, wx.ID_OPEN, _("Load"))
         buttons_sizer.Add(button_load, 1)
         button_load.Bind(wx.EVT_BUTTON, self.on_ok)
 
-        button_save = wx.Button(panel, wx.ID_SAVE, "Save")
+        button_save = wx.Button(panel, wx.ID_SAVE, _("Save"))
         buttons_sizer.Add(button_save, 1)
         button_save.Bind(wx.EVT_BUTTON, self.on_ok)
 
-        button_cancel = wx.Button(panel, wx.ID_CANCEL, "Cancel")
+        button_cancel = wx.Button(panel, wx.ID_CANCEL, _("Cancel"))
         buttons_sizer.Add(button_cancel, 1)
 
         top_sizer.Add(buttons_sizer, 0, wx.EXPAND | wx.ALL, 5)
@@ -136,7 +141,7 @@ class SettingsDialog(wx.Dialog):
     def on_ok(self, e):
         self.session_file_path = self.session_picker.GetPath()
         if not self.session_file_path:
-            wx.MessageBox("Please specify the Current Fest file.", "No Fest File", wx.OK | wx.ICON_ERROR, self)
+            wx.MessageBox(_("Please specify the Current Fest file."), "No Fest File", wx.OK | wx.ICON_ERROR, self)
             return
 
         self.config[Config.PROJECTOR_SCREEN] = self.screens_combobox.GetSelection()

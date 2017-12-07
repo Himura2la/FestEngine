@@ -1,19 +1,19 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR ORGANIZATION
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Русская локализация Fest Engine
+# https://github.com/Himura2la/FestEngine
+# Himura Kazuto, 2017. А вообще, смотрите Blame.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2017-12-07 22:34+0300\n"
-"PO-Revision-Date: 2017-12-07 22:36+0300\n"
-"Last-Translator: \n"
-"Language-Team: \n"
+"POT-Creation-Date: 2017-12-07 23:06+0300\n"
+"PO-Revision-Date: 2017-12-07 23:24+0300\n"
+"Last-Translator: Himura\n"
+"Language-Team: FestEngine Team\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: pygettext.py 1.5\n"
+"Generated-By: pygettext.py 1.5 (допиленный для юникода)\n"
 "X-Generator: Poedit 2.0.5\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -68,7 +68,7 @@ msgstr "&Удалить строку"
 
 #: ..\main.pyw:169
 msgid "&Add intermission (countdown) above"
-msgstr "Вставить &перерыв сверху"
+msgstr "Вставить перерыв сверху"
 
 #: ..\main.pyw:171
 msgid "&Add intermission (countdown) below"
@@ -76,7 +76,7 @@ msgstr "Вставить &перерыв снизу"
 
 #: ..\main.pyw:173
 msgid "&Item"
-msgstr "&Строка"
+msgstr "С&трока"
 
 #: ..\main.pyw:178
 msgid "&Show"
@@ -116,11 +116,11 @@ msgstr "&Фоновая музыка"
 
 #: ..\main.pyw:210
 msgid "&Emergency Stop All\tEsc"
-msgstr "&Экстренная остановка всего\tEsc"
+msgstr "&Экстренная остановка\tEsc"
 
 #: ..\main.pyw:211
 msgid "Show &ZAD\tF1"
-msgstr "Показать &ZAD\tF1"
+msgstr "Показать &ZAD (картинку)\tF1"
 
 #: ..\main.pyw:212
 msgid "&Play Sound/Video\tF2"
@@ -128,7 +128,7 @@ msgstr "&Запустить звук/видео\tF2"
 
 #: ..\main.pyw:213
 msgid "&Clear ZAD\tShift+F1"
-msgstr "&Убрать ZAD\tShift+F1"
+msgstr "&Убрать ZAD (картинку)\tShift+F1"
 
 #: ..\main.pyw:214
 msgid "&No Show"
@@ -136,7 +136,7 @@ msgstr "&Черный экран"
 
 #: ..\main.pyw:216
 msgid "&Play/Pause Background\tF3"
-msgstr "&Включить/выключить фоновую музыку\tF3"
+msgstr "&Play/Pause фоновой музыки\tF3"
 
 #: ..\main.pyw:233
 msgid "&Fire"
@@ -144,11 +144,7 @@ msgstr "&Запуск"
 
 #: ..\main.pyw:255
 msgid "Fade out"
-msgstr "Закончить номер"
-
-#: ..\main.pyw:262
-msgid "Stop"
-msgstr "Стоп"
+msgstr "Закончить"
 
 #: ..\main.pyw:265
 msgid "Find"
@@ -168,6 +164,12 @@ msgid ""
 "Directories: %s\n"
 "Filename RegEx: %s"
 msgstr ""
+"Нет либо регулярного выражения, либо ни одной папки треков.\n"
+"Пожалуйста, укажите в настройках правильные пути и регулярное выражение\n"
+"которое будет имена ваших файлов.\n"
+"\n"
+"Папки с треками: %s\n"
+"Регулярное выражение: %s"
 
 #: ..\main.pyw:531
 msgid ""
@@ -176,11 +178,19 @@ msgid ""
 "number at the beginning of all filenames. The order should correspond to "
 "your event's program\n"
 "\n"
-"In this case the RegEx will look like this: ^(?P<num>\\d{3})(?P<name>."
-"*)\n"
+"In this case the RegEx will look like this: ^(?P<num>\\d{3})(?P<name>.*)\n"
 "\n"
 "Your filename RegEx: %s"
 msgstr ""
+"Не найдена группа 'num' в регулярном выражении. Рекомендуется "
+"использовать\n"
+"уникальный всегда трехзначный номер в начале каждого имени файла.\n"
+"Порядок номеров должен соответствовать программе мероприятия.\n"
+"\n"
+"В описанном случае, регулярное выражение примерно такое:\n"
+"^(?P<num>\\d{3})(?P<name>.*)\n"
+"\n"
+"Ваше регулярное выражение: %s"
 
 #: ..\main.pyw:539
 msgid ""
@@ -191,16 +201,27 @@ msgid ""
 "\n"
 "Your filename RegEx: %s"
 msgstr ""
+"Не задана группа '%s' в регулярном выражении. Она необходима для "
+"обратного отсчета.\n"
+"\n"
+"Самый простой вариант регулярного выражения: ^(?P<num>\\d{3})(?P<name>."
+"*)\n"
+"\n"
+"Ваше регулярное выражение: %s"
 
 #: ..\main.pyw:556
 msgid "[WARNING] File %s does not match filename_re"
 msgstr ""
+"[ВНИМАНИЕ] Файл %s не соответствует регулярному выражению и был "
+"проигнорирован"
 
 #: ..\main.pyw:567
 msgid ""
 "[WARNING] Inconsistent value '%s': changing '%s' to '%s'.\n"
 "\t\tItem: %s"
 msgstr ""
+"[ВНИМАНИЕ] Неоднозначное значение '%s': меняем '%s' на '%s'.\n"
+"\t\tНомер: %s"
 
 #: ..\main.pyw:577
 msgid ""
@@ -208,6 +229,9 @@ msgid ""
 "%s\n"
 "Conflicts with: %s"
 msgstr ""
+"Обнаружен дубликат! Этот файл:\n"
+"%s\n"
+"конфликтует с: %s"
 
 #: ..\main.pyw:692
 msgid "Replace File for №%s"
@@ -221,7 +245,7 @@ msgstr "Какой из файлов заменить?"
 msgid "Select target file"
 msgstr "На что заменить?"
 
-#: ..\main.pyw:714
+#: ..\main.pyw:714 ..\settings.py:132
 msgid "Cancel"
 msgstr "Отмена"
 
@@ -244,6 +268,14 @@ msgid ""
 "copied in place of\n"
 "'%s'"
 msgstr ""
+"Резервная копия оригинального файла сохранена в файл\n"
+"'%s';\n"
+"\n"
+"Файл\n"
+"'%s'\n"
+"\n"
+"скопирован на место\n"
+"'%s'"
 
 #: ..\main.pyw:865
 msgid "Invalid countdown row"
@@ -264,3 +296,58 @@ msgid ""
 "\n"
 "Found path: %s"
 msgstr ""
+"Неправильный путь к фоновым трекам.\n"
+"укажите правильный путь в настройках, плиз.\n"
+"\n"
+"Сейчас там это: %s"
+
+#: ..\settings.py:13
+msgid ""
+"Hi ^_^ Please select a new or existing *.fest file in the 'Current Fest' "
+"field.\n"
+"It will load automatically on each start unless you change it.\n"
+"The load of files can be performed only once, thus it's better to restart "
+"the appafter changing something files-related in settings. Do the best "
+"festival! \n"
+msgstr ""
+"Привет! ^_^ Для начала, укажи новый или существующий файл феста.\n"
+"Он будет автоматически загружаться при запуске пока его не сменишь.\n"
+"Загрузку файлов можно произвести лишь однажды, поcему лучше\n"
+"перезапускать приложение при изменениях в файлах. Ваш фест будет лучшим!"
+"\",\n"
+
+#: ..\settings.py:28
+msgid "Current Fest"
+msgstr "Файл феста"
+
+#: ..\settings.py:46
+msgid "Projector Screen"
+msgstr "Окно &проектора"
+
+#: ..\settings.py:51
+msgid "Filename RegEx"
+msgstr "Регулярное выражение имён файлов"
+
+#: ..\settings.py:56
+msgid "Background Tracks Dir"
+msgstr "Папка с фоновой музыкой"
+
+#: ..\settings.py:61
+msgid "Background ZAD Path"
+msgstr "Папка с картинками задников (ZAD)"
+
+#: ..\settings.py:68
+msgid "Files Dirs"
+msgstr "Папки с треками"
+
+#: ..\settings.py:124
+msgid "Load"
+msgstr "Загрузить"
+
+#: ..\settings.py:128
+msgid "Save"
+msgstr "Сохранить"
+
+#: ..\settings.py:144
+msgid "Please specify the Current Fest file."
+msgstr "Пожалуйста, укажите файл феста"
