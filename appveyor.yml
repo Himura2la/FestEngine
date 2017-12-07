@@ -1,12 +1,12 @@
 skip_non_tags: true
 environment:
     matrix:
-      - ARCH: '32'
-        PYTHON_PATH: C:\Python36
-        VLC_INSTALL_FLAGS: '--x86'
       - ARCH: '64'
         PYTHON_PATH: C:\Python36-x64
         VLC_INSTALL_FLAGS: ''
+      - ARCH: '32'
+        PYTHON_PATH: C:\Python36
+        VLC_INSTALL_FLAGS: '--x86'
 
 install:
     - |
