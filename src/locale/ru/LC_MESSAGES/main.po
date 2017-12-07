@@ -1,0 +1,266 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2017-12-07 22:34+0300\n"
+"PO-Revision-Date: 2017-12-07 22:36+0300\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 2.0.5\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: ..\main.pyw:87
+msgid "&Load ZAD and MP3"
+msgstr "&Загрузить ZAD и MP3"
+
+#: ..\main.pyw:95
+msgid "Open &Folder with '%s'"
+msgstr "Открыть &папку с '%s'"
+
+#: ..\main.pyw:99
+msgid "Open '%s' Folder"
+msgstr "Открыть папку '%s'"
+
+#: ..\main.pyw:102
+msgid "Open &Background Music Folder"
+msgstr "Открыть папку &фоновых треков"
+
+#: ..\main.pyw:135
+msgid "&Settings"
+msgstr "&Настройки"
+
+#: ..\main.pyw:137
+msgid "&Show Log"
+msgstr "&Открыть окно &лога"
+
+#: ..\main.pyw:144
+msgid "&Prefer No Video (fallback)"
+msgstr "Не включать видео когда есть звук"
+
+#: ..\main.pyw:150
+msgid "&About"
+msgstr "&О программе"
+
+#: ..\main.pyw:152
+msgid "E&xit"
+msgstr "Вы&ход"
+
+#: ..\main.pyw:153
+msgid "&Main"
+msgstr "&Глагнэ"
+
+#: ..\main.pyw:158
+msgid "&Replace File"
+msgstr "&Заменить файл"
+
+#: ..\main.pyw:162
+msgid "&Delete item"
+msgstr "&Удалить строку"
+
+#: ..\main.pyw:169
+msgid "&Add intermission (countdown) above"
+msgstr "Вставить &перерыв сверху"
+
+#: ..\main.pyw:171
+msgid "&Add intermission (countdown) below"
+msgstr "Вставить &перерыв снизу"
+
+#: ..\main.pyw:173
+msgid "&Item"
+msgstr "&Строка"
+
+#: ..\main.pyw:178
+msgid "&Show"
+msgstr "&Создать"
+
+#: ..\main.pyw:179
+msgid "&Destroy"
+msgstr "&Убрать"
+
+#: ..\main.pyw:182
+msgid "&Projector Window"
+msgstr "Окно &проектора"
+
+#: ..\main.pyw:188
+msgid "&Load Files"
+msgstr "Загрузить &файлы"
+
+#: ..\main.pyw:190
+msgid "&Open Window"
+msgstr "&Открыть окно"
+
+#: ..\main.pyw:194
+msgid "&Fade In/Out Enabled"
+msgstr "Плавный переход звука"
+
+#: ..\main.pyw:198
+msgid "&Play Next"
+msgstr "&Включить следующий трек"
+
+#: ..\main.pyw:202
+msgid "&Pause"
+msgstr "&Пауза"
+
+#: ..\main.pyw:206
+msgid "&Background Music"
+msgstr "&Фоновая музыка"
+
+#: ..\main.pyw:210
+msgid "&Emergency Stop All\tEsc"
+msgstr "&Экстренная остановка всего\tEsc"
+
+#: ..\main.pyw:211
+msgid "Show &ZAD\tF1"
+msgstr "Показать &ZAD\tF1"
+
+#: ..\main.pyw:212
+msgid "&Play Sound/Video\tF2"
+msgstr "&Запустить звук/видео\tF2"
+
+#: ..\main.pyw:213
+msgid "&Clear ZAD\tShift+F1"
+msgstr "&Убрать ZAD\tShift+F1"
+
+#: ..\main.pyw:214
+msgid "&No Show"
+msgstr "&Черный экран"
+
+#: ..\main.pyw:216
+msgid "&Play/Pause Background\tF3"
+msgstr "&Включить/выключить фоновую музыку\tF3"
+
+#: ..\main.pyw:233
+msgid "&Fire"
+msgstr "&Запуск"
+
+#: ..\main.pyw:255
+msgid "Fade out"
+msgstr "Закончить номер"
+
+#: ..\main.pyw:262
+msgid "Stop"
+msgstr "Стоп"
+
+#: ..\main.pyw:265
+msgid "Find"
+msgstr "Поиск"
+
+#: ..\main.pyw:278
+msgid "Right-click to quit search"
+msgstr "Кликните правой кнопкой чтобы выйти из поиска"
+
+#: ..\main.pyw:518
+msgid ""
+"No filename regular expression or ZAD path is invalid or MP3 path is "
+"invalid.\n"
+"Please specify valid paths to folders with your files, and regular\n"
+"expression that parses your filenames in settings or .fest file.\n"
+"\n"
+"Directories: %s\n"
+"Filename RegEx: %s"
+msgstr ""
+
+#: ..\main.pyw:531
+msgid ""
+"No 'num' group in filename RegEx. We recommend using a unique sorting-"
+"friendly three-digit\n"
+"number at the beginning of all filenames. The order should correspond to "
+"your event's program\n"
+"\n"
+"In this case the RegEx will look like this: ^(?P<num>\\d{3})(?P<name>."
+"*)\n"
+"\n"
+"Your filename RegEx: %s"
+msgstr ""
+
+#: ..\main.pyw:539
+msgid ""
+"No '%s' group in filename RegEx. It is required to set the countdown "
+"description.\n"
+"\n"
+"The simplest RegEx looks like this: ^(?P<num>\\d{3})(?P<name>.*)\n"
+"\n"
+"Your filename RegEx: %s"
+msgstr ""
+
+#: ..\main.pyw:556
+msgid "[WARNING] File %s does not match filename_re"
+msgstr ""
+
+#: ..\main.pyw:567
+msgid ""
+"[WARNING] Inconsistent value '%s': changing '%s' to '%s'.\n"
+"\t\tItem: %s"
+msgstr ""
+
+#: ..\main.pyw:577
+msgid ""
+"Duplicate files found:\n"
+"%s\n"
+"Conflicts with: %s"
+msgstr ""
+
+#: ..\main.pyw:692
+msgid "Replace File for №%s"
+msgstr "Заменить файл для №%s"
+
+#: ..\main.pyw:697
+msgid "Select which file to replace"
+msgstr "Какой из файлов заменить?"
+
+#: ..\main.pyw:702
+msgid "Select target file"
+msgstr "На что заменить?"
+
+#: ..\main.pyw:714
+msgid "Cancel"
+msgstr "Отмена"
+
+#: ..\main.pyw:743
+msgid "Do not replace .%s to .%s!"
+msgstr "Нельзя менять .%s на .%s!"
+
+#: ..\main.pyw:744
+msgid "Different file types"
+msgstr "Разные типы файлов"
+
+#: ..\main.pyw:762
+msgid ""
+"Original file backed up as\n"
+"'%s';\n"
+"\n"
+"File\n"
+"'%s'\n"
+"\n"
+"copied in place of\n"
+"'%s'"
+msgstr ""
+
+#: ..\main.pyw:865
+msgid "Invalid countdown row"
+msgstr "Неверная строка обратного отсчета"
+
+#: ..\main.pyw:880
+msgid "Nothing to play for №%s"
+msgstr "Нечего включить для №%s"
+
+#: ..\main.pyw:903
+msgid "Playback FAILED !!!"
+msgstr "НЕ УДАЛОСЬ запустить !!!"
+
+#: ..\main.pyw:1032
+msgid ""
+"Background MP3 path is invalid. Please specify a\n"
+"valid path with your background tracks in settings.\n"
+"\n"
+"Found path: %s"
+msgstr ""

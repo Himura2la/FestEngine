@@ -1,7 +1,6 @@
 #!python3
 # -*- coding: utf-8 -*-
 
-import argparse
 import bisect
 import os
 import re
@@ -11,8 +10,9 @@ import threading
 import time
 import webbrowser
 import json
-
 import functools
+import gettext
+
 import vlc
 import wx
 import wx.grid
@@ -22,6 +22,8 @@ from constants import Config, Colors, Columns, FileTypes, Strings
 from projector import ProjectorWindow
 from settings import SettingsDialog
 from logger import Logger
+
+gettext.translation('main', './locale', ['ru']).install()
 
 
 if sys.platform.startswith('linux'):
@@ -82,7 +84,7 @@ class MainFrame(wx.Frame):
         # --- Main ---
         menu_file = wx.Menu()
 
-        self.load_data_item = menu_file.Append(wx.ID_ANY, "&Load ZAD and MP3")
+        self.load_data_item = menu_file.Append(wx.ID_ANY, _("&Load ZAD and MP3"))
         self.Bind(wx.EVT_MENU, self.load_files, self.load_data_item)
 
         menu_file.AppendSeparator()
@@ -90,14 +92,14 @@ class MainFrame(wx.Frame):
         if self.session_file_path:
             session_folder, session_file = os.path.split(self.session_file_path)
             self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(session_folder)),
-                      menu_file.Append(wx.ID_ANY, "Open &Folder with '%s'" % session_file))
+                      menu_file.Append(wx.ID_ANY, _("Open &Folder with '%s'") % session_file))
 
         for folder in self.config[Config.FILES_DIRS]:
             self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(folder)),
-                      menu_file.Append(wx.ID_ANY, "Open '%s' Folder" % os.path.basename(folder)))
+                      menu_file.Append(wx.ID_ANY, _("Open '%s' Folder") % os.path.basename(folder)))
 
         self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(self.config[Config.BG_TRACKS_DIR])),
-                  menu_file.Append(wx.ID_ANY, "Open &Background Music Folder"))
+                  menu_file.Append(wx.ID_ANY, _("Open &Background Music Folder")))
 
         menu_file.AppendSeparator()
 
@@ -130,88 +132,88 @@ class MainFrame(wx.Frame):
                 json.dump(prev_config, open(self.session_file_path + "_bkp", 'w', encoding='utf-8'),
                       ensure_ascii=False, indent=4)
 
-        self.Bind(wx.EVT_MENU, on_settings, menu_file.Append(wx.ID_ANY, "&Settings"))
+        self.Bind(wx.EVT_MENU, on_settings, menu_file.Append(wx.ID_ANY, _("&Settings")))
 
-        show_log_menu_item = menu_file.Append(wx.ID_ANY, "&Show Log")
+        show_log_menu_item = menu_file.Append(wx.ID_ANY, _("&Show Log"))
 
         def on_log(e):
             self.logger.open_window(lambda: show_log_menu_item.Enable(True))
             show_log_menu_item.Enable(False)
         self.Bind(wx.EVT_MENU, on_log, show_log_menu_item)
 
-        self.prefer_audio = menu_file.Append(wx.ID_ANY, "&Prefer No Video (fallback)", kind=wx.ITEM_CHECK)
+        self.prefer_audio = menu_file.Append(wx.ID_ANY, _("&Prefer No Video (fallback)"), kind=wx.ITEM_CHECK)
         self.prefer_audio.Check(False)
 
         menu_file.AppendSeparator()
 
         self.Bind(wx.EVT_MENU, lambda _: webbrowser.open('https://github.com/Himura2la/FestEngine'),
-                  menu_file.Append(wx.ID_ABOUT, "&About"))
+                  menu_file.Append(wx.ID_ABOUT, _("&About")))
         self.Bind(wx.EVT_MENU, self.on_exit,
-                  menu_file.Append(wx.ID_EXIT, "E&xit"))
-        menu_bar.Append(menu_file, "&Main")
+                  menu_file.Append(wx.ID_EXIT, _("E&xit")))
+        menu_bar.Append(menu_file, _("&Main"))
 
         # --- Item ---
         menu_item = wx.Menu()
 
-        self.replace_file_item = menu_item.Append(wx.ID_ANY, "&Replace File")
+        self.replace_file_item = menu_item.Append(wx.ID_ANY, _("&Replace File"))
         self.replace_file_item.Enable(False)
         self.Bind(wx.EVT_MENU, self.replace_file, self.replace_file_item)
 
-        self.del_dup_row_item = menu_item.Append(wx.ID_ANY, "&Delete item")
+        self.del_dup_row_item = menu_item.Append(wx.ID_ANY, _("&Delete item"))
         self.del_dup_row_item.Enable(False)
         self.Bind(wx.EVT_MENU, self.del_row, self.del_dup_row_item)
 
         menu_item.AppendSeparator()
 
         self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(False, message=Strings.TIMER_DEFAULT_TEXT),
-                  menu_item.Append(wx.ID_ANY, "&Add intermission (countdown) above"))
+                  menu_item.Append(wx.ID_ANY, _("&Add intermission (countdown) above")))
         self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(True, message=Strings.TIMER_DEFAULT_TEXT),
-                  menu_item.Append(wx.ID_ANY, "&Add intermission (countdown) below"))
+                  menu_item.Append(wx.ID_ANY, _("&Add intermission (countdown) below")))
 
-        menu_bar.Append(menu_item, "&Item")
+        menu_bar.Append(menu_item, _("&Item"))
 
         # --- Projector Window ---
         proj_win_menu = wx.Menu()
         self.Bind(wx.EVT_MENU, self.ensure_proj_win,
-                  proj_win_menu.Append(wx.ID_ANY, "&Show"))
-        self.destroy_proj_win_item = proj_win_menu.Append(wx.ID_ANY, "&Destroy")
+                  proj_win_menu.Append(wx.ID_ANY, _("&Show")))
+        self.destroy_proj_win_item = proj_win_menu.Append(wx.ID_ANY, _("&Destroy"))
         self.destroy_proj_win_item.Enable(False)
         self.Bind(wx.EVT_MENU, self.destroy_proj_win, self.destroy_proj_win_item)
-        menu_bar.Append(proj_win_menu, "&Projector Window")
+        menu_bar.Append(proj_win_menu, _("&Projector Window"))
 
         # --- Background Music ---
         menu_bg_music = wx.Menu()
 
         self.Bind(wx.EVT_MENU, self.on_bg_load_files,
-                  menu_bg_music.Append(wx.ID_ANY, "&Load Files"))
+                  menu_bg_music.Append(wx.ID_ANY, _("&Load Files")))
         self.Bind(wx.EVT_MENU, lambda e: self.bg_player.show_window(),
-                  menu_bg_music.Append(wx.ID_ANY, "&Open Window"))
+                  menu_bg_music.Append(wx.ID_ANY, _("&Open Window")))
 
         menu_bg_music.AppendSeparator()
 
-        self.bg_fade_switch = menu_bg_music.Append(wx.ID_ANY, "&Fade In/Out Enabled", kind=wx.ITEM_CHECK)
+        self.bg_fade_switch = menu_bg_music.Append(wx.ID_ANY, _("&Fade In/Out Enabled"), kind=wx.ITEM_CHECK)
         self.bg_fade_switch.Check(self.bg_player.fade_in_out)
         self.Bind(wx.EVT_MENU, self.fade_switched, self.bg_fade_switch)
 
-        self.bg_play_item = menu_bg_music.Append(wx.ID_ANY, "&Play Next")
+        self.bg_play_item = menu_bg_music.Append(wx.ID_ANY, _("&Play Next"))
         self.Bind(wx.EVT_MENU, self.background_play, self.bg_play_item)
         self.bg_play_item.Enable(False)
 
-        self.bg_pause_switch = menu_bg_music.Append(wx.ID_ANY, "&Pause", kind=wx.ITEM_CHECK)
+        self.bg_pause_switch = menu_bg_music.Append(wx.ID_ANY, _("&Pause"), kind=wx.ITEM_CHECK)
         self.bg_pause_switch.Enable(False)
         self.Bind(wx.EVT_MENU, self.background_pause, self.bg_pause_switch)
 
-        menu_bar.Append(menu_bg_music, "&Background Music")
+        menu_bar.Append(menu_bg_music, _("&Background Music"))
 
         # --- Fire (Play) ---
         menu_play = wx.Menu()
-        emergency_stop_item = menu_play.Append(wx.ID_ANY, "&Emergency Stop All\tEsc")
-        show_zad_item = menu_play.Append(wx.ID_ANY, "Show &ZAD\tF1")
-        play_track_item = menu_play.Append(wx.ID_ANY, "&Play Sound/Video\tF2")
-        clear_zad_item = menu_play.Append(wx.ID_ANY, "&Clear ZAD\tShift+F1")
-        no_show_item = menu_play.Append(wx.ID_ANY, "&No Show")
+        emergency_stop_item = menu_play.Append(wx.ID_ANY, _("&Emergency Stop All\tEsc"))
+        show_zad_item = menu_play.Append(wx.ID_ANY, _("Show &ZAD\tF1"))
+        play_track_item = menu_play.Append(wx.ID_ANY, _("&Play Sound/Video\tF2"))
+        clear_zad_item = menu_play.Append(wx.ID_ANY, _("&Clear ZAD\tShift+F1"))
+        no_show_item = menu_play.Append(wx.ID_ANY, _("&No Show"))
         menu_play.AppendSeparator()
-        play_pause_bg_item = menu_play.Append(wx.ID_ANY, "&Play/Pause Background\tF3")
+        play_pause_bg_item = menu_play.Append(wx.ID_ANY, _("&Play/Pause Background\tF3"))
 
         self.Bind(wx.EVT_MENU, self.emergency_stop, emergency_stop_item)
         self.Bind(wx.EVT_MENU, self.show_zad, show_zad_item)
@@ -228,7 +230,7 @@ class MainFrame(wx.Frame):
             # wx.AcceleratorEntry(wx.ACCEL_CRTL, wx.WXK_F1, no_show_item.GetId()),  # OS captures them
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F3, play_pause_bg_item.GetId())]))
 
-        menu_bar.Append(menu_play, "&Fire")
+        menu_bar.Append(menu_play, _("&Fire"))
 
         self.SetMenuBar(menu_bar)
 
@@ -250,17 +252,17 @@ class MainFrame(wx.Frame):
         self.vol_control.SetRange(-1, 200)
         self.vol_control.Bind(wx.EVT_SPINCTRL, self.set_vol, self.vol_control)
 
-        self.fade_out_btn = wx.Button(self, label="Fade out", size=(-1, toolbar_base_height + 2))
+        self.fade_out_btn = wx.Button(self, label=_("Fade out"), size=(-1, toolbar_base_height + 2))
         self.fade_out_btn.Enable(False)
         self.toolbar.Add(self.fade_out_btn, 0)
         self.fade_out_btn.Bind(wx.EVT_BUTTON, self.stop_async)
 
         self.time_bar = wx.Gauge(self, range=1, size=(-1, toolbar_base_height))
         self.toolbar.Add(self.time_bar, 1, wx.ALIGN_CENTER_VERTICAL)
-        self.time_label = wx.StaticText(self, label='Stop', size=(50, -1), style=wx.ALIGN_CENTER)
+        self.time_label = wx.StaticText(self, label=_('Stop'), size=(50, -1), style=wx.ALIGN_CENTER)
         self.toolbar.Add(self.time_label, 0, wx.ALIGN_CENTER_VERTICAL)
 
-        self.search_box = wx.TextCtrl(self, size=(60, toolbar_base_height), value='Find', style=wx.TE_PROCESS_ENTER)
+        self.search_box = wx.TextCtrl(self, size=(60, toolbar_base_height), value=_('Find'), style=wx.TE_PROCESS_ENTER)
         self.search_box.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
         self.toolbar.Add(self.search_box, 0, wx.ALIGN_CENTER_VERTICAL)
 
@@ -273,7 +275,7 @@ class MainFrame(wx.Frame):
         self.search_box.Bind(wx.EVT_KILL_FOCUS, search_box_leave_handler)
         self.search_box.Bind(wx.EVT_TEXT, self.search)
         self.search_box.Bind(wx.EVT_RIGHT_DOWN, self.quit_search)
-        self.search_box.SetToolTip('Right-click to quit search')
+        self.search_box.SetToolTip(_('Right-click to quit search'))
         self.search_box.Bind(wx.EVT_TEXT_ENTER, self.quit_search)
 
         self.vid_btn = wx.ToggleButton(self, label='VID', size=(35 if win else 50, toolbar_base_height + 2))
@@ -513,11 +515,11 @@ class MainFrame(wx.Frame):
         dirs = self.config[Config.FILES_DIRS]
         filename_re = self.config[Config.FILENAME_RE]
         if not dirs or not all([os.path.isdir(d) for d in dirs]) or not filename_re:
-            msg = "No filename regular expression or ZAD path is invalid or MP3 path is invalid.\n" \
-                  "Please specify valid paths to folders with your files, and regular\n" \
-                  "expression that parses your filenames in settings or .fest file.\n\n" \
-                  "Directories: %s\n" \
-                  "Filename RegEx: %s" % (", ".join(dirs), filename_re)
+            msg = _("No filename regular expression or ZAD path is invalid or MP3 path is invalid.\n"
+                    "Please specify valid paths to folders with your files, and regular\n"
+                    "expression that parses your filenames in settings or .fest file.\n\n"
+                    "Directories: %s\n"
+                    "Filename RegEx: %s") % (", ".join(dirs), filename_re)
             wx.MessageBox(msg, "Path Error", wx.OK | wx.ICON_ERROR, self)
             return
 
@@ -526,17 +528,17 @@ class MainFrame(wx.Frame):
         group_names, group_positions = zip(*sorted(self.filename_re.groupindex.items(), key=lambda a: a[1]))
 
         if 'num' not in group_names:
-            msg = "No 'num' group in filename RegEx. We recommend using a unique sorting-friendly three-digit\n" \
-                  "number at the beginning of all filenames. The order should correspond to your event's program\n\n" \
-                  "In this case the RegEx will look like this: ^(?P<num>\d{3})(?P<name>.*)\n\n" \
-                  "Your filename RegEx: %s" % filename_re
+            msg = _("No 'num' group in filename RegEx. We recommend using a unique sorting-friendly three-digit\n"
+                    "number at the beginning of all filenames. The order should correspond to your event's program\n\n"
+                    "In this case the RegEx will look like this: ^(?P<num>\d{3})(?P<name>.*)\n\n"
+                    "Your filename RegEx: %s") % filename_re
             wx.MessageBox(msg, "Filename RegEx Error", wx.OK | wx.ICON_ERROR, self)
             return
 
         if Columns.NAME not in group_names:
-            msg = "No '%s' group in filename RegEx. It is required to set the countdown description.\n\n" \
-                  "The simplest RegEx looks like this: ^(?P<num>\d{3})(?P<name>.*)\n\n" \
-                  "Your filename RegEx: %s" % (Columns.NAME, filename_re)
+            msg = _("No '%s' group in filename RegEx. It is required to set the countdown description.\n\n"
+                    "The simplest RegEx looks like this: ^(?P<num>\d{3})(?P<name>.*)\n\n"
+                    "Your filename RegEx: %s") % (Columns.NAME, filename_re)
             wx.MessageBox(msg, "Filename RegEx Error", wx.OK | wx.ICON_ERROR, self)
             return
 
@@ -551,7 +553,7 @@ class MainFrame(wx.Frame):
             ext = ext.lower()  # Never forget doing this!
             match = re.search(self.filename_re, name)
             if not match:
-                self.logger.log("[WARNING] File %s does not match filename_re" % file_path)
+                self.logger.log(_("[WARNING] File %s does not match filename_re") % file_path)
                 continue
             num = match.group('num')
 
@@ -562,8 +564,8 @@ class MainFrame(wx.Frame):
                 value = match.group(group)
                 if value and group != 'num':
                     if group in self.data[num] and self.data[num][group] != value:
-                        self.logger.log("[WARNING] Inconsistent value '%s': changing '%s' to '%s'.\n\t\tItem: %s" %
-                                                (group, self.data[num][group], value, str(self.data[num])))
+                        self.logger.log(_("[WARNING] Inconsistent value '%s': changing '%s' to '%s'.\n\t\tItem: %s") %
+                                        (group, self.data[num][group], value, str(self.data[num])))
                     self.data[num][group] = value
 
             if 'files' not in self.data[num]:
@@ -572,7 +574,7 @@ class MainFrame(wx.Frame):
             if ext not in self.data[num]['files']:
                 self.data[num]['files'][ext] = file_path
             else:
-                msg = "Duplicate files were found:\n%s\nConflicts with: %s" % (file_path, self.data[num])
+                msg = _("Duplicate files found:\n%s\nConflicts with: %s") % (file_path, self.data[num])
                 self.logger.log('[!!! ALERT !!!] ' + msg)
                 wx.MessageBox('ALERT !!!\n' + msg, "Duplicate files alert", wx.OK | wx.ICON_ERROR)
 
@@ -687,17 +689,17 @@ class MainFrame(wx.Frame):
 
         class FileReplacer(wx.Dialog):
             def __init__(self, parent, num):
-                wx.Dialog.__init__(self, parent, title=u"Replace File for №%s" % num)
+                wx.Dialog.__init__(self, parent, title=_(u"Replace File for №%s") % num)
                 top_sizer = wx.BoxSizer(wx.VERTICAL)
 
                 files = [path for ext, path in parent.data[num]['files'].items()]
 
-                self.src_file_chooser = wx.RadioBox(self, label="Select which file to replace",
+                self.src_file_chooser = wx.RadioBox(self, label=_("Select which file to replace"),
                                                     choices=files, majorDimension=1, style=wx.RA_SPECIFY_COLS)
                 self.Bind(wx.EVT_RADIOBOX, self.src_file_selected, self.src_file_chooser)
                 top_sizer.Add(self.src_file_chooser, 1, wx.ALL | wx.EXPAND, 5)
 
-                file_picker_box = wx.StaticBox(self, label="Select target file")
+                file_picker_box = wx.StaticBox(self, label=_("Select target file"))
                 file_picker_box_sizer = wx.StaticBoxSizer(file_picker_box, wx.VERTICAL)
                 self.file_picker = wx.FilePickerCtrl(self)
                 file_picker_box_sizer.Add(self.file_picker, 0, wx.EXPAND)
@@ -709,7 +711,7 @@ class MainFrame(wx.Frame):
                 self.ok_button = wx.Button(self, wx.ID_OK, "OK")
                 self.ok_button.Bind(wx.EVT_BUTTON, self.on_ok)
                 buttons_sizer.Add(self.ok_button, 1)
-                buttons_sizer.Add(wx.Button(self, wx.ID_CANCEL, "Cancel"), 1)
+                buttons_sizer.Add(wx.Button(self, wx.ID_CANCEL, _("Cancel")), 1)
                 top_sizer.Add(buttons_sizer, 0, wx.EXPAND | wx.ALL, 5)
 
                 self.SetSizerAndFit(top_sizer)
@@ -738,8 +740,8 @@ class MainFrame(wx.Frame):
                 known_exts = [val for name, val in vars(FileTypes).items()
                               if name[:2] + name[-2:] != '____' and isinstance(val, set)]
                 if not any({src_ext in ext_set and tgt_ext in ext_set for ext_set in known_exts}):
-                    wx.MessageBox("Do not replace .%s to .%s!" % (src_ext, tgt_ext),
-                                  "Different file types", wx.OK | wx.ICON_ERROR, self)
+                    wx.MessageBox(_("Do not replace .%s to .%s!") % (src_ext, tgt_ext),
+                                  _("Different file types"), wx.OK | wx.ICON_ERROR, self)
                     self.tgt_file = self.src_file
                     return
                 self.ok_button.Enable(True)
@@ -757,9 +759,9 @@ class MainFrame(wx.Frame):
 
         with FileReplacer(self, num) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
-                wx.MessageBox("Original file backed up as\n'%s';\n\n"
-                              "File\n'%s'\n\n"
-                              "copied in place of\n'%s'" % (dlg.bkp_path, dlg.tgt_file, dlg.src_file))
+                wx.MessageBox(_("Original file backed up as\n'%s';\n\n"
+                                "File\n'%s'\n\n"
+                                "copied in place of\n'%s'") % (dlg.bkp_path, dlg.tgt_file, dlg.src_file))
 
     # --- Search ---
 
@@ -860,7 +862,7 @@ class MainFrame(wx.Frame):
 
             if not self.proj_win.launch_timer(notes, self.grid.GetCellValue(self.grid.GetGridCursorRow(),
                                                                             self.grid_rows.index(Columns.NAME))):
-                self.status("Invalid countdown row")
+                self.status(_("Invalid countdown row"))
             else:
                 self.status("Countdown started!")
             return
@@ -875,7 +877,7 @@ class MainFrame(wx.Frame):
                 audio_files = [file[1] for file in files if file[0] in FileTypes.audio_extensions]
                 file_path, sound_only = (audio_files[0], True) if audio_files else (video_files[0], False)
         except IndexError:
-            self.player_status = u"Nothing to play for №%s" % num
+            self.player_status = _(u"Nothing to play for №%s") % num
             return
         self.play_pause_bg(play=False)
         self.player.set_media(self.vlc_instance.media_new(file_path))
@@ -898,7 +900,7 @@ class MainFrame(wx.Frame):
                 self.logger.log("Trying to get video panel handler...")
 
         if self.player.play() != 0:  # [Play] button is pushed here!
-            wx.CallAfter(lambda: self.set_player_status('Playback FAILED !!!'))
+            wx.CallAfter(lambda: self.set_player_status(_('Playback FAILED !!!')))
             return
 
         state = self.player.get_state()
@@ -1027,9 +1029,9 @@ class MainFrame(wx.Frame):
 
     def on_bg_load_files(self, e=None):
         if not self.config[Config.BG_TRACKS_DIR] or not os.path.isdir(self.config[Config.BG_TRACKS_DIR]):
-            msg = "Background MP3 path is invalid. Please specify a\n" \
-                  "valid path with your background tracks in settings.\n\n" \
-                  "Found path: %s" % self.config[Config.BG_TRACKS_DIR]
+            msg = _("Background MP3 path is invalid. Please specify a\n"
+                    "valid path with your background tracks in settings.\n\n"
+                    "Found path: %s") % self.config[Config.BG_TRACKS_DIR]
             d = wx.MessageBox(msg, "Path Error", wx.OK | wx.ICON_ERROR, self)
             return
 
