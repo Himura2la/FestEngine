@@ -5,6 +5,11 @@ language: python
 python:
   - 3.6
 
+addons:
+  apt:
+    packages:
+    - gettext
+
 cache: pip
 
 install:
@@ -12,6 +17,7 @@ install:
   - pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk2/ubuntu-14.04 wxPython
 
 script:
+  - msgfmt -o ./src/locale/ru/LC_MESSAGES/main.mo ./src/locale/ru/LC_MESSAGES/main.po
   - cd bin && python build.py -novlc
   - mv install.sh FestEngine/
   - tar -zcvf festengine-linux-x64-minimal.tar.gz FestEngine

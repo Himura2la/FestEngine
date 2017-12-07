@@ -15,11 +15,6 @@ class SettingsDialog(wx.Dialog):
                             "The load of files can be performed only once, thus it's better to restart the app"
                             "after changing something files-related in settings. Do the best festival! \n"),
                           "Welcome to the Fest Engine", wx.OK | wx.ICON_INFORMATION, self)
-            # wx.MessageBox("Привет! Для начала, выбери новый или существующий файл феста в поле Current Fest.\n"
-            #               "Он будет автоматически загружаться при запуске пока его не сменишь.\n"
-            #               "Загрузку файлов можно произвести лишь однажды, поcему лучше перезапускать приложение"
-            #               "при изменении состава папок Files Dirs",
-            #               "Welcome to Fest Engine", wx.OK | wx.ICON_INFORMATION, self)
 
         top_sizer = wx.BoxSizer(wx.VERTICAL)
         panel = wx.Panel(self)

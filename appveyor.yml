@@ -9,24 +9,29 @@ environment:
         VLC_INSTALL_FLAGS: ''
 
 install:
-    - "SET PATH=%PYTHON_PATH%;%PYTHON_PATH%\\Scripts;%PATH%"
-    - cmd: pip install pyinstaller python-vlc wxpython
-    - cmd: choco install vlc %VLC_INSTALL_FLAGS% -y --no-progress
+    - |
+        SET PATH=%PYTHON_PATH%;%PYTHON_PATH%\\Scripts;%PATH%
+        pip install pyinstaller python-vlc wxpython
+        choco install -y --no-progress gettext
+        choco install -y --no-progress %VLC_INSTALL_FLAGS% vlc
 
 build_script:
-    - cmd: cd "%APPVEYOR_BUILD_FOLDER%\bin"
-    - cmd: python build.py
+    - |
+        python %PYTHON_PATH%\Tools\i18n\msgfmt.py -o "%APPVEYOR_BUILD_FOLDER%\src\locale\ru\LC_MESSAGES\main.mo" "%APPVEYOR_BUILD_FOLDER%\src\locale\ru\LC_MESSAGES\main.po"
+        cd "%APPVEYOR_BUILD_FOLDER%\bin"
+        python build.py
 
 after_build:
-    - cmd: cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine"
-    - cmd: del MSVCP140.dll VCRUNTIME140.dll api-ms-*  # GPL does not allow...
-    - cmd: echo --- Packing a Full version ---
-    - cmd: 7z a ..\festengine-win%ARCH%-full.zip *
-    - cmd: echo --- Minimalizing ---
-    - cmd: cd ..
-    - cmd: .\minimalize.bat
-    - cmd: echo --- Packing a Minimal version ---
-    - cmd: 7z a ..\festengine-win%ARCH%-minimal.zip *
+    - |
+        cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine"
+        del MSVCP140.dll VCRUNTIME140.dll api-ms-*  # GPL does not allow...
+        echo --- Packing a Full version ---
+        7z a ..\festengine-win%ARCH%-full.zip *
+        echo --- Minimalizing ---
+        cd ..
+        .\minimalize.bat
+        echo --- Packing a Minimal version ---
+        7z a ..\festengine-win%ARCH%-minimal.zip *
 
 artifacts:
     - path: bin\festengine-win$(arch)-full.zip
