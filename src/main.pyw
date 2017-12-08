@@ -23,7 +23,9 @@ from projector import ProjectorWindow
 from settings import SettingsDialog
 from logger import Logger
 
-gettext.translation('main', './locale', ['ru']).install()
+
+
+gettext.translation('main', os.path.join(os.path.dirname(os.path.realpath(__file__)), 'locale'), ['ru']).install()
 
 
 if sys.platform.startswith('linux'):
