@@ -274,6 +274,11 @@ class BackgroundMusicFrame(wx.Frame):
 
         self.Bind(wx.EVT_CLOSE, parent.on_bg_player_win_close)
 
+        f3_id = wx.NewId()
+        self.Bind(wx.EVT_MENU, parent.play_pause_bg, id=f3_id)
+        self.SetAcceleratorTable(wx.AcceleratorTable([(wx.ACCEL_NORMAL, wx.WXK_F3, f3_id)]))
+
+
     def set_volume_from_slider(self, e=None):
         self.parent.background_volume = self.vol_slider.GetValue()  # Forwards to player
         self.vol_label.SetLabel('VOL: %d' % self.parent.background_volume)  # Gets from player
