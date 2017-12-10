@@ -122,7 +122,7 @@ python3 ./FestEngine/src/main.pyw
 
 * [Hokori Tori 2017](https://vk.com/hokori_tori), Орёл
 * [СROSSxOVER - 2017](https://vk.com/crossover_42), Кемерово
-* [Интерактивный аниме показ "Танец духов"](https://vk.com/tulaanime11), Тула
+* [Интерактивный аниме показ "Танец духов"](https://vk.com/tulaanime11), 2017, Тула
 
 # Как это дебажить?
 
