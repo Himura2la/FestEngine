@@ -23,8 +23,8 @@ class BackgroundMusicPlayer(object):
         self.playlist = None
         self.current_track_i = -1
         self.fade_in_out = True
-        self.stop_fade_speed = 0.05
-        self.pause_fade_speed = 0.01
+        self.stop_fade_speed = 0.03  # TODO: To settings
+        self.pause_fade_speed = 0.01 # TODO: To settings
 
     def window_exists(self):
         return bool(self.window)
@@ -76,7 +76,7 @@ class BackgroundMusicPlayer(object):
         if self.current_track_i >= 0:
             if self.player.get_state() in {vlc.State.Playing, vlc.State.Paused}:
                 self.playlist[self.current_track_i]['color'] = Colors.BG_SKIPPED
-                if self.fade_in_out:
+                if self.fade_in_out and self.player.get_state() == vlc.State.Playing:
                     self.fade_out_sync(self.stop_fade_speed)  # Blocks thread
             else:
                 self.playlist[self.current_track_i]['color'] = Colors.BG_PLAYED_TO_END
