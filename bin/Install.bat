@@ -3,8 +3,7 @@
 fsutil dirty query %SYSTEMDRIVE% >nul
 If ERRORLEVEL 1 (
    echo Run me as Administrator, please :3
-   pause
-   exit 1
+   goto hell
 )
 
 for /f "usebackq tokens=1 skip=1 delims=-" %%A in (`wmic os get osarchitecture 2^>nul`) DO (
