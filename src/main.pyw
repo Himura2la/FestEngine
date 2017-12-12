@@ -249,7 +249,7 @@ class MainFrame(wx.Frame):
         # TODO: #9
 
         self.toolbar.Add(wx.StaticText(self, label=' VOL '), 0, wx.ALIGN_CENTER_VERTICAL)
-        self.vol_control = wx.SpinCtrl(self, value='-1', size=(50 if win else 83, toolbar_base_height))
+        self.vol_control = wx.SpinCtrl(self, value='-1', size=(50 if win else 100, toolbar_base_height))
         self.toolbar.Add(self.vol_control, 0, wx.ALIGN_CENTER_VERTICAL)
         self.vol_control.SetRange(-1, 200)
         self.vol_control.Bind(wx.EVT_SPINCTRL, self.set_vol, self.vol_control)
