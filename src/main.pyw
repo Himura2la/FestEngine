@@ -24,9 +24,7 @@ from settings import SettingsDialog
 from logger import Logger
 
 
-
 gettext.translation('main', os.path.join(os.path.dirname(os.path.realpath(__file__)), 'locale'), ['ru']).install()
-
 
 if sys.platform.startswith('linux'):
     try:
@@ -110,29 +108,20 @@ class MainFrame(wx.Frame):
             with SettingsDialog(self.session_file_path, self.config, self) as settings_dialog:
                 action = settings_dialog.ShowModal()
 
-                if action in {wx.ID_SAVE, wx.ID_OPEN}:
-                    self.session_file_path = settings_dialog.session_file_path
-                    with open(Config.LAST_SESSION_PATH, 'w') as f:
-                        f.write(self.session_file_path)
-
-                    if not self.config_ok and os.path.isfile(self.session_file_path):
-                        action = wx.ID_OPEN  # User wants to open! I feel it!
-
-                    if action == wx.ID_SAVE:
-                        # No need to fetch settings_dialog.config, because it was passed by reference
-                        json.dump(self.config, open(self.session_file_path, 'w', encoding='utf-8'),
-                                  ensure_ascii=False, indent=4)
-                    elif action == wx.ID_OPEN:
-                        try:
-                            self.config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
-                        except FileNotFoundError:
-                            json.dump(self.config, open(self.session_file_path, 'w', encoding='utf-8'),
-                                      ensure_ascii=False, indent=4)  # User has no choice...
-                        self.config_ok = True
+                self.session_file_path = settings_dialog.session_file_path
+                self.config = settings_dialog.config
+                self.config_ok = action in {wx.ID_SAVE, wx.ID_OPEN}
 
             if prev_config != self.config:  # Safety is everything!
                 json.dump(prev_config, open(self.session_file_path + "_bkp", 'w', encoding='utf-8'),
                       ensure_ascii=False, indent=4)
+
+            if prev_config[Config.FILES_DIRS] != self.config[Config.FILES_DIRS]:
+                with wx.MessageDialog(self, _("You may want to restart FestEngine. Exit now?"),
+                                      _("Restart Required"), wx.YES_NO | wx.ICON_INFORMATION) as restart_dialog:
+                    action = restart_dialog.ShowModal()
+                    if action == wx.ID_YES:
+                        self.on_exit()
 
         self.Bind(wx.EVT_MENU, on_settings, menu_file.Append(wx.ID_ANY, _("&Settings")))
 
@@ -389,7 +378,7 @@ class MainFrame(wx.Frame):
     def set_bg_player_status(self, text):  # For lambdas
         self.status_bar.SetStatusText(text, 3)
 
-    def on_exit(self, e):
+    def on_exit(self, e=None):
         self.destroy_proj_win()
         self.Close(True)
 

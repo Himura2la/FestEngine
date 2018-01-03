@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2017-12-07 23:06+0300\n"
-"PO-Revision-Date: 2017-12-07 23:24+0300\n"
+"POT-Creation-Date: 2018-01-03 16:16+0300\n"
+"PO-Revision-Date: 2018-01-03 16:18+0300\n"
 "Last-Translator: Himura\n"
 "Language-Team: FestEngine Team\n"
 "Language: ru\n"
@@ -34,127 +34,137 @@ msgstr "Открыть папку '%s'"
 msgid "Open &Background Music Folder"
 msgstr "Открыть папку &фоновых треков"
 
-#: ..\main.pyw:135
+#: ..\main.pyw:120
+msgid "You may want to restart FestEngine. Exit now?"
+msgstr ""
+"Перезапустить Fest Engine -- хорошая идея.\n"
+"Выйти прямо сейчас?"
+
+#: ..\main.pyw:121
+msgid "Restart Required"
+msgstr "Требуется перезапуск"
+
+#: ..\main.pyw:126
 msgid "&Settings"
 msgstr "&Настройки"
 
-#: ..\main.pyw:137
+#: ..\main.pyw:128
 msgid "&Show Log"
 msgstr "&Открыть окно &лога"
 
-#: ..\main.pyw:144
+#: ..\main.pyw:135
 msgid "&Prefer No Video (fallback)"
 msgstr "Не включать видео когда есть звук"
 
-#: ..\main.pyw:150
+#: ..\main.pyw:141
 msgid "&About"
 msgstr "&О программе"
 
-#: ..\main.pyw:152
+#: ..\main.pyw:143
 msgid "E&xit"
 msgstr "Вы&ход"
 
-#: ..\main.pyw:153
+#: ..\main.pyw:144
 msgid "&Main"
 msgstr "&Глагнэ"
 
-#: ..\main.pyw:158
+#: ..\main.pyw:149
 msgid "&Replace File"
 msgstr "&Заменить файл"
 
-#: ..\main.pyw:162
+#: ..\main.pyw:153
 msgid "&Delete item"
 msgstr "&Удалить строку"
 
-#: ..\main.pyw:169
+#: ..\main.pyw:160
 msgid "&Add intermission (countdown) above"
 msgstr "Вставить перерыв сверху"
 
-#: ..\main.pyw:171
+#: ..\main.pyw:162
 msgid "&Add intermission (countdown) below"
 msgstr "Вставить &перерыв снизу"
 
-#: ..\main.pyw:173
+#: ..\main.pyw:164
 msgid "&Item"
 msgstr "С&трока"
 
-#: ..\main.pyw:178
+#: ..\main.pyw:169
 msgid "&Show"
 msgstr "&Создать"
 
-#: ..\main.pyw:179
+#: ..\main.pyw:170
 msgid "&Destroy"
 msgstr "&Убрать"
 
-#: ..\main.pyw:182
+#: ..\main.pyw:173
 msgid "&Projector Window"
 msgstr "Окно &проектора"
 
-#: ..\main.pyw:188
+#: ..\main.pyw:179
 msgid "&Load Files"
 msgstr "Загрузить &файлы"
 
-#: ..\main.pyw:190
+#: ..\main.pyw:181
 msgid "&Open Window"
 msgstr "&Открыть окно"
 
-#: ..\main.pyw:194
+#: ..\main.pyw:185
 msgid "&Fade In/Out Enabled"
 msgstr "Плавный переход звука"
 
-#: ..\main.pyw:198
+#: ..\main.pyw:189
 msgid "&Play Next"
 msgstr "&Включить следующий трек"
 
-#: ..\main.pyw:202
+#: ..\main.pyw:193
 msgid "&Pause"
 msgstr "&Пауза"
 
-#: ..\main.pyw:206
+#: ..\main.pyw:197
 msgid "&Background Music"
 msgstr "&Фоновая музыка"
 
-#: ..\main.pyw:210
+#: ..\main.pyw:201
 msgid "&Emergency Stop All\tEsc"
 msgstr "&Экстренная остановка\tEsc"
 
-#: ..\main.pyw:211
+#: ..\main.pyw:202
 msgid "Show &ZAD\tF1"
 msgstr "Показать &ZAD (картинку)\tF1"
 
-#: ..\main.pyw:212
+#: ..\main.pyw:203
 msgid "&Play Sound/Video\tF2"
 msgstr "&Запустить звук/видео\tF2"
 
-#: ..\main.pyw:213
+#: ..\main.pyw:204
 msgid "&Clear ZAD\tShift+F1"
 msgstr "&Убрать ZAD (картинку)\tShift+F1"
 
-#: ..\main.pyw:214
+#: ..\main.pyw:205
 msgid "&No Show"
 msgstr "&Черный экран"
 
-#: ..\main.pyw:216
+#: ..\main.pyw:207
 msgid "&Play/Pause Background\tF3"
 msgstr "&Play/Pause фоновой музыки\tF3"
 
-#: ..\main.pyw:233
+#: ..\main.pyw:224
 msgid "&Fire"
 msgstr "&Запуск"
 
-#: ..\main.pyw:255
+#: ..\main.pyw:246
 msgid "Fade out"
 msgstr "Закончить"
 
-#: ..\main.pyw:265
+#: ..\main.pyw:256
 msgid "Find"
 msgstr "Поиск"
 
-#: ..\main.pyw:278
+#: ..\main.pyw:269
 msgid "Right-click to quit search"
 msgstr "Кликните правой кнопкой чтобы выйти из поиска"
 
-#: ..\main.pyw:518
+#: ..\main.pyw:506
 msgid ""
 "No filename regular expression or ZAD path is invalid or MP3 path is "
 "invalid.\n"
@@ -171,7 +181,7 @@ msgstr ""
 "Папки с треками: %s\n"
 "Регулярное выражение: %s"
 
-#: ..\main.pyw:531
+#: ..\main.pyw:519
 msgid ""
 "No 'num' group in filename RegEx. We recommend using a unique sorting-"
 "friendly three-digit\n"
@@ -182,8 +192,7 @@ msgid ""
 "\n"
 "Your filename RegEx: %s"
 msgstr ""
-"Не найдена группа 'num' в регулярном выражении. Рекомендуется "
-"использовать\n"
+"Не найдена группа 'num' в регулярном выражении. Рекомендуется использовать\n"
 "уникальный всегда трехзначный номер в начале каждого имени файла.\n"
 "Порядок номеров должен соответствовать программе мероприятия.\n"
 "\n"
@@ -192,7 +201,7 @@ msgstr ""
 "\n"
 "Ваше регулярное выражение: %s"
 
-#: ..\main.pyw:539
+#: ..\main.pyw:527
 msgid ""
 "No '%s' group in filename RegEx. It is required to set the countdown "
 "description.\n"
@@ -201,21 +210,20 @@ msgid ""
 "\n"
 "Your filename RegEx: %s"
 msgstr ""
-"Не задана группа '%s' в регулярном выражении. Она необходима для "
-"обратного отсчета.\n"
+"Не задана группа '%s' в регулярном выражении. Она необходима для обратного "
+"отсчета.\n"
 "\n"
-"Самый простой вариант регулярного выражения: ^(?P<num>\\d{3})(?P<name>."
-"*)\n"
+"Самый простой вариант регулярного выражения: ^(?P<num>\\d{3})(?P<name>.*)\n"
 "\n"
 "Ваше регулярное выражение: %s"
 
-#: ..\main.pyw:556
+#: ..\main.pyw:544
 msgid "[WARNING] File %s does not match filename_re"
 msgstr ""
 "[ВНИМАНИЕ] Файл %s не соответствует регулярному выражению и был "
 "проигнорирован"
 
-#: ..\main.pyw:567
+#: ..\main.pyw:555
 msgid ""
 "[WARNING] Inconsistent value '%s': changing '%s' to '%s'.\n"
 "\t\tItem: %s"
@@ -223,7 +231,7 @@ msgstr ""
 "[ВНИМАНИЕ] Неоднозначное значение '%s': меняем '%s' на '%s'.\n"
 "\t\tНомер: %s"
 
-#: ..\main.pyw:577
+#: ..\main.pyw:565
 msgid ""
 "Duplicate files found:\n"
 "%s\n"
@@ -233,31 +241,31 @@ msgstr ""
 "%s\n"
 "конфликтует с: %s"
 
-#: ..\main.pyw:692
+#: ..\main.pyw:680
 msgid "Replace File for №%s"
 msgstr "Заменить файл для №%s"
 
-#: ..\main.pyw:697
+#: ..\main.pyw:685
 msgid "Select which file to replace"
 msgstr "Какой из файлов заменить?"
 
-#: ..\main.pyw:702
+#: ..\main.pyw:690
 msgid "Select target file"
 msgstr "На что заменить?"
 
-#: ..\main.pyw:714 ..\settings.py:132
+#: ..\main.pyw:702 ..\settings.py:103
 msgid "Cancel"
 msgstr "Отмена"
 
-#: ..\main.pyw:743
+#: ..\main.pyw:731
 msgid "Do not replace .%s to .%s!"
 msgstr "Нельзя менять .%s на .%s!"
 
-#: ..\main.pyw:744
+#: ..\main.pyw:732
 msgid "Different file types"
 msgstr "Разные типы файлов"
 
-#: ..\main.pyw:762
+#: ..\main.pyw:750
 msgid ""
 "Original file backed up as\n"
 "'%s';\n"
@@ -277,19 +285,19 @@ msgstr ""
 "скопирован на место\n"
 "'%s'"
 
-#: ..\main.pyw:865
+#: ..\main.pyw:853
 msgid "Invalid countdown row"
 msgstr "Неверная строка обратного отсчета"
 
-#: ..\main.pyw:880
+#: ..\main.pyw:868
 msgid "Nothing to play for №%s"
 msgstr "Нечего включить для №%s"
 
-#: ..\main.pyw:903
+#: ..\main.pyw:891
 msgid "Playback FAILED !!!"
 msgstr "НЕ УДАЛОСЬ запустить !!!"
 
-#: ..\main.pyw:1032
+#: ..\main.pyw:1020
 msgid ""
 "Background MP3 path is invalid. Please specify a\n"
 "valid path with your background tracks in settings.\n"
@@ -301,53 +309,52 @@ msgstr ""
 "\n"
 "Сейчас там это: %s"
 
-#: ..\settings.py:13
+#: ..\settings.py:15
 msgid ""
 "Hi ^_^ Please select a new or existing *.fest file in the 'Current Fest' "
 "field.\n"
-"It will load automatically on each start unless you change it.\n"
-"The load of files can be performed only once, thus it's better to restart "
-"the appafter changing something files-related in settings. Do the best "
-"festival! \n"
+"It will load automatically on each start unless you change it. The "
+"configuration\n"
+"may seem confusing, if you find it so, please read the page in About section."
+"Do the best event!"
 msgstr ""
 "Привет! ^_^ Для начала, укажи новый или существующий файл феста.\n"
 "Он будет автоматически загружаться при запуске пока его не сменишь.\n"
-"Загрузку файлов можно произвести лишь однажды, поcему лучше\n"
-"перезапускать приложение при изменениях в файлах. Ваш фест будет лучшим!"
-"\",\n"
+"Если возникают сложности с настройками, обратитесь к меню \"Файл | О "
+"программе\"\n"
+"Ваш фест будет лучшим!"
 
-#: ..\settings.py:28
+#: ..\settings.py:25
 msgid "Current Fest"
 msgstr "Файл феста"
 
-#: ..\settings.py:46
+#: ..\settings.py:44
 msgid "Projector Screen"
 msgstr "Окно &проектора"
 
-#: ..\settings.py:51
+#: ..\settings.py:49
 msgid "Filename RegEx"
 msgstr "Регулярное выражение имён файлов"
 
-#: ..\settings.py:56
+#: ..\settings.py:54
 msgid "Background Tracks Dir"
 msgstr "Папка с фоновой музыкой"
 
-#: ..\settings.py:61
+#: ..\settings.py:59
 msgid "Background ZAD Path"
 msgstr "Папка с картинками задников (ZAD)"
 
-#: ..\settings.py:68
+#: ..\settings.py:66
 msgid "Files Dirs"
 msgstr "Папки с треками"
 
-#: ..\settings.py:124
+#: ..\settings.py:95
 msgid "Load"
 msgstr "Загрузить"
 
-#: ..\settings.py:128
+#: ..\settings.py:99
 msgid "Save"
 msgstr "Сохранить"
 
-#: ..\settings.py:144
-msgid "Please specify the Current Fest file."
-msgstr "Пожалуйста, укажите файл феста"
+#~ msgid "Please specify the Current Fest file."
+#~ msgstr "Пожалуйста, укажите файл феста"
