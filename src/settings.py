@@ -23,7 +23,8 @@ class SettingsDialog(wx.Dialog):
 
         session_sizer = wx.BoxSizer(wx.HORIZONTAL)
         session_sizer.Add(wx.StaticText(self.panel, label=_("Current Fest")), 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 5)
-        self.session_picker = wx.FilePickerCtrl(self.panel, style=wx.FLP_SAVE | wx.FLP_USE_TEXTCTRL, wildcard="*.fest")
+        self.session_picker = wx.FilePickerCtrl(self.panel, style=wx.FLP_SAVE | wx.FLP_USE_TEXTCTRL,
+                                                wildcard="Fest Engine sessions (.fest)|*.fest")
         self.Bind(wx.EVT_FILEPICKER_CHANGED, self.on_fest_selected, self.session_picker)
         self.session_picker.SetPath(self.session_file_path)
         session_sizer.Add(self.session_picker, 1, wx.EXPAND | wx.ALL, 5)
@@ -170,7 +171,10 @@ class SettingsDialog(wx.Dialog):
         self.config[Config.FILES_DIRS] = [picker.GetPath() for picker in self.dir_pickers]
 
     def on_ok(self, e):
-        self.session_file_path = self.session_picker.GetPath()
+        ext = '.fest'
+        self.session_file_path = self.session_picker.GetPath() + ext \
+            if self.session_picker.GetPath().find(ext) < len(self.session_picker.GetPath()) - len(ext) \
+            else self.session_picker.GetPath()
 
         with open(Config.LAST_SESSION_PATH, 'w') as f:
             f.write(self.session_file_path)
@@ -181,4 +185,3 @@ class SettingsDialog(wx.Dialog):
                       ensure_ascii=False, indent=4)
 
         self.EndModal(e.Id)
-
