@@ -23,14 +23,11 @@ class BackgroundMusicPlayer(object):
         self.playlist = None
         self.current_track_i = -1
         self.fade_in_out = True
-        self.stop_fade_speed = 0.03  # TODO: To settings
-        self.pause_fade_speed = 0.01 # TODO: To settings
-
-    def window_exists(self):
-        return bool(self.window)
+        self.stop_fade_speed = 0.03   # TODO: To settings
+        self.pause_fade_speed = 0.01  # TODO: To settings
 
     def show_window(self):
-        if not self.window_exists():
+        if not self.window:
             self.window = BackgroundMusicFrame(self.parent)
         self.window.Show()
         self.window.fade_in_out_switch.SetValue(self.fade_in_out)
@@ -48,7 +45,7 @@ class BackgroundMusicPlayer(object):
                           'path': p,
                           'color': Colors.BG_NEVER_PLAYED}
                          for p in file_paths if os.path.isfile(p) and os.path.basename(p).rsplit('.', 1)[1] in FileTypes.audio_extensions]
-        if self.window_exists():
+        if self.window:
             self.load_playlist_to_grid()
 
     def load_playlist_to_grid(self):
@@ -80,12 +77,12 @@ class BackgroundMusicPlayer(object):
                     self.fade_out_sync(self.stop_fade_speed)  # Blocks thread
             else:
                 self.playlist[self.current_track_i]['color'] = Colors.BG_PLAYED_TO_END
-        if self.window_exists():
+        if self.window:
             self.window.grid.SetCellBackgroundColour(self.current_track_i, 0,
                                                      self.playlist[self.current_track_i]['color'])
             self.window.grid.ForceRefresh()  # Updates colors
 
-        if self.window_exists() and from_grid:
+        if self.window and from_grid:
             self.current_track_i = self.window.grid.GetSelectedRows()[0]
         else:
             self.current_track_i = (self.current_track_i + 1) % len(self.playlist)
@@ -94,7 +91,7 @@ class BackgroundMusicPlayer(object):
         self.parent.bg_pause_switch.Enable(True)
 
     def _fade_sync(self, vol_range, delay):
-        window_exists = self.window_exists()
+        window_exists = self.window
         if window_exists:
             wx.CallAfter(lambda: self.window.vol_slider.Enable(False))
 
@@ -142,7 +139,7 @@ class BackgroundMusicPlayer(object):
 
         self.playlist[self.current_track_i]['color'] = Colors.BG_PLAYING_NOW
 
-        if self.window_exists():
+        if self.window:
             def ui_upd():
                 self.window.pause_btn.Enable(True)
                 self.window.lock_btn.Enable(True)

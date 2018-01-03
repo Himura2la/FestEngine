@@ -347,11 +347,6 @@ class MainFrame(wx.Frame):
 
 # ------------------------------------------------------------------------------------------------------------------
 
-    def on_close(self, e):
-        self.player.stop()
-        self.vlc_instance.release()
-        e.Skip()
-
     def grid_set_shape(self, new_rows, new_cols, readonly_cols=None):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
         if current_rows > 0:
@@ -400,6 +395,11 @@ class MainFrame(wx.Frame):
 
     # -------------------------------------------------- Actions --------------------------------------------------
 
+    def on_close(self, e):
+        self.player.stop()
+        self.vlc_instance.release()
+        e.Skip()
+
     def on_proj_win_close(self, e):
         self.proj_win.countdown_panel.timer.Stop()
         self.proj_win.Destroy()
@@ -409,11 +409,8 @@ class MainFrame(wx.Frame):
         self.bg_player.window.Destroy()
         self.bg_player.window = None
 
-    def proj_win_exists(self):
-        return bool(self.proj_win)
-
     def ensure_proj_win(self, e=None):
-        no_window = not self.proj_win_exists()
+        no_window = not self.proj_win
         if no_window:
             self.proj_win = ProjectorWindow(self, self.config[Config.PROJECTOR_SCREEN])
 
@@ -429,7 +426,7 @@ class MainFrame(wx.Frame):
         return no_window
 
     def destroy_proj_win(self, e=None):
-        if not self.proj_win_exists():
+        if not self.proj_win:
             return
         self.proj_win.Close(True)
         self.vid_btn.SetValue(False)
@@ -441,7 +438,7 @@ class MainFrame(wx.Frame):
 
     def switch_to_vid(self, e=None):
         """ Call set_vlc_video_panel() until it returns True after this"""
-        if not self.proj_win_exists():
+        if not self.proj_win:
             return
         self.vid_btn.SetValue(True)
         self.zad_btn.SetValue(False)
@@ -460,7 +457,7 @@ class MainFrame(wx.Frame):
         return True
 
     def switch_to_zad(self, e=None):
-        if not self.proj_win_exists():
+        if not self.proj_win:
             return
         self.vid_btn.SetValue(False)
         self.zad_btn.SetValue(True)
@@ -488,7 +485,7 @@ class MainFrame(wx.Frame):
             delayed_run()
 
     def clear_zad(self, e=None, no_show=False, status=u"ZAD Cleared"):
-        if not self.proj_win_exists():
+        if not self.proj_win:
             return
         self.proj_win.switch_to_images()
         if self.config[Config.BG_ZAD_PATH] and not no_show:
@@ -500,7 +497,7 @@ class MainFrame(wx.Frame):
         self.status(status)
 
     def emergency_stop(self, e=None):
-        if self.proj_win_exists():
+        if self.proj_win:
             self.clear_zad()
         self.stop_async(fade_out=False)
 
@@ -1045,7 +1042,7 @@ class MainFrame(wx.Frame):
         self.bg_player.fade_in_out = value
         if isinstance(e.EventObject, wx.CheckBox):
             self.bg_fade_switch.Check(value)
-        elif isinstance(e.EventObject, wx.Menu) and self.bg_player.window_exists():
+        elif isinstance(e.EventObject, wx.Menu) and self.bg_player.window:
             self.bg_player.window.fade_in_out_switch.SetValue(value)
 
     def background_play(self, e=None, from_grid=True):
@@ -1063,7 +1060,7 @@ class MainFrame(wx.Frame):
         self.bg_player.pause_async(value)
         if not e or isinstance(e.EventObject, wx.ToggleButton):
             self.bg_pause_switch.Check(value)
-        if self.bg_player.window_exists():
+        if self.bg_player.window:
             self.bg_player.window.pause_btn.SetValue(value)
 
     @property
@@ -1074,7 +1071,7 @@ class MainFrame(wx.Frame):
     def background_volume(self, value):
         self.bg_player.volume = value
         self.bg_player.player.audio_set_volume(value)
-        if self.bg_player.window_exists():
+        if self.bg_player.window:
             self.bg_player.window.vol_slider.SetValue(value)
 
     def bg_player_timer_start(self, val):
@@ -1088,7 +1085,7 @@ class MainFrame(wx.Frame):
         pos = seeking_time if seeking_time else self.bg_player.player.get_time()
         time_remaining = '-%02d:%02d' % divmod(length / 1000 - pos / 1000, 60)
 
-        if self.bg_player.window_exists():
+        if self.bg_player.window:
             self.bg_player.window.time_slider.SetRange(0, length)
             self.bg_player.window.time_slider.SetValue(pos)
             self.bg_player.window.time_label.SetLabel(time_remaining)
@@ -1109,7 +1106,7 @@ class MainFrame(wx.Frame):
 
         if player_state in range(4, 8):
             self.bg_player_timer.Stop()
-            if player_state != vlc.State.Paused and self.bg_player.window_exists():
+            if player_state != vlc.State.Paused and self.bg_player.window:
                 self.bg_player.window.time_slider.SetValue(0)
             if player_state == vlc.State.Ended:
                 self.background_play(from_grid=False)
