@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-01-03 16:16+0300\n"
-"PO-Revision-Date: 2018-01-03 16:18+0300\n"
+"POT-Creation-Date: 2018-01-03 17:08+0300\n"
+"PO-Revision-Date: 2018-01-03 17:10+0300\n"
 "Last-Translator: Himura\n"
 "Language-Team: FestEngine Team\n"
 "Language: ru\n"
@@ -181,6 +181,10 @@ msgstr ""
 "Папки с треками: %s\n"
 "Регулярное выражение: %s"
 
+#: ..\main.pyw:511 ..\settings.py:179
+msgid "Path Error"
+msgstr "Кривой путь"
+
 #: ..\main.pyw:519
 msgid ""
 "No 'num' group in filename RegEx. We recommend using a unique sorting-"
@@ -192,7 +196,8 @@ msgid ""
 "\n"
 "Your filename RegEx: %s"
 msgstr ""
-"Не найдена группа 'num' в регулярном выражении. Рекомендуется использовать\n"
+"Не найдена группа 'num' в регулярном выражении. Рекомендуется "
+"использовать\n"
 "уникальный всегда трехзначный номер в начале каждого имени файла.\n"
 "Порядок номеров должен соответствовать программе мероприятия.\n"
 "\n"
@@ -253,7 +258,7 @@ msgstr "Какой из файлов заменить?"
 msgid "Select target file"
 msgstr "На что заменить?"
 
-#: ..\main.pyw:702 ..\settings.py:103
+#: ..\main.pyw:702 ..\settings.py:105
 msgid "Cancel"
 msgstr "Отмена"
 
@@ -315,7 +320,7 @@ msgid ""
 "field.\n"
 "It will load automatically on each start unless you change it. The "
 "configuration\n"
-"may seem confusing, if you find it so, please read the page in About section."
+"may seem confusing, if you find it so, open the 'File | About' menu item.\n"
 "Do the best event!"
 msgstr ""
 "Привет! ^_^ Для начала, укажи новый или существующий файл феста.\n"
@@ -328,33 +333,45 @@ msgstr ""
 msgid "Current Fest"
 msgstr "Файл феста"
 
-#: ..\settings.py:44
+#: ..\settings.py:45
 msgid "Projector Screen"
 msgstr "Окно &проектора"
 
-#: ..\settings.py:49
+#: ..\settings.py:50
 msgid "Filename RegEx"
 msgstr "Регулярное выражение имён файлов"
 
-#: ..\settings.py:54
+#: ..\settings.py:55
 msgid "Background Tracks Dir"
 msgstr "Папка с фоновой музыкой"
 
-#: ..\settings.py:59
+#: ..\settings.py:61
 msgid "Background ZAD Path"
-msgstr "Папка с картинками задников (ZAD)"
+msgstr "Фоновая картинка"
 
-#: ..\settings.py:66
+#: ..\settings.py:68
 msgid "Files Dirs"
 msgstr "Папки с треками"
 
-#: ..\settings.py:95
+#: ..\settings.py:97
 msgid "Load"
 msgstr "Загрузить"
 
-#: ..\settings.py:99
+#: ..\settings.py:101
 msgid "Save"
 msgstr "Сохранить"
+
+#: ..\settings.py:171
+msgid "Invalid Background Tracks Dir"
+msgstr "Папка с фоновой музыкой не найдена"
+
+#: ..\settings.py:172
+msgid "Invalid Files dir"
+msgstr "Папка с треками не найдена"
+
+#: ..\settings.py:173
+msgid "Invalid Background ZAD Path"
+msgstr "Фоновая картинка не найдена"
 
 #~ msgid "Please specify the Current Fest file."
 #~ msgstr "Пожалуйста, укажите файл феста"

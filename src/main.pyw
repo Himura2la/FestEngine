@@ -508,7 +508,7 @@ class MainFrame(wx.Frame):
                     "expression that parses your filenames in settings or .fest file.\n\n"
                     "Directories: %s\n"
                     "Filename RegEx: %s") % (", ".join(dirs), filename_re)
-            wx.MessageBox(msg, "Path Error", wx.OK | wx.ICON_ERROR, self)
+            wx.MessageBox(msg, _("Path Error"), wx.OK | wx.ICON_ERROR, self)
             return
 
         self.filename_re = re.compile(filename_re)

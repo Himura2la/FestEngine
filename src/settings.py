@@ -2,7 +2,7 @@ import os
 import wx
 import json
 
-from constants import Config
+from constants import Config, FileTypes
 
 
 class SettingsDialog(wx.Dialog):
@@ -14,7 +14,7 @@ class SettingsDialog(wx.Dialog):
         if not session_file_path:
             wx.MessageBox(_("Hi ^_^ Please select a new or existing *.fest file in the 'Current Fest' field.\n"
                             "It will load automatically on each start unless you change it. The configuration\n"
-                            "may seem confusing, if you find it so, please read the page in About section."
+                            "may seem confusing, if you find it so, open the 'File | About' menu item.\n"
                             "Do the best event!"),
                           "Welcome to Fest Engine", wx.OK | wx.ICON_INFORMATION, self)
 
@@ -24,7 +24,7 @@ class SettingsDialog(wx.Dialog):
         session_sizer = wx.BoxSizer(wx.HORIZONTAL)
         session_sizer.Add(wx.StaticText(self.panel, label=_("Current Fest")), 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 5)
         self.session_picker = wx.FilePickerCtrl(self.panel, style=wx.FLP_SAVE | wx.FLP_USE_TEXTCTRL,
-                                                wildcard="Fest Engine sessions (.fest)|*.fest")
+                                                wildcard="Fest Engine sessions (*.fest)|*.fest")
         self.Bind(wx.EVT_FILEPICKER_CHANGED, self.on_fest_selected, self.session_picker)
         self.session_picker.SetPath(self.session_file_path)
         session_sizer.Add(self.session_picker, 1, wx.EXPAND | wx.ALL, 5)
@@ -55,7 +55,8 @@ class SettingsDialog(wx.Dialog):
         self.configs_grid.Add(wx.StaticText(self.panel, label=_("Background Tracks Dir")), 0, wx.ALIGN_CENTER_VERTICAL)
         self.configs_grid.Add(self.bg_tracks, 1, wx.EXPAND)
 
-        self.bg_zad = wx.FilePickerCtrl(self.panel)
+        img_wc = "Images ({0})|{0}".format(";".join(["*.%s" % x for x in FileTypes.img_extensions]))
+        self.bg_zad = wx.FilePickerCtrl(self.panel, wildcard=img_wc)
         self.bg_zad.SetPath(self.config[Config.BG_ZAD_PATH])
         self.configs_grid.Add(wx.StaticText(self.panel, label=_("Background ZAD Path")), 0, wx.ALIGN_CENTER_VERTICAL)
         self.configs_grid.Add(self.bg_zad, 1, wx.EXPAND)
@@ -162,13 +163,22 @@ class SettingsDialog(wx.Dialog):
         self.panel.SetSizerAndFit(self.top_sizer)
         self.Fit()
         self.SetSize((800, self.GetSize()[1]))
+        self.ui_to_config()  # For validation
 
     def ui_to_config(self):
         self.config[Config.PROJECTOR_SCREEN] = self.screens_combobox.GetSelection()
         self.config[Config.FILENAME_RE] = self.filename_re.GetValue()
-        self.config[Config.BG_TRACKS_DIR] = self.bg_tracks.GetPath()
-        self.config[Config.BG_ZAD_PATH] = self.bg_zad.GetPath()
-        self.config[Config.FILES_DIRS] = [picker.GetPath() for picker in self.dir_pickers]
+        self.config[Config.BG_TRACKS_DIR] = self.validate_path(self.bg_tracks, _("Invalid Background Tracks Dir"))
+        self.config[Config.FILES_DIRS] = [self.validate_path(picker, _("Invalid Files dir")) for picker in self.dir_pickers]
+        self.config[Config.BG_ZAD_PATH] = self.validate_path(self.bg_zad, _("Invalid Background ZAD Path"))
+
+    def validate_path(self, widget, msg):
+        if not widget.GetPath() or os.path.exists(widget.GetPath()):
+            return widget.GetPath()
+        else:
+            wx.MessageBox("%s:\n%s" % (msg, widget.GetPath()), _("Path Error"), wx.OK | wx.ICON_WARNING, self)
+            widget.SetPath("")
+            return ""
 
     def on_ok(self, e):
         ext = '.fest'
