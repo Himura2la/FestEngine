@@ -204,14 +204,17 @@ class MainFrame(wx.Frame):
         clear_zad_item = menu_play.Append(wx.ID_ANY, _("&Clear ZAD\tShift+F1"))
         no_show_item = menu_play.Append(wx.ID_ANY, _("&No Show"))
         menu_play.AppendSeparator()
-        play_pause_bg_item = menu_play.Append(wx.ID_ANY, _("&Play/Pause Background\tF3"))
+        play_pause_bg = menu_play.Append(wx.ID_ANY, _("&Play/Pause Background\tF3"))
+        self.play_bg_item = menu_play.Append(wx.ID_ANY, _("&Play Selected BG Track\tShift+F3"))
+        self.play_bg_item.Enable(False)
 
         self.Bind(wx.EVT_MENU, self.emergency_stop, emergency_stop_item)
         self.Bind(wx.EVT_MENU, self.show_zad, show_zad_item)
         self.Bind(wx.EVT_MENU, self.play_async, play_track_item)
         self.Bind(wx.EVT_MENU, self.clear_zad, clear_zad_item)
         self.Bind(wx.EVT_MENU, lambda e: self.clear_zad(e, True), no_show_item)
-        self.Bind(wx.EVT_MENU, self.play_pause_bg, play_pause_bg_item)
+        self.Bind(wx.EVT_MENU, self.play_pause_bg, play_pause_bg)
+        self.Bind(wx.EVT_MENU, lambda e: self.background_play(from_grid=True), self.play_bg_item)
 
         self.SetAcceleratorTable(wx.AcceleratorTable([
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, emergency_stop_item.GetId()),
@@ -219,7 +222,8 @@ class MainFrame(wx.Frame):
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F2, play_track_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_F1, clear_zad_item.GetId()),
             # wx.AcceleratorEntry(wx.ACCEL_CRTL, wx.WXK_F1, no_show_item.GetId()),  # OS captures them
-            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F3, play_pause_bg_item.GetId())]))
+            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F3, play_pause_bg.GetId()),
+            wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_F3, self.play_bg_item.GetId())]))
 
         menu_bar.Append(menu_play, _("&Fire"))
 
@@ -397,6 +401,7 @@ class MainFrame(wx.Frame):
     def on_bg_player_win_close(self, e):
         self.bg_player.window.Destroy()
         self.bg_player.window = None
+        self.play_bg_item.Enable(False)
 
     def ensure_proj_win(self, e=None):
         no_window = not self.proj_win

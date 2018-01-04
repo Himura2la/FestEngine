@@ -33,9 +33,9 @@ class BackgroundMusicPlayer(object):
         self.window.fade_in_out_switch.SetValue(self.fade_in_out)
         self.window.vol_slider.SetValue(self.volume)
         self.window.set_volume_from_slider()
+        self.parent.play_bg_item.Enable(True)
         if self.playlist:
             self.load_playlist_to_grid()
-
         if self.player.get_state() in {vlc.State.Playing, vlc.State.Paused}:
             self.window.lock_btn.Enable(True)
 
@@ -271,10 +271,11 @@ class BackgroundMusicFrame(wx.Frame):
 
         self.Bind(wx.EVT_CLOSE, parent.on_bg_player_win_close)
 
-        f3_id = wx.NewId()
+        f3_id, shift_f3_id = wx.NewId(), wx.NewId()
         self.Bind(wx.EVT_MENU, parent.play_pause_bg, id=f3_id)
-        self.SetAcceleratorTable(wx.AcceleratorTable([(wx.ACCEL_NORMAL, wx.WXK_F3, f3_id)]))
-
+        self.Bind(wx.EVT_MENU, lambda e: parent.background_play(from_grid=True), id=shift_f3_id)
+        self.SetAcceleratorTable(wx.AcceleratorTable([(wx.ACCEL_NORMAL, wx.WXK_F3, f3_id),
+                                                      (wx.ACCEL_SHIFT, wx.WXK_F3, shift_f3_id)]))
 
     def set_volume_from_slider(self, e=None):
         self.parent.background_volume = self.vol_slider.GetValue()  # Forwards to player

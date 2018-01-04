@@ -182,9 +182,8 @@ class SettingsDialog(wx.Dialog):
 
     def on_ok(self, e):
         ext = '.fest'
-        self.session_file_path = self.session_picker.GetPath() + ext \
-            if self.session_picker.GetPath().find(ext) < len(self.session_picker.GetPath()) - len(ext) \
-            else self.session_picker.GetPath()
+        path = self.session_picker.GetPath()
+        self.session_file_path = path + ext if path.find(ext) < len(path) - len(ext) else path
 
         with open(Config.LAST_SESSION_PATH, 'w') as f:
             f.write(self.session_file_path)
