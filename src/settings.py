@@ -1,7 +1,10 @@
 import os
+import sys
+import subprocess
 import shutil
-import wx
 import json
+
+import wx
 
 from constants import Config, FileTypes
 
@@ -29,6 +32,11 @@ class SettingsDialog(wx.Dialog):
         self.Bind(wx.EVT_FILEPICKER_CHANGED, self.on_fest_selected, self.session_picker)
         self.session_picker.SetPath(self.session_file_path)
         session_sizer.Add(self.session_picker, 1, wx.EXPAND | wx.ALL, 5)
+        session_sizer.Add(wx.StaticLine(self.panel, style=wx.LI_VERTICAL), 0, wx.EXPAND | wx.TOP | wx.BOTTOM | wx.RIGHT,
+                          5)
+        self.session_file_edit_btn = wx.Button(self.panel, wx.ID_ANY, _("All Settings"))
+        self.Bind(wx.EVT_BUTTON, self.on_file_edit, self.session_file_edit_btn)
+        session_sizer.Add(self.session_file_edit_btn, 0, wx.TOP | wx.RIGHT, 5)
         self.top_sizer.Add(session_sizer, 0, wx.EXPAND)
 
         # --- Grid ---
@@ -114,7 +122,7 @@ class SettingsDialog(wx.Dialog):
         self.pickers_sizer.Add(dir_picker, 0, wx.EXPAND)
         if isinstance(path, str):  # Assuming initial calls
             dir_picker.SetPath(path)
-        else:   # Assuming manual adding
+        else:  # Assuming manual adding
             self.top_sizer.Layout()
             size = self.GetSize()
             size[1] += dir_picker.GetSize()[1]
@@ -138,6 +146,7 @@ class SettingsDialog(wx.Dialog):
             for sizer_item in sizer.GetChildren():
                 widget = sizer_item.GetWindow()
                 widget.Enable(enabled)
+
         list(map(process_children, [self.configs_grid, self.pickers_sizer, self.dir_buttons_sizer]))
 
     def on_fest_selected(self, e=None, first_run=False):
@@ -170,7 +179,8 @@ class SettingsDialog(wx.Dialog):
         self.config[Config.PROJECTOR_SCREEN] = self.screens_combobox.GetSelection()
         self.config[Config.FILENAME_RE] = self.filename_re.GetValue()
         self.config[Config.BG_TRACKS_DIR] = self.validate_path(self.bg_tracks, _("Invalid Background Tracks Dir"))
-        self.config[Config.FILES_DIRS] = [self.validate_path(picker, _("Invalid Files dir")) for picker in self.dir_pickers]
+        self.config[Config.FILES_DIRS] = [self.validate_path(picker, _("Invalid Files dir")) for picker in
+                                          self.dir_pickers]
         self.config[Config.BG_ZAD_PATH] = self.validate_path(self.bg_zad, _("Invalid Background ZAD Path"))
 
     def validate_path(self, widget, msg):
@@ -200,3 +210,29 @@ class SettingsDialog(wx.Dialog):
                       ensure_ascii=False, indent=4)
 
         self.EndModal(e.Id)
+
+    def on_file_edit(self, e):
+        config_path = self.session_picker.GetPath()
+
+        if sys.platform.startswith('linux'):  # for Linux using the X Server
+            subprocess.call(('xdg-open', config_path))
+        elif sys.platform == "win32":  # for Windows
+            os.startfile(config_path)
+        elif sys.platform == "darwin":  # for MacOS
+            subprocess.call(('open', config_path))
+
+        with wx.MessageDialog(self, _("The operating system is opening the '%s' file.\n"
+                                      "It is in JSON format, use any plain-text editor to open it.\n"
+                                      "For instance: AkelPad, Visual Studio Code, Notepad, etc.\n\n"
+                                      "Edit the file very carefully and save it.\n"
+                                      "Then hit 'OK' to load the new config or 'Cancel' to revert your changes." %
+                                              os.path.basename(config_path)),
+                              _("Manual Configuration"), wx.OK | wx.CANCEL | wx.ICON_INFORMATION) as restart_dialog:
+            action = restart_dialog.ShowModal()
+            if action == wx.ID_OK:
+                self.config = json.load(open(config_path, 'r', encoding='utf-8'))
+                self.EndModal(wx.ID_OPEN)
+            elif action == wx.ID_CANCEL:
+                json.dump(self.config, open(config_path, 'w', encoding='utf-8'),
+                          ensure_ascii=False, indent=4)
+                self.EndModal(wx.ID_CANCEL)
