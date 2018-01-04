@@ -46,15 +46,19 @@ class MainFrame(wx.Frame):
         self.fade_out_delays_ms = 10
 
         self.config_ok = False
+        self.session_file_path = ""
         if os.path.isfile(Config.LAST_SESSION_PATH):
             self.session_file_path = open(Config.LAST_SESSION_PATH, 'r').read()
-
             if os.path.isfile(self.session_file_path):
-                self.config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
-                self.config_ok = True
-
+                try:
+                    self.config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
+                    self.config_ok = True
+                except json.decoder.JSONDecodeError as e:
+                    msg = _("Unfortunately, you broke the JSON format...\n"
+                            "Please fix the configuration file%s ASAP.\n\nDetails: %s") % \
+                          ("\n(%s)" % self.session_file_path, str(e))
+                    wx.MessageBox(msg, "JSON Error", wx.OK | wx.ICON_ERROR, self)
         if not self.config_ok:
-            self.session_file_path = ""
             self.config = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1,  # The last one
                            Config.VLC_ARGUMENTS: "--file-caching=1000 --no-drop-late-frames --no-skip-frames",
                            Config.FILENAME_RE: "^(?P<num>\d{3})(?P<name>.*)$",
@@ -107,29 +111,7 @@ class MainFrame(wx.Frame):
 
         menu_file.AppendSeparator()
 
-        def on_settings(e=None):
-            prev_config = copy.copy(self.config)
-            with SettingsDialog(self.session_file_path, self.config, self) as settings_dialog:
-                action = settings_dialog.ShowModal()
-
-                self.session_file_path = settings_dialog.session_file_path  # To be sure.
-                self.config = settings_dialog.config                        # Maybe redundant
-                self.config_ok = action in {wx.ID_SAVE, wx.ID_OPEN}
-
-            if prev_config != self.config:  # Safety is everything!
-                bkp_name = "%s-%s.bkp.fest" % (os.path.splitext(self.session_file_path)[0],
-                                               time.strftime("%d%m%y%H%M%S", time.localtime()))
-                json.dump(prev_config, open(bkp_name, 'w', encoding='utf-8'),
-                          ensure_ascii=False, indent=4)
-
-            if prev_config[Config.FILES_DIRS] != self.config[Config.FILES_DIRS]:
-                with wx.MessageDialog(self, _("You may want to restart FestEngine. Exit now?"),
-                                      _("Restart Required"), wx.YES_NO | wx.ICON_INFORMATION) as restart_dialog:
-                    action = restart_dialog.ShowModal()
-                    if action == wx.ID_YES:
-                        self.on_exit()
-
-        self.Bind(wx.EVT_MENU, on_settings, menu_file.Append(wx.ID_ANY, _("&Settings")))
+        self.Bind(wx.EVT_MENU, self.on_settings, menu_file.Append(wx.ID_ANY, _("&Settings")))
 
         show_log_menu_item = menu_file.Append(wx.ID_ANY, _("&Show Log"))
 
@@ -210,8 +192,8 @@ class MainFrame(wx.Frame):
         clear_zad_item = menu_play.Append(wx.ID_ANY, _("&Clear ZAD\tShift+F1"))
         no_show_item = menu_play.Append(wx.ID_ANY, _("&No Show"))
         menu_play.AppendSeparator()
-        play_pause_bg = menu_play.Append(wx.ID_ANY, _("&Play/Pause Background\tF3"))
-        self.play_bg_item = menu_play.Append(wx.ID_ANY, _("&Play Selected BG Track\tShift+F3"))
+        play_pause_bg = menu_play.Append(wx.ID_ANY, _("Play/Pause &Background\tF3"))
+        self.play_bg_item = menu_play.Append(wx.ID_ANY, _("Play &Selected BG Track\tShift+F3"))
         self.play_bg_item.Enable(False)
 
         self.Bind(wx.EVT_MENU, self.emergency_stop, emergency_stop_item)
@@ -337,7 +319,7 @@ class MainFrame(wx.Frame):
 
         def init():
             if not self.config_ok:
-                on_settings()
+                self.on_settings()
             else:
                 self.load_files()
                 if self.config[Config.BG_TRACKS_DIR]:
@@ -398,6 +380,28 @@ class MainFrame(wx.Frame):
         self.player.stop()
         self.vlc_instance.release()
         e.Skip()
+
+    def on_settings(self, e=None):
+        prev_config = copy.copy(self.config)
+        with SettingsDialog(self.session_file_path, self.config, self) as settings_dialog:
+            action = settings_dialog.ShowModal()
+
+            self.session_file_path = settings_dialog.session_file_path  # To be sure.
+            self.config = settings_dialog.config                        # Maybe redundant
+            self.config_ok = action in {wx.ID_SAVE, wx.ID_OPEN}
+
+        if prev_config != self.config:  # Safety is everything!
+            bkp_name = "%s-%s.bkp.fest" % (os.path.splitext(self.session_file_path)[0],
+                                           time.strftime("%d%m%y%H%M%S", time.localtime()))
+            json.dump(prev_config, open(bkp_name, 'w', encoding='utf-8'),
+                      ensure_ascii=False, indent=4)
+
+        if prev_config[Config.FILES_DIRS] != self.config[Config.FILES_DIRS]:
+            with wx.MessageDialog(self, _("You may want to restart FestEngine. Exit now?"),
+                                  _("Restart Required"), wx.YES_NO | wx.ICON_INFORMATION) as restart_dialog:
+                action = restart_dialog.ShowModal()
+                if action == wx.ID_YES:
+                    self.on_exit()
 
     def on_proj_win_close(self, e):
         self.proj_win.countdown_panel.timer.Stop()

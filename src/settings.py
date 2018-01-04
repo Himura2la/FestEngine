@@ -152,7 +152,14 @@ class SettingsDialog(wx.Dialog):
     def on_fest_selected(self, e=None, first_run=False):
         fest_file_exists = os.path.isfile(e.Path) if e else False
         if fest_file_exists:
-            self.config = json.load(open(e.Path, 'r', encoding='utf-8'))
+            try:
+                self.config = json.load(open(e.Path, 'r', encoding='utf-8'))
+            except json.decoder.JSONDecodeError as e:
+                msg = _("Unfortunately, you broke the JSON format...\n"
+                        "Please fix the configuration file%s ASAP.\n\nDetails: %s") % ("", str(e))
+                wx.MessageBox(msg, "JSON Error", wx.OK | wx.ICON_ERROR, self)
+                self.on_file_edit()
+                return
         self.config_to_ui()
         if first_run:
             self.enable_settings(False)
@@ -211,7 +218,7 @@ class SettingsDialog(wx.Dialog):
 
         self.EndModal(e.Id)
 
-    def on_file_edit(self, e):
+    def on_file_edit(self, e=None):
         config_path = self.session_picker.GetPath()
 
         if sys.platform.startswith('linux'):  # for Linux using the X Server
@@ -225,13 +232,18 @@ class SettingsDialog(wx.Dialog):
                                       "It is in JSON format, use any plain-text editor to open it.\n"
                                       "For instance: AkelPad, Visual Studio Code, Notepad, etc.\n\n"
                                       "Edit the file very carefully and save it.\n"
-                                      "Then hit 'OK' to load the new config or 'Cancel' to revert your changes." %
-                                              os.path.basename(config_path)),
+                                      "Then hit 'OK' to load the new config or 'Cancel' to revert your changes.") %
+                                              os.path.basename(config_path),
                               _("Manual Configuration"), wx.OK | wx.CANCEL | wx.ICON_INFORMATION) as restart_dialog:
             action = restart_dialog.ShowModal()
             if action == wx.ID_OK:
-                self.config = json.load(open(config_path, 'r', encoding='utf-8'))
-                self.EndModal(wx.ID_OPEN)
+                try:
+                    self.config = json.load(open(config_path, 'r', encoding='utf-8'))
+                    self.EndModal(wx.ID_OPEN)
+                except json.decoder.JSONDecodeError as e:
+                    msg = _("Unfortunately, you broke the JSON format...\n"
+                            "Please fix the configuration file%s ASAP.\n\nDetails: %s") % ("", str(e))
+                    wx.MessageBox(msg, "JSON Error", wx.OK | wx.ICON_ERROR, self)
             elif action == wx.ID_CANCEL:
                 json.dump(self.config, open(config_path, 'w', encoding='utf-8'),
                           ensure_ascii=False, indent=4)
