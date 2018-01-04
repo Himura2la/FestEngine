@@ -1,4 +1,5 @@
 import os
+import shutil
 import wx
 import json
 
@@ -24,7 +25,7 @@ class SettingsDialog(wx.Dialog):
         session_sizer = wx.BoxSizer(wx.HORIZONTAL)
         session_sizer.Add(wx.StaticText(self.panel, label=_("Current Fest")), 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 5)
         self.session_picker = wx.FilePickerCtrl(self.panel, style=wx.FLP_SAVE | wx.FLP_USE_TEXTCTRL,
-                                                wildcard="Fest Engine sessions (*.fest)|*.fest")
+                                                wildcard="Fest Engine sessions (*.fest)|*.fest;*.fest_bkp")
         self.Bind(wx.EVT_FILEPICKER_CHANGED, self.on_fest_selected, self.session_picker)
         self.session_picker.SetPath(self.session_file_path)
         session_sizer.Add(self.session_picker, 1, wx.EXPAND | wx.ALL, 5)
@@ -181,9 +182,14 @@ class SettingsDialog(wx.Dialog):
             return ""
 
     def on_ok(self, e):
-        ext = '.fest'
         path = self.session_picker.GetPath()
-        self.session_file_path = path + ext if path.find(ext) < len(path) - len(ext) else path
+        ext = '.bkp.fest'
+        if path.find(ext) == len(path) - len(ext):
+            self.session_file_path = path[:-4]
+            shutil.copy(path, self.session_file_path)
+        else:
+            ext = '.fest'
+            self.session_file_path = path if path.find(ext) == len(path) - len(ext) else path + ext
 
         with open(Config.LAST_SESSION_PATH, 'w') as f:
             f.write(self.session_file_path)

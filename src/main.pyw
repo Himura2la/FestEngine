@@ -12,6 +12,7 @@ import webbrowser
 import json
 import functools
 import gettext
+import copy
 
 import vlc
 import wx
@@ -59,7 +60,10 @@ class MainFrame(wx.Frame):
                            Config.FILENAME_RE: "^(?P<num>\d{3})(?P<name>.*)$",
                            Config.BG_TRACKS_DIR: "",
                            Config.BG_ZAD_PATH: "",
-                           Config.FILES_DIRS: [""]}
+                           Config.FILES_DIRS: [""],
+                           Config.BG_FADE_STOP_DELAYS: 0.03,
+                           Config.BG_FADE_PAUSE_DELAYS: 0.01,
+                           Config.COUNTDOWN_TIME_FMT: u"Ждём Вас в %s ^_^"}
 
         self.logger = Logger(self)
         self.proj_win = None
@@ -104,17 +108,19 @@ class MainFrame(wx.Frame):
         menu_file.AppendSeparator()
 
         def on_settings(e=None):
-            prev_config = self.config
+            prev_config = copy.copy(self.config)
             with SettingsDialog(self.session_file_path, self.config, self) as settings_dialog:
                 action = settings_dialog.ShowModal()
 
-                self.session_file_path = settings_dialog.session_file_path
-                self.config = settings_dialog.config
+                self.session_file_path = settings_dialog.session_file_path  # To be sure.
+                self.config = settings_dialog.config                        # Maybe redundant
                 self.config_ok = action in {wx.ID_SAVE, wx.ID_OPEN}
 
             if prev_config != self.config:  # Safety is everything!
-                json.dump(prev_config, open(self.session_file_path + "_bkp", 'w', encoding='utf-8'),
-                      ensure_ascii=False, indent=4)
+                bkp_name = "%s-%s.bkp.fest" % (os.path.splitext(self.session_file_path)[0],
+                                               time.strftime("%d%m%y%H%M%S", time.localtime()))
+                json.dump(prev_config, open(bkp_name, 'w', encoding='utf-8'),
+                          ensure_ascii=False, indent=4)
 
             if prev_config[Config.FILES_DIRS] != self.config[Config.FILES_DIRS]:
                 with wx.MessageDialog(self, _("You may want to restart FestEngine. Exit now?"),
@@ -156,9 +162,9 @@ class MainFrame(wx.Frame):
 
         menu_item.AppendSeparator()
 
-        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(False, message=Strings.TIMER_DEFAULT_TEXT),
+        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(False, message=Strings.COUNTDOWN_DEFAULT_TEXT),
                   menu_item.Append(wx.ID_ANY, _("&Add intermission (countdown) above")))
-        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(True, message=Strings.TIMER_DEFAULT_TEXT),
+        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(True, message=Strings.COUNTDOWN_DEFAULT_TEXT),
                   menu_item.Append(wx.ID_ANY, _("&Add intermission (countdown) below")))
 
         menu_bar.Append(menu_item, _("&Item"))
@@ -592,7 +598,7 @@ class MainFrame(wx.Frame):
         self.grid.AutoSizeColumns()
         self.status("Loaded %d items" % i)
 
-        self.add_countdown_row(False, 0, Strings.TIMER_FIRST_TEXT)
+        self.add_countdown_row(False, 0, Strings.COUNTDOWN_FIRST_TEXT)
 
         self.SetLabel("%s: %s" % (Strings.APP_NAME, self.session_file_path))
 

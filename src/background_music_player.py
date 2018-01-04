@@ -6,7 +6,7 @@ import vlc
 import wx
 import wx.grid
 
-from constants import Colors, FileTypes
+from constants import Colors, FileTypes, Config
 
 
 class BackgroundMusicPlayer(object):
@@ -23,8 +23,6 @@ class BackgroundMusicPlayer(object):
         self.playlist = None
         self.current_track_i = -1
         self.fade_in_out = True
-        self.stop_fade_speed = 0.03   # TODO: To settings
-        self.pause_fade_speed = 0.01  # TODO: To settings
 
     def show_window(self):
         if not self.window:
@@ -74,7 +72,7 @@ class BackgroundMusicPlayer(object):
             if self.player.get_state() in {vlc.State.Playing, vlc.State.Paused}:
                 self.playlist[self.current_track_i]['color'] = Colors.BG_SKIPPED
                 if self.fade_in_out and self.player.get_state() == vlc.State.Playing:
-                    self.fade_out_sync(self.stop_fade_speed)  # Blocks thread
+                    self.fade_out_sync(self.parent.config[Config.BG_FADE_STOP_DELAYS])  # Blocks thread
             else:
                 self.playlist[self.current_track_i]['color'] = Colors.BG_PLAYED_TO_END
         if self.window:
@@ -159,7 +157,7 @@ class BackgroundMusicPlayer(object):
             time.sleep(0.005)
 
         if self.fade_in_out:
-            self.fade_in_sync(self.stop_fade_speed)
+            self.fade_in_sync(self.parent.config[Config.BG_FADE_STOP_DELAYS])
 
         wx.CallAfter(lambda: self.parent.set_bg_player_status("%s Vol:%d" %
                                                               (self.parent.player_state_parse(self.player.get_state()),
@@ -174,10 +172,10 @@ class BackgroundMusicPlayer(object):
 
     def pause_sync(self, paused):
         if self.fade_in_out and paused:
-            self.fade_out_sync(self.pause_fade_speed)
+            self.fade_out_sync(self.parent.config[Config.BG_FADE_PAUSE_DELAYS])
         self.player.set_pause(paused)
         if self.fade_in_out and not paused:
-            self.fade_in_sync(self.pause_fade_speed)
+            self.fade_in_sync(self.parent.config[Config.BG_FADE_PAUSE_DELAYS])
 
 
 # |  ^
@@ -203,13 +201,13 @@ class BackgroundMusicFrame(wx.Frame):
         self.top_toolbar.Add(self.fade_in_out_switch, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=3)
         self.fade_in_out_switch.Bind(wx.EVT_CHECKBOX, self.parent.fade_switched)
 
-        self.play_btn = wx.Button(self, label="Play", size=(70, toolbar_base_height + 2))
+        self.play_btn = wx.Button(self, label="Play (^+F3)", size=(80, toolbar_base_height + 2))
         self.play_btn.Enable(False)
         self.top_toolbar.Add(self.play_btn, 0)
         self.play_btn.Bind(wx.EVT_BUTTON, parent.background_play)
         # Forwarding events through the main window, because this frame is optional and may be absent.
 
-        self.pause_btn = wx.ToggleButton(self, label="Pause", size=(70, toolbar_base_height + 2))
+        self.pause_btn = wx.ToggleButton(self, label="Pause (F3)", size=(80, toolbar_base_height + 2))
 
         try:
             self.pause_btn.Enable(self.parent.bg_player.player.get_state() in range(5))

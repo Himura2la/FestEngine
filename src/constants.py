@@ -9,6 +9,9 @@ class Config:
     BG_ZAD_PATH = "Background ZAD Path"
     FILES_DIRS = "Files Dirs"
     VLC_ARGUMENTS = "VLC CLI Arguments"
+    BG_FADE_STOP_DELAYS = "BG Player Stop Fade In/Out Delays"
+    BG_FADE_PAUSE_DELAYS = "BG Player Pause Fade In/Out Delays"
+    COUNTDOWN_TIME_FMT = "Countdown Time Format"
 
 
 class Columns:
@@ -20,9 +23,8 @@ class Columns:
 
 class Strings:
     APP_NAME = "Fest Engine"
-    TIMER_EXACT_TIME_FMT = "Ждём Вас в %s ^_^"
-    TIMER_FIRST_TEXT = "До начала фестиваля"
-    TIMER_DEFAULT_TEXT = "До конца перерыва"
+    COUNTDOWN_FIRST_TEXT = "До начала фестиваля"
+    COUNTDOWN_DEFAULT_TEXT = "До конца перерыва"
     COUNTDOWN_ROW_TEXT_FULL = "break"
     COUNTDOWN_ROW_TEXT_SHORT = "brk"
 

@@ -1,6 +1,6 @@
 import wx
 from datetime import *
-from constants import Strings, Colors
+from constants import Config, Colors
 
 
 class ProjectorWindow(wx.Frame):
@@ -107,7 +107,8 @@ class ProjectorWindow(wx.Frame):
                 self.time_end = self.time_started + timedelta(minutes=minutes)
 
                 self.info_text.SetLabel(text)
-                self.time_text.SetLabel(Strings.TIMER_EXACT_TIME_FMT % self.time_end.strftime("%H:%M"))
+                self.time_text.SetLabel(self.parent.parent.config[Config.COUNTDOWN_TIME_FMT] %
+                                        self.time_end.strftime("%H:%M"))
                 self.update_time()
 
             def update_time(self, e=None):
