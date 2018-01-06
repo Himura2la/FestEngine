@@ -298,9 +298,14 @@ class MainFrame(wx.Frame):
                     scroll_target = cell_origin - full_page / 6  # https://stackoverflow.com/a/15894331/3399377
                     self.grid.Scroll((0, scroll_target))
                 wx.CallAfter(delayed_run)  # Should start after select_row()
-            e.Skip()
+                e.Skip()
+            elif e.KeyCode == wx.WXK_RETURN:
+                self.play_async()  # For emergency situations
+            else:
+                e.Skip()
 
         self.grid.Bind(wx.EVT_KEY_DOWN, on_grid_key_down)
+        self.grid.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.play_async)  # For emergency situations
 
         main_sizer.Add(self.toolbar, 0, wx.EXPAND)
         main_sizer.Add(self.grid, 1, wx.EXPAND | wx.TOP, border=1)
