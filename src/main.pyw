@@ -138,9 +138,9 @@ class MainFrame(wx.Frame):
         self.replace_file_item.Enable(False)
         self.Bind(wx.EVT_MENU, self.replace_file, self.replace_file_item)
 
-        self.del_dup_row_item = menu_item.Append(wx.ID_ANY, _("&Delete item"))
-        self.del_dup_row_item.Enable(False)
-        self.Bind(wx.EVT_MENU, self.del_row, self.del_dup_row_item)
+        self.del_row_item = menu_item.Append(wx.ID_ANY, _("&Delete item"))
+        self.del_row_item.Enable(False)
+        self.Bind(wx.EVT_MENU, self.del_row, self.del_row_item)
 
         menu_item.AppendSeparator()
 
@@ -283,23 +283,31 @@ class MainFrame(wx.Frame):
             self.grid.Unbind(wx.grid.EVT_GRID_RANGE_SELECT)
             self.grid.SelectRow(row)
             self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
-            self.del_dup_row_item.Enable(self.row_type(row) != 'track')
+            item_is_track = self.row_type(row) == 'track'
+            self.del_row_item.Enable(not item_is_track)
+            self.replace_file_item.Enable(item_is_track)
 
         self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
         self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
         self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
+
+        def play_if_track(e):
+            if self.row_type(self.grid.GetGridCursorRow()) == 'track':
+                self.play_async(e)
+            else:
+                e.Skip()
 
         def on_grid_key_down(e):
             if e.KeyCode in {wx.WXK_UP, wx.WXK_DOWN}:
                 wx.CallAfter(self.grid_align_viewpoint)  # Should start after select_row()
                 e.Skip()
             elif e.KeyCode == wx.WXK_RETURN:
-                self.play_async()  # For emergency situations
+                play_if_track(e)  # For emergency situations
             else:
                 e.Skip()
-
         self.grid.Bind(wx.EVT_KEY_DOWN, on_grid_key_down)
-        self.grid.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.play_async)  # For emergency situations
+
+        self.grid.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, play_if_track)  # For emergency situations
 
         main_sizer.Add(self.toolbar, 0, wx.EXPAND)
         main_sizer.Add(self.grid, 1, wx.EXPAND | wx.TOP, border=1)
@@ -628,7 +636,6 @@ class MainFrame(wx.Frame):
         self.SetLabel("%s: %s" % (Strings.APP_NAME, self.session_file_path))
 
         self.load_data_item.Enable(False)  # Safety is everything!
-        self.replace_file_item.Enable(True)
 
     # --- Duplication from notes ---
 
@@ -706,6 +713,7 @@ class MainFrame(wx.Frame):
         [self.grid.SetCellBackgroundColour(row_pos, col, Colors.COUNTDOWN_ROW)
                                                     for col in range(self.grid.GetNumberCols())]
 
+        self.grid.SelectRow(row_pos)
     # --- Replacer ---
 
     def replace_file(self, e):
@@ -776,7 +784,7 @@ class MainFrame(wx.Frame):
                 bkp_dir = os.path.join(path, src_dir + '_backup')
                 if not os.path.exists(bkp_dir):
                     os.mkdir(bkp_dir)
-                self.bkp_path = os.path.join(bkp_dir, time.strftime("%y%m%d-%H%M%S-") + src_name)
+                self.bkp_path = os.path.join(bkp_dir, time.strftime("%d%m%y%H%M%S-", time.localtime()) + src_name)
                 shutil.move(self.src_file, self.bkp_path)
                 shutil.copy(self.tgt_file, self.src_file)  # TODO: Async and progress bar
                 self.EndModal(wx.ID_OK)
