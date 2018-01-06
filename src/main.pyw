@@ -789,7 +789,7 @@ class MainFrame(wx.Frame):
     # --- Search ---
 
     def enter_search(self, e=None):
-        if self.search_box.GetValue() == 'Find':
+        if self.search_box.GetValue() == _('Find'):
             self.search_box.Clear()
             self.search_box.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
             self.in_search = True
@@ -825,7 +825,7 @@ class MainFrame(wx.Frame):
 
     def search(self, e=None):
         string = self.search_box.GetValue()
-        if string == 'Find' or not self.in_search or not string:
+        if string == _('Find') or not self.in_search or not string:
             return
 
         def match(row):
@@ -851,7 +851,7 @@ class MainFrame(wx.Frame):
             self.in_search = False
             self.paint_search_box(False)
 
-            self.search_box.SetValue('Find')
+            self.search_box.SetValue(_('Find'))
             self.search_box.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
 
             selected_row = [self.grid.GetCellValue(self.grid.GetSelectedRows()[0], col)
