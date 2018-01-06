@@ -291,13 +291,7 @@ class MainFrame(wx.Frame):
 
         def on_grid_key_down(e):
             if e.KeyCode in {wx.WXK_UP, wx.WXK_DOWN}:
-                def delayed_run():
-                    row = self.grid.GetGridCursorRow()
-                    cell_origin = self.grid.CellToRect(row, 0).y / self.grid.GetScrollPixelsPerUnit()[1]
-                    full_page = self.grid.GetScrollPageSize(wx.VERTICAL)
-                    scroll_target = cell_origin - full_page / 6  # https://stackoverflow.com/a/15894331/3399377
-                    self.grid.Scroll((0, scroll_target))
-                wx.CallAfter(delayed_run)  # Should start after select_row()
+                wx.CallAfter(self.grid_align_viewpoint)  # Should start after select_row()
                 e.Skip()
             elif e.KeyCode == wx.WXK_RETURN:
                 self.play_async()  # For emergency situations
@@ -361,6 +355,13 @@ class MainFrame(wx.Frame):
             [self.grid.SetReadOnly(row, col)
              for row in range(new_rows)
              for col in range(new_cols) if col in readonly_cols]
+
+    def grid_align_viewpoint(self):  # https://stackoverflow.com/a/15894331/3399377
+        row = self.grid.GetGridCursorRow()
+        cell_origin = self.grid.CellToRect(row, 0).y / self.grid.GetScrollPixelsPerUnit()[1]
+        full_page = self.grid.GetScrollPageSize(wx.VERTICAL)
+        scroll_target = cell_origin - full_page / 6
+        self.grid.Scroll((0, scroll_target))
 
     def status(self, text):
         self.status_bar.SetStatusText(text, 0)
@@ -865,7 +866,7 @@ class MainFrame(wx.Frame):
 
             self.grid.SelectRow(selected_row_i)
             self.grid.SetGridCursor(selected_row_i, 0)
-            self.grid.MakeCellVisible(selected_row_i, 0)
+            wx.CallAfter(self.grid_align_viewpoint)
 
             self.grid.SetFocus()
             # if e: e.Skip() # Invokes default handler with context menu
