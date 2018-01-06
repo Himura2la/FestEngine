@@ -268,7 +268,7 @@ class MainFrame(wx.Frame):
         self.toolbar.Add(self.vid_btn, 0)
         self.toolbar.Add(self.zad_btn, 0)
 
-        # --- Table ---
+        # --- Grid ---
         self.grid = wx.grid.Grid(self)
         self.grid.CreateGrid(0, 0)
         self.grid.HideRowLabels()
@@ -277,7 +277,9 @@ class MainFrame(wx.Frame):
         self.grid.SetSelectionMode(wx.grid.Grid.wxGridSelectRows)
 
         def select_row(e):
-            row = e.Row if hasattr(e, 'Row') else e.TopRow
+            if not e.Selecting() or hasattr(e, 'TopRow') and e.TopRow == e.BottomRow:
+                return
+            row = e.Row if hasattr(e, 'Row') else self.grid.GridCursorRow
             self.grid.Unbind(wx.grid.EVT_GRID_RANGE_SELECT)
             self.grid.SelectRow(row)
             self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
@@ -286,6 +288,19 @@ class MainFrame(wx.Frame):
         self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
         self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
         self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
+
+        def on_grid_key_down(e):
+            if e.KeyCode in {wx.WXK_UP, wx.WXK_DOWN}:
+                def delayed_run():
+                    row = self.grid.GetGridCursorRow()
+                    cell_origin = self.grid.CellToRect(row, 0).y / self.grid.GetScrollPixelsPerUnit()[1]
+                    full_page = self.grid.GetScrollPageSize(wx.VERTICAL)
+                    scroll_target = cell_origin - full_page / 6  # https://stackoverflow.com/a/15894331/3399377
+                    self.grid.Scroll((0, scroll_target))
+                wx.CallAfter(delayed_run)  # Should start after select_row()
+            e.Skip()
+
+        self.grid.Bind(wx.EVT_KEY_DOWN, on_grid_key_down)
 
         main_sizer.Add(self.toolbar, 0, wx.EXPAND)
         main_sizer.Add(self.grid, 1, wx.EXPAND | wx.TOP, border=1)
