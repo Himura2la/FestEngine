@@ -10,7 +10,7 @@ class TextWindow(wx.Frame):
     def __init__(self, parent, title, db_path):
         self.parent = parent
         self.base_title = title
-        wx.Frame.__init__(self, parent, title=title, size=(800, 400))
+        wx.Frame.__init__(self, parent, title=title, size=(1024, 768))
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
 
         # ---------------------------------------------- Layout -----------------------------------------------------
@@ -19,19 +19,25 @@ class TextWindow(wx.Frame):
         label_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.label = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL)
         font = self.label.GetFont()
-        font.SetPixelSize(wx.Size(0, 25))
+        font.SetPixelSize(wx.Size(0, 28))
         self.label.SetFont(font)
 
-        label_sizer.Add(self.label, 1, wx.EXPAND)
+        label_sizer.AddStretchSpacer()
+        label_sizer.Add(self.label, 0, wx.EXPAND)
+        label_sizer.AddStretchSpacer()
         main_sizer.Add(label_sizer, 0, wx.EXPAND)
 
         self.grid = wx.grid.Grid(self)
         self.columns = ['Section', 'Key', 'Value']
         self.grid.CreateGrid(0, len(self.columns))
         [self.grid.SetColLabelValue(i, v) for i, v in enumerate(self.columns)]
-        self.grid.SetRowLabelSize(20)
-        self.grid.SetColLabelSize(20)
+        self.grid.SetColLabelSize(24)
+        self.grid.HideRowLabels()
         self.grid.SetDefaultRenderer(wx.grid.GridCellAutoWrapStringRenderer())
+        self.grid.SetDefaultEditor(wx.grid.GridCellAutoWrapStringEditor())
+        font = self.grid.GetDefaultCellFont()
+        font.SetPixelSize(wx.Size(0, 18))
+        self.grid.SetDefaultCellFont(font)
 
         main_sizer.Add(self.grid, 1, wx.EXPAND | wx.TOP, border=1)
 
@@ -54,8 +60,6 @@ class TextWindow(wx.Frame):
 
         self.list = self.get_list()
         self.current_name = ""
-
-        self.show_details(self.list[30])
 
     def grid_autosize_cols(self, e=None):
         w = self.grid.GetClientSize()[0] - self.grid.GetRowLabelSize()
@@ -104,10 +108,18 @@ class TextWindow(wx.Frame):
 
         self.current_name = "%s: %s %s. %s" % list_item[2:6]
         self.label.SetLabel(self.current_name)
+        self.Layout()
+
+    def clear_details(self, message='Please wait...'):
+        self.current_name = message
+        self.label.SetLabel(self.current_name)
+        self.grid_set_rows(0)
+        self.Layout()
 
 
 if __name__ == "__main__":
     app = wx.App()
     frame = TextWindow(None, 'Text Window (Debug)', "D:\Fests Local\Past\Yuki no Odori 2016\\2016-fest\C2D\\tulafest\sqlite3_data.db")
     frame.Show(True)
+    frame.show_details(frame.list[42])
     app.MainLoop()
