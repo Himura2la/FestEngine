@@ -25,12 +25,12 @@ from logger import Logger
 from file_replacer import FileReplacer
 from text_window import TextWindow
 
-
 gettext.translation('main', os.path.join(os.path.dirname(os.path.realpath(__file__)), 'locale'), ['ru']).install()
 
 if sys.platform.startswith('linux'):
     try:
         import ctypes
+
         x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11'))
         x11.XInitThreads()
     except Exception as x_init_threads_ex:
@@ -121,6 +121,7 @@ class MainFrame(wx.Frame):
         def on_log(e):
             self.logger.open_window(lambda: show_log_menu_item.Enable(True))
             show_log_menu_item.Enable(False)
+
         self.Bind(wx.EVT_MENU, on_log, show_log_menu_item)
 
         self.prefer_audio = menu_file.Append(wx.ID_ANY, _("&Prefer No Video (fallback)"), kind=wx.ITEM_CHECK)
@@ -130,7 +131,7 @@ class MainFrame(wx.Frame):
 
         self.Bind(wx.EVT_MENU, lambda _: webbrowser.open('https://github.com/Himura2la/FestEngine'),
                   menu_file.Append(wx.ID_ABOUT, _("&About")))
-        self.Bind(wx.EVT_MENU, self.on_exit,
+        self.Bind(wx.EVT_MENU, lambda e: self.Close(True),
                   menu_file.Append(wx.ID_EXIT, _("E&xit")))
         menu_bar.Append(menu_file, _("&Main"))
 
@@ -294,6 +295,11 @@ class MainFrame(wx.Frame):
             item_is_track = self.row_type(row) == 'track'
             self.del_row_item.Enable(not item_is_track)
             self.replace_file_item.Enable(item_is_track)
+            if self.text_win:
+                if item_is_track:
+                    self.text_win_load_async(4, self.get_num(row))
+                else:
+                    self.text_win.clear_details()
 
         self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
         self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
@@ -313,6 +319,7 @@ class MainFrame(wx.Frame):
                 play_if_track(e)  # For emergency situations
             else:
                 e.Skip()
+
         self.grid.Bind(wx.EVT_KEY_DOWN, on_grid_key_down)
 
         self.grid.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, play_if_track)  # For emergency situations
@@ -354,9 +361,10 @@ class MainFrame(wx.Frame):
                 self.load_files()
                 if self.config[Config.BG_TRACKS_DIR]:
                     self.on_bg_load_files()
+
         wx.CallAfter(init)
 
-# ------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
 
     def grid_set_shape(self, new_rows, new_cols, readonly_cols=None):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
@@ -407,13 +415,11 @@ class MainFrame(wx.Frame):
     def set_bg_player_status(self, text):  # For lambdas
         self.status_bar.SetStatusText(text, 3)
 
-    def on_exit(self, e=None):
-        self.destroy_proj_win()
-        self.Close(True)
-
     # -------------------------------------------------- Actions --------------------------------------------------
 
     def on_close(self, e):
+        self.destroy_proj_win()
+        self.on_text_win_close()
         self.player.stop()
         self.vlc_instance.release()
         e.Skip()
@@ -719,7 +725,7 @@ class MainFrame(wx.Frame):
         self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.NOTES), "30m")  # Can be 15:35
 
         [self.grid.SetCellBackgroundColour(row_pos, col, Colors.COUNTDOWN_ROW)
-                                                    for col in range(self.grid.GetNumberCols())]
+         for col in range(self.grid.GetNumberCols())]
 
         self.grid.SelectRow(row_pos)
 
@@ -779,7 +785,7 @@ class MainFrame(wx.Frame):
         def match(row):
             """Returns True if any cell in a row matches"""
             return functools.reduce(lambda a, b: a or b, [self.search_box.GetValue().lower() in cell.lower()
-                                                                                             for cell in row['cols']])
+                                                          for cell in row['cols']])
 
         filtered_grid_data = list(filter(match, self.full_grid_data))
         found = bool(filtered_grid_data)
@@ -1119,11 +1125,26 @@ class MainFrame(wx.Frame):
             self.status("Text Window ERROR !!!")
 
     def on_text_win_close(self, e=None):
+        if not self.text_win:
+            return
         if self.text_win.db:
             self.text_win.db.close()
         self.text_win.Destroy()
         self.text_win = None
         self.status("Text Window Destroyed")
+
+    def text_win_load_async(self, field_number, value):
+        """ field_number in [requests.id, number, title, list.card_code, voting_number, voting_title].
+            See self.text_win.get_list() """
+        threading.Thread(target=self.text_win_load_sync, args=(field_number, value)).start()
+
+    def text_win_load_sync(self, field_number, value):
+        item = next((x for x in self.text_win.list if str(x[field_number]) == value), None)
+        if item:
+            wx.CallAfter(self.text_win.show_details, item)
+        else:
+            self.status("Text Not Found !!!")
+            self.text_win.clear_details(_("Integrity Error"))
 
 
 if __name__ == "__main__":
