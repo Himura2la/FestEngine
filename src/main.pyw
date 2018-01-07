@@ -23,6 +23,7 @@ from projector import ProjectorWindow
 from settings import SettingsDialog
 from logger import Logger
 from file_replacer import FileReplacer
+from text_window import TextWindow
 
 
 gettext.translation('main', os.path.join(os.path.dirname(os.path.realpath(__file__)), 'locale'), ['ru']).install()

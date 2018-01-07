@@ -7,7 +7,7 @@ import sqlite3
 
 
 class TextWindow(wx.Frame):
-    def __init__(self, parent, title, db_path):
+    def __init__(self, parent, title):
         self.parent = parent
         self.base_title = title
         wx.Frame.__init__(self, parent, title=title, size=(1024, 768))
@@ -16,8 +16,11 @@ class TextWindow(wx.Frame):
         # ---------------------------------------------- Layout -----------------------------------------------------
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
+        self.default_name = "Please wait..."
+        self.current_name = self.default_name
+
         label_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.label = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL)
+        self.label = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL, label=self.current_name)
         font = self.label.GetFont()
         font.SetPixelSize(wx.Size(0, 28))
         self.label.SetFont(font)
@@ -47,8 +50,20 @@ class TextWindow(wx.Frame):
         self.grid.Bind(wx.EVT_SIZE, self.grid_autosize_cols)
         self.grid_autosize_cols()
 
-        # --- DB ---
+        self.event_name = ""
+        self.list = None
+        self.db = None
+        self.c = None
 
+        self.Bind(wx.EVT_CLOSE, self.on_close)
+
+    def on_close(self, e=None):
+        if self.db:
+            self.db.close()
+        if e:
+            e.Skip()
+
+    def load_db(self, db_path):
         self.db = sqlite3.connect(db_path, isolation_level=None)
         self.c = self.db.cursor()
 
@@ -59,7 +74,6 @@ class TextWindow(wx.Frame):
         self.SetLabel("%s: %s" % (self.base_title, self.event_name))
 
         self.list = self.get_list()
-        self.current_name = ""
 
     def grid_autosize_cols(self, e=None):
         w = self.grid.GetClientSize()[0] - self.grid.GetRowLabelSize()
@@ -110,8 +124,8 @@ class TextWindow(wx.Frame):
         self.label.SetLabel(self.current_name)
         self.Layout()
 
-    def clear_details(self, message='Please wait...'):
-        self.current_name = message
+    def clear_details(self, message=None):
+        self.current_name = message if message else self.default_name
         self.label.SetLabel(self.current_name)
         self.grid_set_rows(0)
         self.Layout()
@@ -119,7 +133,8 @@ class TextWindow(wx.Frame):
 
 if __name__ == "__main__":
     app = wx.App()
-    frame = TextWindow(None, 'Text Window (Debug)', "D:\Fests Local\Past\Yuki no Odori 2016\\2016-fest\C2D\\tulafest\sqlite3_data.db")
+    frame = TextWindow(None, 'Text Window (Debug)')
     frame.Show(True)
+    frame.load_db("D:\Fests Local\Past\Yuki no Odori 2016\\2016-fest\C2D\\tulafest\sqlite3_data.db")
     frame.show_details(frame.list[42])
     app.MainLoop()
