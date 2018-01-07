@@ -7,9 +7,10 @@ import sqlite3
 
 
 class TextWindow(wx.Frame):
-    def __init__(self, parent, db_path):
+    def __init__(self, parent, title, db_path):
         self.parent = parent
-        wx.Frame.__init__(self, parent, title='Text Window', size=(800, 400))
+        self.base_title = title
+        wx.Frame.__init__(self, parent, title=title, size=(800, 400))
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
 
         # ---------------------------------------------- Layout -----------------------------------------------------
@@ -19,15 +20,17 @@ class TextWindow(wx.Frame):
         self.columns = ['Section', 'Key', 'Value']
         self.grid.CreateGrid(0, len(self.columns))
         [self.grid.SetColLabelValue(i, v) for i, v in enumerate(self.columns)]
-        self.grid.DisableDragRowSize()
         self.grid.SetRowLabelSize(20)
         self.grid.SetColLabelSize(20)
-        self.grid.SetSelectionMode(wx.grid.Grid.wxGridSelectRows)
+        self.grid.SetDefaultRenderer(wx.grid.GridCellAutoWrapStringRenderer())
 
         main_sizer.Add(self.grid, 1, wx.EXPAND | wx.TOP, border=1)
 
         self.SetSizer(main_sizer)
         self.Layout()
+
+        self.grid.Bind(wx.EVT_SIZE, self.grid_autosize_cols)
+        self.grid_autosize_cols()
 
         # --- DB ---
 
@@ -37,11 +40,21 @@ class TextWindow(wx.Frame):
         self.c.execute('PRAGMA encoding = "UTF-8"')
         self.c.execute("SELECT value FROM settings WHERE key = 'subdomain'")
         self.event_name = self.c.fetchone()[0]
-        self.SetLabel("%s: %s" % (self.GetLabel(), self.event_name))
 
         self.list = self.get_list()
+        self.current_name = ""
 
-        self.show_details(self.list[30][0])
+        self.show_details(self.list[30])
+
+    def grid_autosize_cols(self, e=None):
+        w = self.grid.GetClientSize()[0] - self.grid.GetRowLabelSize()
+        col_sizes = [self.grid.GetColSize(i) for i in range(self.grid.GetNumberCols())] if e else [1, 1, 2]
+        n_cols = self.grid.GetNumberCols()
+        for col in range(n_cols):
+            k = w / sum(col_sizes)
+            self.grid.SetColSize(col, col_sizes[col] * k)
+        if e:
+            e.Skip()
 
     def get_list(self):
         self.c.execute("""
@@ -65,8 +78,8 @@ class TextWindow(wx.Frame):
             self.grid.DeleteRows(0, current_rows, False)
         self.grid.AppendRows(new_rows)
 
-    def show_details(self, request_id):
-        data = self._get_details(request_id)
+    def show_details(self, list_item):
+        data = self._get_details(list_item[0])
         self.grid_set_rows(len(data))
 
         def set_row(row_number, row_data):
@@ -74,10 +87,16 @@ class TextWindow(wx.Frame):
             self.grid.SetCellValue(row_number, self.columns.index('Section'), str(section_title))
             self.grid.SetCellValue(row_number, self.columns.index('Key'), str(title))
             self.grid.SetCellValue(row_number, self.columns.index('Value'), str(value))
+            self.grid.AutoSizeRow(row_number)
+            self.grid.SetRowSize(row_number, self.grid.GetRowSize(row_number) - 10)
         [set_row(i, val) for i, val in enumerate(data)]
+
+        self.current_name = "%s %s. %s" % list_item[2:5]
+        self.SetLabel("%s: %s | %s" % (self.base_title, self.event_name, self.current_name))
+
 
 if __name__ == "__main__":
     app = wx.App()
-    frame = TextWindow(None, "D:\Fests Local\Past\Yuki no Odori 2016\\2016-fest\C2D\\tulafest\sqlite3_data.db")
+    frame = TextWindow(None, 'Text Window (Debug)', "D:\Fests Local\Past\Yuki no Odori 2016\\2016-fest\C2D\\tulafest\sqlite3_data.db")
     frame.Show(True)
     app.MainLoop()
