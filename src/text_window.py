@@ -16,6 +16,15 @@ class TextWindow(wx.Frame):
         # ---------------------------------------------- Layout -----------------------------------------------------
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
+        label_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.label = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL)
+        font = self.label.GetFont()
+        font.SetPixelSize(wx.Size(0, 25))
+        self.label.SetFont(font)
+
+        label_sizer.Add(self.label, 1, wx.EXPAND)
+        main_sizer.Add(label_sizer, 0, wx.EXPAND)
+
         self.grid = wx.grid.Grid(self)
         self.columns = ['Section', 'Key', 'Value']
         self.grid.CreateGrid(0, len(self.columns))
@@ -41,6 +50,8 @@ class TextWindow(wx.Frame):
         self.c.execute("SELECT value FROM settings WHERE key = 'subdomain'")
         self.event_name = self.c.fetchone()[0]
 
+        self.SetLabel("%s: %s" % (self.base_title, self.event_name))
+
         self.list = self.get_list()
         self.current_name = ""
 
@@ -58,7 +69,7 @@ class TextWindow(wx.Frame):
 
     def get_list(self):
         self.c.execute("""
-            SELECT requests.id, number, list.card_code, voting_number, voting_title
+            SELECT requests.id, number, title, list.card_code, voting_number, voting_title
             FROM   list, requests 
             WHERE  list.id = topic_id AND list.default_duration > 0
         """)
@@ -91,8 +102,8 @@ class TextWindow(wx.Frame):
             self.grid.SetRowSize(row_number, self.grid.GetRowSize(row_number) - 10)
         [set_row(i, val) for i, val in enumerate(data)]
 
-        self.current_name = "%s %s. %s" % list_item[2:5]
-        self.SetLabel("%s: %s | %s" % (self.base_title, self.event_name, self.current_name))
+        self.current_name = "%s: %s %s. %s" % list_item[2:6]
+        self.label.SetLabel(self.current_name)
 
 
 if __name__ == "__main__":
