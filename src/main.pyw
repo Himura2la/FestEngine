@@ -611,13 +611,11 @@ class MainFrame(wx.Frame):
                 wx.MessageBox('ALERT !!!\n' + msg, "Duplicate files alert", wx.OK | wx.ICON_ERROR)
 
         self.grid_set_shape(len(self.data), len(self.grid_rows))
-        for i in range(len(self.grid_rows)):
-            self.grid.SetColLabelValue(i, self.grid_rows[i])
+        [self.grid.SetColLabelValue(i, v) for i, v in enumerate(self.grid_rows)]
 
         i = 0
         for num, data in sorted(self.data.items()):
-            for j in range(len(self.grid_rows)):
-                row = self.grid_rows[j]
+            for j, row in enumerate(self.grid_rows):
                 if row == Columns.NUM:
                     self.grid.SetCellValue(i, j, num)
                 elif row == Columns.FILES:
@@ -797,8 +795,8 @@ class MainFrame(wx.Frame):
             selected_row = [self.grid.GetCellValue(self.grid.GetSelectedRows()[0], col)
                             for col in range(self.grid.GetNumberCols())]
             selected_row_i = 0
-            for i in range(len(self.full_grid_data)):
-                if self.full_grid_data[i]['cols'] == selected_row:
+            for i, val in enumerate(self.full_grid_data):
+                if val['cols'] == selected_row:
                     selected_row_i = i
                     break
             self.grid_pop()
