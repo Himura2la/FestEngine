@@ -61,7 +61,7 @@ class MainFrame(wx.Frame):
         if not self.config_ok:
             self.config = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1,  # The last one
                            Config.VLC_ARGUMENTS: "--file-caching=1000 --no-drop-late-frames --no-skip-frames",
-                           Config.FILENAME_RE: "^(?P<num>\d{3})(?P<name>.*)$",
+                           Config.FILENAME_RE: "^(?P<num>\d{1,3})\W(?P<name>.*)$",
                            Config.BG_TRACKS_DIR: "",
                            Config.BG_ZAD_PATH: "",
                            Config.FILES_DIRS: [""],

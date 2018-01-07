@@ -178,7 +178,7 @@ class BackgroundMusicPlayer(object):
             self.fade_in_sync(self.parent.config[Config.BG_FADE_PAUSE_DELAYS])
 
 
-# |  ^
+#    |  ^
 #    |  |
 # [MainFrame]
 #    |  |
