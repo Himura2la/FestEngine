@@ -43,6 +43,8 @@ class Colors:
 
     COUNTDOWN_TEXT_COLOR = (255, 255, 255, 255)
 
+    BG_TXT_WIN_CAT_ALTERNATION = FILTERED_GRID
+
 
 class FileTypes:
     video_extensions = {'avi', 'mp4', 'mov', 'wmv', 'mkv'}

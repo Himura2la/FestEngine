@@ -5,6 +5,8 @@ import wx
 import wx.grid
 import sqlite3
 
+from constants import Colors
+
 
 class TextWindow(wx.Frame):
     def __init__(self, parent, title, main_fields):
@@ -32,11 +34,10 @@ class TextWindow(wx.Frame):
         main_sizer.Add(label_sizer, 0, wx.EXPAND)
 
         self.grid = wx.grid.Grid(self)
-        self.columns = ['Section', 'Key', 'Value']
-        self.grid.CreateGrid(0, len(self.columns))
-        [self.grid.SetColLabelValue(i, v) for i, v in enumerate(self.columns)]
+        self.grid.CreateGrid(0, 0)
         self.grid.SetColLabelSize(24)
         self.grid.HideRowLabels()
+        self.grid.HideColLabels()
         self.grid.SetDefaultRenderer(wx.grid.GridCellAutoWrapStringRenderer())
         self.grid.SetDefaultEditor(wx.grid.GridCellAutoWrapStringEditor())
         font = self.grid.GetDefaultCellFont()
@@ -74,7 +75,7 @@ class TextWindow(wx.Frame):
 
     def grid_autosize_cols(self, e=None):
         w = self.grid.GetClientSize()[0] - self.grid.GetRowLabelSize()
-        col_sizes = [self.grid.GetColSize(i) for i in range(self.grid.GetNumberCols())] if e else [1, 1, 2]
+        col_sizes = [self.grid.GetColSize(i) for i in range(self.grid.GetNumberCols())] if e else [1, 2]
         n_cols = self.grid.GetNumberCols()
         for col in range(n_cols):
             k = w / sum(col_sizes)
@@ -115,21 +116,29 @@ class TextWindow(wx.Frame):
         if not self.show_full_info:
             data = list(filter(lambda r: r[2] in self.main_fields, data))
 
-        self.grid_set_shape(len(data), 1 if self.show_values_only else 3)
+        self.grid_set_shape(len(data), 1 if self.show_values_only else 2)
 
-        def set_row(row_number, row_data):
+        section_i = 1
+        request_section_id = -1
+
+        for row_number, row_data in enumerate(data):
+            prev_section = request_section_id
             request_section_id, section_title, title, value, data_type = row_data
             if self.show_values_only:
                 self.grid.SetCellValue(row_number, 0, str(value))
             else:
-                self.grid.SetCellValue(row_number, self.columns.index('Section'), str(section_title))
-                self.grid.SetCellValue(row_number, self.columns.index('Key'), str(title))
-                self.grid.SetCellValue(row_number, self.columns.index('Value'), str(value))
+                self.grid.SetCellValue(row_number, 0, "[%s]\n%s" % (section_title, title))
+                self.grid.SetCellValue(row_number, 1, str(value))
+                color = self.grid.GetDefaultCellBackgroundColour() if section_i % 2 \
+                                                                   else Colors.BG_TXT_WIN_CAT_ALTERNATION
+                self.grid.SetCellBackgroundColour(row_number, 0, color)
+                self.grid.SetCellBackgroundColour(row_number, 1, color)
+                if prev_section != request_section_id:
+                    section_i += 1
             if self.show_full_info:
                 self.grid.AutoSizeRow(row_number)
             else:
                 self.grid.SetRowSize(row_number, self.grid.GetClientSize()[1] - 70)
-        [set_row(i, val) for i, val in enumerate(data)]
 
         self.current_name = "%s: %s %s. %s" % list_item[2:6]
         self.label.SetLabel(self.current_name)

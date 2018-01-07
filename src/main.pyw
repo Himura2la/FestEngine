@@ -69,7 +69,7 @@ class MainFrame(wx.Frame):
                            Config.BG_FADE_STOP_DELAYS: 0.03,
                            Config.BG_FADE_PAUSE_DELAYS: 0.01,
                            Config.COUNTDOWN_TIME_FMT: u"Ждём Вас в %s ^_^",
-                           Config.C2_DATABASE_PATH: "D:\Fests Local\Past\Yuki no Odori 2016\\2016-fest\C2D\\tulafest\sqlite3_data.db",
+                           Config.C2_DATABASE_PATH: "",
                            Config.TEXT_WIN_FIELDS: ["Пожелания по сценическому свету (необязательно)"]}
 
         self.logger = Logger(self)
@@ -418,7 +418,7 @@ class MainFrame(wx.Frame):
     def player_status(self, text):
         self.status_bar.SetStatusText(text, 2)
 
-    def player_status(self, text):  # For lambdas
+    def set_player_status(self, text):  # For lambdas
         self.status_bar.SetStatusText(text, 2)
 
     @property
@@ -434,12 +434,13 @@ class MainFrame(wx.Frame):
 
     # -------------------------------------------------- Actions --------------------------------------------------
 
-    def on_close(self, e):
+    def on_close(self, e=None):
         self.destroy_proj_win()
         self.on_text_win_close()
         self.player.stop()
         self.vlc_instance.release()
-        e.Skip()
+        if e:
+            e.Skip()
 
     def on_settings(self, e=None):
         prev_config = copy.copy(self.config)
@@ -1129,7 +1130,7 @@ class MainFrame(wx.Frame):
 
     def text_win_show(self, e):
         if e.Selection:
-            if not Config.C2_DATABASE_PATH in self.config or not os.path.exists(self.config[Config.C2_DATABASE_PATH]):
+            if Config.C2_DATABASE_PATH not in self.config or not os.path.exists(self.config[Config.C2_DATABASE_PATH]):
                 self.status("No Cosplay2 Database")
                 return
             self.text_win = TextWindow(self, _('Text Data'), self.config[Config.TEXT_WIN_FIELDS])
