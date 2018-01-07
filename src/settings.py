@@ -148,6 +148,7 @@ class SettingsDialog(wx.Dialog):
                 widget.Enable(enabled)
 
         list(map(process_children, [self.configs_grid, self.pickers_sizer, self.dir_buttons_sizer]))
+        self.session_file_edit_btn.Enable(enabled)
 
     def on_fest_selected(self, e=None, first_run=False):
         fest_file_exists = os.path.isfile(e.Path) if e else False

@@ -68,10 +68,12 @@ class MainFrame(wx.Frame):
                            Config.FILES_DIRS: [""],
                            Config.BG_FADE_STOP_DELAYS: 0.03,
                            Config.BG_FADE_PAUSE_DELAYS: 0.01,
-                           Config.COUNTDOWN_TIME_FMT: u"Ждём Вас в %s ^_^"}
+                           Config.COUNTDOWN_TIME_FMT: u"Ждём Вас в %s ^_^",
+                           Config.C2_DATABASE_PATH: "D:\Fests Local\Past\Yuki no Odori 2016\\2016-fest\C2D\\tulafest\sqlite3_data.db"}
 
         self.logger = Logger(self)
         self.proj_win = None
+        self.text_win = None
         self.filename_re = None
         self.grid_rows = None
         self.data = {}
@@ -154,12 +156,17 @@ class MainFrame(wx.Frame):
 
         # --- Projector Window ---
         proj_win_menu = wx.Menu()
-        self.Bind(wx.EVT_MENU, self.ensure_proj_win,
-                  proj_win_menu.Append(wx.ID_ANY, _("&Show")))
+        self.Bind(wx.EVT_MENU, self.ensure_proj_win, proj_win_menu.Append(wx.ID_ANY, _("&Create")))
         self.destroy_proj_win_item = proj_win_menu.Append(wx.ID_ANY, _("&Destroy"))
         self.destroy_proj_win_item.Enable(False)
         self.Bind(wx.EVT_MENU, self.destroy_proj_win, self.destroy_proj_win_item)
         menu_bar.Append(proj_win_menu, _("&Projector Window"))
+
+        # --- Text Window ---
+        text_win_menu = wx.Menu()
+        self.text_win_show_item = text_win_menu.Append(wx.ID_ANY, _("&Enable"), kind=wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.text_win_show, self.text_win_show_item)
+        menu_bar.Append(text_win_menu, _("&Text Window"))
 
         # --- Background Music ---
         menu_bg_music = wx.Menu()
@@ -426,7 +433,8 @@ class MainFrame(wx.Frame):
             json.dump(prev_config, open(bkp_name, 'w', encoding='utf-8'),
                       ensure_ascii=False, indent=4)
 
-        if prev_config[Config.FILES_DIRS] != self.config[Config.FILES_DIRS]:
+        if prev_config[Config.FILES_DIRS] != self.config[Config.FILES_DIRS] or \
+                        prev_config[Config.FILENAME_RE] != self.config[Config.FILENAME_RE]:
             with wx.MessageDialog(self, _("You may want to restart FestEngine. Exit now?"),
                                   _("Restart Required"), wx.YES_NO | wx.ICON_INFORMATION) as restart_dialog:
                 action = restart_dialog.ShowModal()
@@ -576,7 +584,8 @@ class MainFrame(wx.Frame):
             return
 
         # Making rows from filename_re groups
-        self.grid_rows = [r if r != 'num' else Columns.NUM for r in group_names] + [Columns.FILES, Columns.NOTES]
+        self.grid_rows = [r if r != 'num' else Columns.NUM
+                          for r in group_names if r[0] != '_'] + [Columns.FILES, Columns.NOTES]
 
         all_files = [[os.path.join(d, path) for path in os.listdir(d)] for d in dirs]
         all_files = [item for sublist in all_files for item in sublist]  # Flatten
@@ -1092,6 +1101,29 @@ class MainFrame(wx.Frame):
                 self.background_play(from_grid=False)
         else:
             self.background_pause(paused=True)
+
+    # -------------------------------------------------- Text Window --------------------------------------------------
+
+    def text_win_show(self, e):
+        if e.Selection:
+            if not Config.C2_DATABASE_PATH in self.config or not os.path.exists(self.config[Config.C2_DATABASE_PATH]):
+                self.status("No Cosplay2 Database")
+                return
+            self.text_win = TextWindow(self, _('Text Data'))
+            self.text_win.Show()
+            self.text_win.load_db(self.config[Config.C2_DATABASE_PATH])
+            self.status("Text Window Created")
+        elif self.text_win:
+            self.on_text_win_close()
+        else:
+            self.status("Text Window ERROR !!!")
+
+    def on_text_win_close(self, e=None):
+        if self.text_win.db:
+            self.text_win.db.close()
+        self.text_win.Destroy()
+        self.text_win = None
+        self.status("Text Window Destroyed")
 
 
 if __name__ == "__main__":

@@ -55,13 +55,7 @@ class TextWindow(wx.Frame):
         self.db = None
         self.c = None
 
-        self.Bind(wx.EVT_CLOSE, self.on_close)
-
-    def on_close(self, e=None):
-        if self.db:
-            self.db.close()
-        if e:
-            e.Skip()
+        self.Bind(wx.EVT_CLOSE, parent.on_text_win_close)
 
     def load_db(self, db_path):
         self.db = sqlite3.connect(db_path, isolation_level=None)
@@ -129,12 +123,3 @@ class TextWindow(wx.Frame):
         self.label.SetLabel(self.current_name)
         self.grid_set_rows(0)
         self.Layout()
-
-
-if __name__ == "__main__":
-    app = wx.App()
-    frame = TextWindow(None, 'Text Window (Debug)')
-    frame.Show(True)
-    frame.load_db("D:\Fests Local\Past\Yuki no Odori 2016\\2016-fest\C2D\\tulafest\sqlite3_data.db")
-    frame.show_details(frame.list[42])
-    app.MainLoop()
