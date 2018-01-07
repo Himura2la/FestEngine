@@ -7,9 +7,10 @@ import sqlite3
 
 
 class TextWindow(wx.Frame):
-    def __init__(self, parent, title):
+    def __init__(self, parent, title, main_fields):
         self.parent = parent
         self.base_title = title
+        self.main_fields = main_fields
         wx.Frame.__init__(self, parent, title=title, size=(1024, 768))
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
 
@@ -50,6 +51,8 @@ class TextWindow(wx.Frame):
         self.grid.Bind(wx.EVT_SIZE, self.grid_autosize_cols)
         self.grid_autosize_cols()
 
+        self.show_full_info = False
+        self.show_values_only = False
         self.event_name = ""
         self.list = None
         self.db = None
@@ -95,31 +98,45 @@ class TextWindow(wx.Frame):
         """, (request_id,))
         return self.c.fetchall()
 
-    def grid_set_rows(self, new_rows):
-        current_rows = self.grid.GetNumberRows()
-        if current_rows > 0:
-            self.grid.DeleteRows(0, current_rows, False)
-        self.grid.AppendRows(new_rows)
+    def grid_set_shape(self, new_rows=-1, new_cols=-1):
+        current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
+        if 0 <= new_rows < current_rows:
+            self.grid.DeleteRows(0, current_rows - new_rows, False)
+        elif new_rows > current_rows:
+            self.grid.AppendRows(new_rows - current_rows)
 
-    def show_details(self, list_item):
+        if 0 <= new_cols < current_cols:
+            self.grid.DeleteCols(0, current_cols - new_cols, False)
+        elif new_cols > current_cols:
+            self.grid.AppendCols(new_cols - current_cols)
+
+    def load_item(self, list_item):
         data = self._get_details(list_item[0])
-        self.grid_set_rows(len(data))
+        if not self.show_full_info:
+            data = list(filter(lambda r: r[2] in self.main_fields, data))
+
+        self.grid_set_shape(len(data), 1 if self.show_values_only else 3)
 
         def set_row(row_number, row_data):
             request_section_id, section_title, title, value, data_type = row_data
-            self.grid.SetCellValue(row_number, self.columns.index('Section'), str(section_title))
-            self.grid.SetCellValue(row_number, self.columns.index('Key'), str(title))
-            self.grid.SetCellValue(row_number, self.columns.index('Value'), str(value))
-            self.grid.AutoSizeRow(row_number)
-            self.grid.SetRowSize(row_number, self.grid.GetRowSize(row_number) - 10)
+            if self.show_values_only:
+                self.grid.SetCellValue(row_number, 0, str(value))
+            else:
+                self.grid.SetCellValue(row_number, self.columns.index('Section'), str(section_title))
+                self.grid.SetCellValue(row_number, self.columns.index('Key'), str(title))
+                self.grid.SetCellValue(row_number, self.columns.index('Value'), str(value))
+            if self.show_full_info:
+                self.grid.AutoSizeRow(row_number)
+            else:
+                self.grid.SetRowSize(row_number, self.grid.GetClientSize()[1] - 70)
         [set_row(i, val) for i, val in enumerate(data)]
 
         self.current_name = "%s: %s %s. %s" % list_item[2:6]
         self.label.SetLabel(self.current_name)
         self.Layout()
 
-    def clear_details(self, message=None):
+    def clear(self, message=None):
         self.current_name = message if message else self.default_name
         self.label.SetLabel(self.current_name)
-        self.grid_set_rows(0)
+        self.grid_set_shape(0)
         self.Layout()

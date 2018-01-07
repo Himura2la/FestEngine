@@ -170,6 +170,7 @@ class SettingsDialog(wx.Dialog):
             self.enable_settings(not fest_file_exists)
             self.button_save.Enable(not fest_file_exists)
             self.button_load.Enable(fest_file_exists)
+            self.session_file_edit_btn.Enable(os.path.exists(self.session_file_path))
 
     def config_to_ui(self):
         self.screens_combobox.SetSelection(self.config[Config.PROJECTOR_SCREEN])

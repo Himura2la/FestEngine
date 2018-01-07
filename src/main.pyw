@@ -69,7 +69,8 @@ class MainFrame(wx.Frame):
                            Config.BG_FADE_STOP_DELAYS: 0.03,
                            Config.BG_FADE_PAUSE_DELAYS: 0.01,
                            Config.COUNTDOWN_TIME_FMT: u"Ждём Вас в %s ^_^",
-                           Config.C2_DATABASE_PATH: "D:\Fests Local\Past\Yuki no Odori 2016\\2016-fest\C2D\\tulafest\sqlite3_data.db"}
+                           Config.C2_DATABASE_PATH: "D:\Fests Local\Past\Yuki no Odori 2016\\2016-fest\C2D\\tulafest\sqlite3_data.db",
+                           Config.TEXT_WIN_FIELDS: ["Пожелания по сценическому свету (необязательно)"]}
 
         self.logger = Logger(self)
         self.proj_win = None
@@ -167,6 +168,22 @@ class MainFrame(wx.Frame):
         text_win_menu = wx.Menu()
         self.text_win_show_item = text_win_menu.Append(wx.ID_ANY, _("&Enable"), kind=wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.text_win_show, self.text_win_show_item)
+        self.text_win_full_info = text_win_menu.Append(wx.ID_ANY, _("&Full Info"), kind=wx.ITEM_CHECK)
+        self.text_win_full_info.Enable(False)
+
+        def on_full_info_switch(e):
+            if self.text_win:
+                self.text_win.show_full_info = bool(e.Selection)
+        self.Bind(wx.EVT_MENU, on_full_info_switch, self.text_win_full_info)
+
+        self.text_win_values_only = text_win_menu.Append(wx.ID_ANY, _("&Values Only"), kind=wx.ITEM_CHECK)
+        self.text_win_values_only.Enable(False)
+
+        def on_values_only_switch(e):
+            if self.text_win:
+                self.text_win.show_values_only = bool(e.Selection)
+        self.Bind(wx.EVT_MENU, on_values_only_switch, self.text_win_values_only)
+
         menu_bar.Append(text_win_menu, _("&Text Window"))
 
         # --- Background Music ---
@@ -299,7 +316,7 @@ class MainFrame(wx.Frame):
                 if item_is_track:
                     self.text_win_load_async(4, self.get_num(row))
                 else:
-                    self.text_win.clear_details()
+                    wx.CallAfter(self.text_win.clear)
 
         self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
         self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
@@ -401,7 +418,7 @@ class MainFrame(wx.Frame):
     def player_status(self, text):
         self.status_bar.SetStatusText(text, 2)
 
-    def set_player_status(self, text):  # For lambdas
+    def player_status(self, text):  # For lambdas
         self.status_bar.SetStatusText(text, 2)
 
     @property
@@ -445,7 +462,7 @@ class MainFrame(wx.Frame):
                                   _("Restart Required"), wx.YES_NO | wx.ICON_INFORMATION) as restart_dialog:
                 action = restart_dialog.ShowModal()
                 if action == wx.ID_YES:
-                    self.on_exit()
+                    self.on_close()
 
     def on_proj_win_close(self, e):
         self.proj_win.countdown_panel.timer.Stop()
@@ -1115,10 +1132,12 @@ class MainFrame(wx.Frame):
             if not Config.C2_DATABASE_PATH in self.config or not os.path.exists(self.config[Config.C2_DATABASE_PATH]):
                 self.status("No Cosplay2 Database")
                 return
-            self.text_win = TextWindow(self, _('Text Data'))
+            self.text_win = TextWindow(self, _('Text Data'), self.config[Config.TEXT_WIN_FIELDS])
             self.text_win.Show()
             self.text_win.load_db(self.config[Config.C2_DATABASE_PATH])
             self.status("Text Window Created")
+            self.text_win_full_info.Enable(True)
+            self.text_win_values_only.Enable(True)
         elif self.text_win:
             self.on_text_win_close()
         else:
@@ -1132,6 +1151,8 @@ class MainFrame(wx.Frame):
         self.text_win.Destroy()
         self.text_win = None
         self.status("Text Window Destroyed")
+        self.text_win_full_info.Enable(False)
+        self.text_win_values_only.Enable(False)
 
     def text_win_load_async(self, field_number, value):
         """ field_number in [requests.id, number, title, list.card_code, voting_number, voting_title].
@@ -1141,10 +1162,10 @@ class MainFrame(wx.Frame):
     def text_win_load_sync(self, field_number, value):
         item = next((x for x in self.text_win.list if str(x[field_number]) == value), None)
         if item:
-            wx.CallAfter(self.text_win.show_details, item)
+            wx.CallAfter(self.text_win.load_item, item)
         else:
             self.status("Text Not Found !!!")
-            self.text_win.clear_details(_("Integrity Error"))
+            self.text_win.clear(_("Integrity Error"))
 
 
 if __name__ == "__main__":

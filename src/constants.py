@@ -13,6 +13,7 @@ class Config:
     BG_FADE_PAUSE_DELAYS = "BG Player Pause Fade In/Out Delays"
     COUNTDOWN_TIME_FMT = "Countdown Time Format"
     C2_DATABASE_PATH = "Cosplay2 Database Path"
+    TEXT_WIN_FIELDS = "Main Fields in Text Window"
 
 
 class Columns:
