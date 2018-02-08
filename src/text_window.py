@@ -39,7 +39,7 @@ class TextWindow(wx.Frame):
         self.grid.HideRowLabels()
         self.grid.HideColLabels()
         self.grid.SetDefaultRenderer(wx.grid.GridCellAutoWrapStringRenderer())
-        self.grid.SetDefaultEditor(wx.grid.GridCellAutoWrapStringEditor())
+        # self.grid.SetDefaultEditor(wx.grid.GridCellAutoWrapStringEditor())  # ReadOnly
         font = self.grid.GetDefaultCellFont()
         font.SetPixelSize(wx.Size(0, 18))
         self.grid.SetDefaultCellFont(font)
@@ -86,7 +86,7 @@ class TextWindow(wx.Frame):
     def get_list(self):
         self.c.execute("""
             SELECT requests.id, number, title, list.card_code, voting_number, voting_title
-            FROM   list, requests 
+            FROM   list, requests
             WHERE  list.id = topic_id AND list.default_duration > 0
         """)
         return self.c.fetchall()

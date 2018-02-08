@@ -21,6 +21,7 @@ class Columns:
     FILES = 'files'
     NOTES = 'notes'
     NAME = 'name'
+    C2_REQUEST_ID = 'req_id'
 
 
 class Strings:

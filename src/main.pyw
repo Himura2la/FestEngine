@@ -314,7 +314,7 @@ class MainFrame(wx.Frame):
             self.replace_file_item.Enable(item_is_track)
             if self.text_win:
                 if item_is_track:
-                    self.text_win_load_async(4, self.get_num(row))
+                    self.text_win_load(self.grid.GetCellValue(row, self.grid_rows.index(Columns.C2_REQUEST_ID)))
                 else:
                     wx.CallAfter(self.text_win.clear)
 
@@ -1155,15 +1155,11 @@ class MainFrame(wx.Frame):
         self.text_win_full_info.Enable(False)
         self.text_win_values_only.Enable(False)
 
-    def text_win_load_async(self, field_number, value):
-        """ field_number in [requests.id, number, title, list.card_code, voting_number, voting_title].
-            See self.text_win.get_list() """
-        threading.Thread(target=self.text_win_load_sync, args=(field_number, value)).start()
-
-    def text_win_load_sync(self, field_number, value):
-        item = next((x for x in self.text_win.list if str(x[field_number]) == value), None)
+    def text_win_load(self, req_id):
+                # ref text_window.py:86 (def get_list) ---- v
+        item = next((x for x in self.text_win.list if str(x[1]) == req_id), None)
         if item:
-            wx.CallAfter(self.text_win.load_item, item)
+            self.text_win.load_item(item)
         else:
             self.status("Text Not Found !!!")
             self.text_win.clear(_("Integrity Error"))
