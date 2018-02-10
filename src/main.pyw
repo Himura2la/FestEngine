@@ -441,6 +441,8 @@ class MainFrame(wx.Frame):
         self.vlc_instance.release()
         if e:
             e.Skip()
+        else:
+            self.Close(True)
 
     def on_settings(self, e=None):
         prev_config = copy.copy(self.config)
