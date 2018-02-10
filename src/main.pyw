@@ -176,14 +176,6 @@ class MainFrame(wx.Frame):
                 self.text_win.show_full_info = bool(e.Selection)
         self.Bind(wx.EVT_MENU, on_full_info_switch, self.text_win_full_info)
 
-        self.text_win_values_only = text_win_menu.Append(wx.ID_ANY, _("&Values Only"), kind=wx.ITEM_CHECK)
-        self.text_win_values_only.Enable(False)
-
-        def on_values_only_switch(e):
-            if self.text_win:
-                self.text_win.show_values_only = bool(e.Selection)
-        self.Bind(wx.EVT_MENU, on_values_only_switch, self.text_win_values_only)
-
         menu_bar.Append(text_win_menu, _("&Text Window"))
 
         # --- Background Music ---
@@ -1140,7 +1132,6 @@ class MainFrame(wx.Frame):
             self.text_win.load_db(self.config[Config.C2_DATABASE_PATH])
             self.status("Text Window Created")
             self.text_win_full_info.Enable(True)
-            self.text_win_values_only.Enable(True)
         elif self.text_win:
             self.on_text_win_close()
         else:
@@ -1156,7 +1147,6 @@ class MainFrame(wx.Frame):
         self.status("Text Window Destroyed")
         self.text_win_show_item.Check(False)
         self.text_win_full_info.Enable(False)
-        self.text_win_values_only.Enable(False)
 
     def text_win_load(self, req_id):
                 # ref text_window.py:86 (def get_list) ---- v

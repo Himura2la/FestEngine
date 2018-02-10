@@ -2,10 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import wx
-import wx.grid
+import wx.richtext
 import sqlite3
-
-from constants import Colors
 
 
 class TextWindow(wx.Frame):
@@ -33,25 +31,13 @@ class TextWindow(wx.Frame):
         label_sizer.AddStretchSpacer()
         main_sizer.Add(label_sizer, 0, wx.EXPAND)
 
-        self.grid = wx.grid.Grid(self)
-        self.grid.CreateGrid(0, 0)
-        self.grid.SetColLabelSize(24)
-        self.grid.HideRowLabels()
-        self.grid.HideColLabels()
-        self.grid.SetDefaultRenderer(wx.grid.GridCellAutoWrapStringRenderer())
-        # self.grid.SetDefaultEditor(wx.grid.GridCellAutoWrapStringEditor())  # ReadOnly
-        font = self.grid.GetDefaultCellFont()
-        font.SetPixelSize(wx.Size(0, 18))
-        self.grid.SetDefaultCellFont(font)
+        self.rtc = wx.richtext.RichTextCtrl(self, style=wx.VSCROLL | wx.NO_BORDER)
+        self.rtc.BeginSuppressUndo()
 
-        main_sizer.Add(self.grid, 1, wx.EXPAND | wx.TOP, border=1)
+        main_sizer.Add(self.rtc, 1, wx.EXPAND | wx.TOP, border=1)
 
         self.SetSizer(main_sizer)
         self.Layout()
-
-        self.grid.Bind(wx.EVT_SIZE, self.grid_autosize_cols)
-        self.grid_autosize_cols()
-
         self.show_full_info = False
         self.show_values_only = False
         self.event_name = ""
@@ -73,16 +59,6 @@ class TextWindow(wx.Frame):
 
         self.list = self.get_list()
 
-    def grid_autosize_cols(self, e=None):
-        w = self.grid.GetClientSize()[0] - self.grid.GetRowLabelSize()
-        col_sizes = [self.grid.GetColSize(i) for i in range(self.grid.GetNumberCols())] if e else [1, 2]
-        n_cols = self.grid.GetNumberCols()
-        for col in range(n_cols):
-            k = w / sum(col_sizes)
-            self.grid.SetColSize(col, col_sizes[col] * k)
-        if e:
-            e.Skip()
-
     def get_list(self):
         self.c.execute("""
             SELECT requests.id, number, title, list.card_code, voting_number, voting_title
@@ -99,47 +75,42 @@ class TextWindow(wx.Frame):
         """, (request_id,))
         return self.c.fetchall()
 
-    def grid_set_shape(self, new_rows=-1, new_cols=-1):
-        current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
-        if 0 <= new_rows < current_rows:
-            self.grid.DeleteRows(0, current_rows - new_rows, False)
-        elif new_rows > current_rows:
-            self.grid.AppendRows(new_rows - current_rows)
-
-        if 0 <= new_cols < current_cols:
-            self.grid.DeleteCols(0, current_cols - new_cols, False)
-        elif new_cols > current_cols:
-            self.grid.AppendCols(new_cols - current_cols)
-
     def load_item(self, list_item):
         data = self._get_details(list_item[0])
         if not self.show_full_info:
             data = list(filter(lambda r: r[2] in self.main_fields, data))
 
-        self.grid_set_shape(len(data), 1 if self.show_values_only else 2)
-
         section_i = 1
         request_section_id = -1
+
+        self.rtc.Freeze()
+        self.rtc.Clear()
 
         for row_number, row_data in enumerate(data):
             prev_section = request_section_id
             request_section_id, section_title, title, value, data_type = row_data
-            if self.show_values_only:
-                self.grid.SetCellValue(row_number, 0, str(value))
-            else:
-                self.grid.SetCellValue(row_number, 0, "[%s]\n%s" % (section_title, title))
-                self.grid.SetCellValue(row_number, 1, str(value))
-                color = self.grid.GetDefaultCellBackgroundColour() if section_i % 2 \
-                                                                   else Colors.BG_TXT_WIN_CAT_ALTERNATION
-                self.grid.SetCellBackgroundColour(row_number, 0, color)
-                self.grid.SetCellBackgroundColour(row_number, 1, color)
-                if prev_section != request_section_id:
-                    section_i += 1
-            if self.show_full_info:
-                self.grid.AutoSizeRow(row_number)
-            else:
-                self.grid.SetRowSize(row_number, self.grid.GetClientSize()[1] - 70)
+            value_text = str(value)
 
+            if not value_text:
+                continue
+
+            self.rtc.BeginBold()
+
+            if self.show_full_info and prev_section != request_section_id:
+                if self.rtc.NumberOfLines > 1:
+                    self.rtc.Newline()
+                self.rtc.WriteText("--- %s [%d] ---" % (section_title, request_section_id))
+                self.rtc.Newline()
+            self.rtc.WriteText("%s: " % title)
+            self.rtc.EndBold()
+
+            if len(value_text) > 50:
+                self.rtc.Newline()
+
+            self.rtc.WriteText(value_text)
+            self.rtc.Newline()
+
+        self.rtc.Thaw()
         self.current_name = "%s: %s %s. %s" % list_item[2:6]
         self.label.SetLabel(self.current_name)
         self.Layout()
@@ -147,5 +118,4 @@ class TextWindow(wx.Frame):
     def clear(self, message=None):
         self.current_name = message if message else self.default_name
         self.label.SetLabel(self.current_name)
-        self.grid_set_shape(0)
         self.Layout()
