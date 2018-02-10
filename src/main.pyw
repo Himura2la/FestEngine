@@ -1154,6 +1154,7 @@ class MainFrame(wx.Frame):
         self.text_win.Destroy()
         self.text_win = None
         self.status("Text Window Destroyed")
+        self.text_win_show_item.Check(False)
         self.text_win_full_info.Enable(False)
         self.text_win_values_only.Enable(False)
 
