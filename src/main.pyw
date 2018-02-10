@@ -75,6 +75,7 @@ class MainFrame(wx.Frame):
         self.logger = Logger(self)
         self.proj_win = None
         self.text_win = None
+        self.req_id_fiend_number = None
         self.filename_re = None
         self.grid_rows = None
         self.data = {}
@@ -1128,6 +1129,7 @@ class MainFrame(wx.Frame):
                 self.status("No Cosplay2 Database")
                 return
             self.text_win = TextWindow(self, _('Text Data'), self.config[Config.TEXT_WIN_FIELDS])
+            self.req_id_fiend_number = self.text_win.LIST_FIELDS.index('requests.number')  # The № value in Cosplay2
             self.text_win.Show()
             self.text_win.load_db(self.config[Config.C2_DATABASE_PATH])
             self.status("Text Window Created")
@@ -1149,13 +1151,12 @@ class MainFrame(wx.Frame):
         self.text_win_full_info.Enable(False)
 
     def text_win_load(self, req_id):
-                # ref text_window.py:86 (def get_list) ---- v
-        item = next((x for x in self.text_win.list if str(x[1]) == req_id), None)
+        item = next((x for x in self.text_win.list if str(x[self.req_id_fiend_number]) == req_id), None)
         if item:
-            self.text_win.load_item(item)
+            self.text_win.load(item)
         else:
             self.status("Text Not Found !!!")
-            self.text_win.clear(_("Integrity Error"))
+            self.text_win.clear(_("Item not found in the database"))
 
 
 if __name__ == "__main__":

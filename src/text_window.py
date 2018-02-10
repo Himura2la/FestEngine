@@ -7,6 +7,9 @@ import sqlite3
 
 
 class TextWindow(wx.Frame):
+    LIST_FIELDS = ['requests.id', 'requests.number', 'list.title', 'list.card_code', 'voting_number', 'voting_title']
+    DETAILS_FIELDS = ['request_section_id', 'section_title', 'title', 'value']
+
     def __init__(self, parent, title, main_fields):
         self.parent = parent
         self.base_title = title
@@ -50,15 +53,12 @@ class TextWindow(wx.Frame):
         self.list = self.get_list()
 
     def get_list(self):
-        self.c.execute("""
-            SELECT requests.id, number, title, list.card_code, voting_number, voting_title
-            FROM   list, requests
-            WHERE  list.id = topic_id AND list.default_duration > 0
-        """)
+        self.c.execute("SELECT %s FROM list,requests WHERE list.id = topic_id AND list.default_duration > 0" %
+                       ",".join(self.LIST_FIELDS))
         return self.c.fetchall()
 
     def _get_details(self, request_id):
-        base_query = "SELECT request_section_id, section_title, title, value, type FROM [values] "
+        base_query = "SELECT %s FROM [values] " % ",".join(self.DETAILS_FIELDS)
         if self.show_full_info:
             self.c.execute(base_query + "WHERE request_id = ?", (request_id,))
         else:
@@ -68,17 +68,16 @@ class TextWindow(wx.Frame):
                            ([request_id] + self.main_fields))
         return self.c.fetchall()
 
-    def load_item(self, list_item):
-        data = self._get_details(list_item[0])
+    def load(self, list_item):
+        data = self._get_details(list_item[self.LIST_FIELDS.index('requests.id')])  # requests.id = request_id
 
-        section_i = 1
-        request_section_id = -1
+        request_section_id = 0
 
         self.rtc.Freeze()
         self.rtc.Clear()
 
-        nom = list_item[2]
-        title = "%s %s. %s" % list_item[3:6]
+        nom = list_item[self.LIST_FIELDS.index('list.title')]
+        title = "%s %s. %s" % list_item[3:6]  # You got the idea, give me some space for optimization
         self.current_title = "%s: %s" % (nom, title)
 
         self.rtc.BeginFontSize(self.title_font_size)
@@ -97,7 +96,7 @@ class TextWindow(wx.Frame):
 
         for row_number, row_data in enumerate(data):
             prev_section = request_section_id
-            request_section_id, section_title, title, value, data_type = row_data
+            request_section_id, section_title, title, value = row_data
             value_text = str(value)
 
             if not value_text:
