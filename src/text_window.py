@@ -17,19 +17,10 @@ class TextWindow(wx.Frame):
         # ---------------------------------------------- Layout -----------------------------------------------------
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.default_name = "Please wait..."
-        self.current_name = self.default_name
+        self.title_font_size = 21
+        self.text_font_size = 18
 
-        label_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.label = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL, label=self.current_name)
-        font = self.label.GetFont()
-        font.SetPixelSize(wx.Size(0, 28))
-        self.label.SetFont(font)
-
-        label_sizer.AddStretchSpacer()
-        label_sizer.Add(self.label, 0, wx.EXPAND)
-        label_sizer.AddStretchSpacer()
-        main_sizer.Add(label_sizer, 0, wx.EXPAND)
+        self.current_title = ""
 
         self.rtc = wx.richtext.RichTextCtrl(self, style=wx.VSCROLL | wx.NO_BORDER)
         self.rtc.BeginSuppressUndo()
@@ -86,6 +77,24 @@ class TextWindow(wx.Frame):
         self.rtc.Freeze()
         self.rtc.Clear()
 
+        nom = list_item[2]
+        title = "%s %s. %s" % list_item[3:6]
+        self.current_title = "%s: %s" % (nom, title)
+
+        self.rtc.BeginFontSize(self.title_font_size)
+        self.rtc.BeginBold()
+
+        self.rtc.WriteText(nom)
+        self.rtc.Newline()
+        self.rtc.WriteText(title)
+
+        self.rtc.EndBold()
+        self.rtc.EndFontSize()
+        self.rtc.Newline()
+
+        self.rtc.BeginFontSize(self.text_font_size)
+        self.rtc.Newline()
+
         for row_number, row_data in enumerate(data):
             prev_section = request_section_id
             request_section_id, section_title, title, value, data_type = row_data
@@ -97,7 +106,7 @@ class TextWindow(wx.Frame):
             self.rtc.BeginBold()
 
             if self.show_full_info and prev_section != request_section_id:
-                if self.rtc.NumberOfLines > 1:
+                if self.rtc.NumberOfLines > 4:
                     self.rtc.Newline()
                 self.rtc.WriteText("--- %s [%d] ---" % (section_title, request_section_id))
                 self.rtc.Newline()
@@ -110,12 +119,12 @@ class TextWindow(wx.Frame):
             self.rtc.WriteText(value_text)
             self.rtc.Newline()
 
+        self.rtc.EndFontSize()
         self.rtc.Thaw()
-        self.current_name = "%s: %s %s. %s" % list_item[2:6]
-        self.label.SetLabel(self.current_name)
-        self.Layout()
 
     def clear(self, message=None):
-        self.current_name = message if message else self.default_name
-        self.label.SetLabel(self.current_name)
-        self.Layout()
+        self.rtc.Clear()
+        if message:
+            self.rtc.BeginFontSize(self.title_font_size)
+            self.rtc.WriteText(message)
+            self.rtc.EndFontSize()
