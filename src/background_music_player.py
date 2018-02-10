@@ -41,7 +41,7 @@ class BackgroundMusicPlayer(object):
         file_paths = [os.path.join(bg_music_dir, f) for f in sorted(os.listdir(bg_music_dir))]
         self.playlist = [{'title': os.path.basename(p).rsplit('.', 1)[0],
                           'path': p,
-                          'color': Colors.BG_NEVER_PLAYED}
+                          'color': Colors.ROW_NEVER_PLAYED}
                          for p in file_paths if os.path.isfile(p) and os.path.basename(p).rsplit('.', 1)[1] in FileTypes.audio_extensions]
         if self.window:
             self.load_playlist_to_grid()
@@ -70,11 +70,11 @@ class BackgroundMusicPlayer(object):
             return
         if self.current_track_i >= 0:
             if self.player.get_state() in {vlc.State.Playing, vlc.State.Paused}:
-                self.playlist[self.current_track_i]['color'] = Colors.BG_SKIPPED
+                self.playlist[self.current_track_i]['color'] = Colors.ROW_SKIPPED
                 if self.fade_in_out and self.player.get_state() == vlc.State.Playing:
                     self.fade_out_sync(self.parent.config[Config.BG_FADE_STOP_DELAYS])  # Blocks thread
             else:
-                self.playlist[self.current_track_i]['color'] = Colors.BG_PLAYED_TO_END
+                self.playlist[self.current_track_i]['color'] = Colors.ROW_PLAYED_TO_END
         if self.window:
             self.window.grid.SetCellBackgroundColour(self.current_track_i, 0,
                                                      self.playlist[self.current_track_i]['color'])
@@ -135,13 +135,13 @@ class BackgroundMusicPlayer(object):
             wx.CallAfter(lambda: self.parent.set_bg_player_status(status))
             time.sleep(0.005)
 
-        self.playlist[self.current_track_i]['color'] = Colors.BG_PLAYING_NOW
+        self.playlist[self.current_track_i]['color'] = Colors.ROW_PLAYING_NOW
 
         if self.window:
             def ui_upd():
                 self.window.pause_btn.Enable(True)
                 self.window.lock_btn.Enable(True)
-                self.window.grid.SetCellBackgroundColour(self.current_track_i, 0, Colors.BG_PLAYING_NOW)
+                self.window.grid.SetCellBackgroundColour(self.current_track_i, 0, Colors.ROW_PLAYING_NOW)
                 self.window.grid.ForceRefresh()  # Updates colors
                 self.window.pause_btn.SetValue(False)
 

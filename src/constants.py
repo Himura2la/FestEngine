@@ -33,16 +33,17 @@ class Strings:
 
 
 class Colors:
-    DUP_ROW = (255, 128, 255, 255)
-    COUNTDOWN_ROW = (128, 255, 128, 255)
-    FILTERED_GRID = (255, 255, 128, 255)
+    DUP_ROW = (128, 255, 255)  # Sky
+    COUNTDOWN_ROW = (128, 255, 200)  # Green
+    FILTERED_GRID = (255, 255, 200)  # Yellow
 
-    BG_NEVER_PLAYED = (255, 255, 255, 255)
-    BG_PLAYING_NOW = DUP_ROW
-    BG_PLAYED_TO_END = FILTERED_GRID
-    BG_SKIPPED = (255, 128, 128, 255)
+    ROW_NEVER_PLAYED = (255, 255, 255)  # White
+    ROW_PLAYING_NOW = (200, 200, 255)  # Blue
 
-    COUNTDOWN_TEXT_COLOR = (255, 255, 255, 255)
+    ROW_PLAYED_TO_END = (200, 200, 200)  # Gray
+    ROW_SKIPPED = (255, 200, 200)  # Red
+
+    COUNTDOWN_TEXT_COLOR = (255, 255, 255)  # White
 
 
 class FileTypes:

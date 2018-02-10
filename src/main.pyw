@@ -77,12 +77,13 @@ class MainFrame(wx.Frame):
         self.text_win = None
         self.req_id_fiend_number = None
         self.filename_re = None
-        self.grid_rows = None
+        self.grid_cols = None
         self.data = {}
         self.in_search = False
         self.grid_default_bg_color = None
         self.full_grid_data = None
         self.num_in_player = None
+        self.current_playing_row = None
 
         self.player_time_update_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.player_time_update, self.player_time_update_timer)
@@ -305,18 +306,33 @@ class MainFrame(wx.Frame):
             item_is_track = self.row_type(row) == 'track'
             self.del_row_item.Enable(not item_is_track)
             self.replace_file_item.Enable(item_is_track)
-            if self.text_win:
-                if item_is_track:
-                    self.text_win_load(self.grid.GetCellValue(row, self.grid_rows.index(Columns.C2_REQUEST_ID)))
+
+            def text_win_load():
+                num = self.get_num(row)
+                if num not in self.data:
+                    self.text_win.clear(num)
+                    return
+                row_data = self.data[num]
+                if Columns.C2_REQUEST_ID in row_data:
+                    req_id = row_data[Columns.C2_REQUEST_ID]
+                elif '_' + Columns.C2_REQUEST_ID in row_data:
+                    req_id = row_data['_' + Columns.C2_REQUEST_ID]
                 else:
-                    wx.CallAfter(self.text_win.clear)
+                    self.logger.log('No request id column found in filenames. Add "{0}" or "_{0}" to your regex'
+                                    .format(Columns.C2_REQUEST_ID))
+                    self.text_win.clear()
+                    return
+                self.text_win_load(req_id)
+
+            if self.text_win:
+                text_win_load()
 
         self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
         self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
         self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
 
         def play_if_track(e):
-            if self.row_type(self.grid.GetGridCursorRow()) == 'track':
+            if self.row_type(self.grid.GetGridCursorRow()) != 'countdown' and self.grid.GetGridCursorCol() != self.grid_cols.index(Columns.NOTES):
                 self.play_async(e)
             else:
                 e.Skip()
@@ -602,8 +618,8 @@ class MainFrame(wx.Frame):
             wx.MessageBox(msg, "Filename RegEx Error", wx.OK | wx.ICON_ERROR, self)
             return
 
-        # Making rows from filename_re groups
-        self.grid_rows = [r if r != 'num' else Columns.NUM
+        # Making columns from filename_re groups
+        self.grid_cols = [r if r != 'num' else Columns.NUM
                           for r in group_names if r[0] != '_'] + [Columns.FILES, Columns.NOTES]
 
         all_files = [[os.path.join(d, path) for path in os.listdir(d)] for d in dirs]
@@ -639,12 +655,12 @@ class MainFrame(wx.Frame):
                 self.logger.log('[!!! ALERT !!!] ' + msg)
                 wx.MessageBox('ALERT !!!\n' + msg, "Duplicate files alert", wx.OK | wx.ICON_ERROR)
 
-        self.grid_set_shape(len(self.data), len(self.grid_rows))
-        [self.grid.SetColLabelValue(i, v) for i, v in enumerate(self.grid_rows)]
+        self.grid_set_shape(len(self.data), len(self.grid_cols))
+        [self.grid.SetColLabelValue(i, v) for i, v in enumerate(self.grid_cols)]
 
         i = 0
         for num, data in sorted(self.data.items()):
-            for j, row in enumerate(self.grid_rows):
+            for j, row in enumerate(self.grid_cols):
                 if row == Columns.NUM:
                     self.grid.SetCellValue(i, j, num)
                 elif row == Columns.FILES:
@@ -652,7 +668,7 @@ class MainFrame(wx.Frame):
                 elif row in data:
                     self.grid.SetCellValue(i, j, data[row])
 
-            [self.grid.SetReadOnly(i, a) for a in range(len(self.grid_rows) - 1)]
+            [self.grid.SetReadOnly(i, a) for a in range(len(self.grid_cols) - 1)]
             i += 1
 
         self.grid.AutoSizeColumns()
@@ -713,9 +729,9 @@ class MainFrame(wx.Frame):
     def get_num(self, row):
         row_type = self.row_type(row)
         if row_type == 'track':
-            return self.grid.GetCellValue(row, self.grid_rows.index(Columns.NUM))
+            return self.grid.GetCellValue(row, self.grid_cols.index(Columns.NUM))
         elif row_type == 'dup':
-            return self.grid.GetCellValue(row, self.grid_rows.index(Columns.NOTES))[1:4]
+            return self.grid.GetCellValue(row, self.grid_cols.index(Columns.NOTES))[1:4]
         else:
             return row_type
 
@@ -732,10 +748,10 @@ class MainFrame(wx.Frame):
         row_pos = base_row + 1 if below_current_row else base_row
 
         self.grid.InsertRows(row_pos, 1)
-        self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.NUM), Strings.COUNTDOWN_ROW_TEXT_SHORT)
-        self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.FILES), Strings.COUNTDOWN_ROW_TEXT_FULL)
-        self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.NAME), message)
-        self.grid.SetCellValue(row_pos, self.grid_rows.index(Columns.NOTES), "30m")  # Can be 15:35
+        self.grid.SetCellValue(row_pos, self.grid_cols.index(Columns.NUM), Strings.COUNTDOWN_ROW_TEXT_SHORT)
+        self.grid.SetCellValue(row_pos, self.grid_cols.index(Columns.FILES), Strings.COUNTDOWN_ROW_TEXT_FULL)
+        self.grid.SetCellValue(row_pos, self.grid_cols.index(Columns.NAME), message)
+        self.grid.SetCellValue(row_pos, self.grid_cols.index(Columns.NOTES), "30m")  # Can be 15:35
 
         [self.grid.SetCellBackgroundColour(row_pos, col, Colors.COUNTDOWN_ROW)
          for col in range(self.grid.GetNumberCols())]
@@ -842,7 +858,7 @@ class MainFrame(wx.Frame):
     def play_async(self, e=None):
         num = self.get_num(self.grid.GetGridCursorRow())
         if num == 'countdown':
-            notes = self.grid.GetCellValue(self.grid.GetGridCursorRow(), self.grid_rows.index(Columns.NOTES))
+            notes = self.grid.GetCellValue(self.grid.GetGridCursorRow(), self.grid_cols.index(Columns.NOTES))
             self.ensure_proj_win()
 
             self.vid_btn.SetValue(False)
@@ -851,7 +867,7 @@ class MainFrame(wx.Frame):
             self.zad_btn.Enable(False)
 
             if not self.proj_win.launch_timer(notes, self.grid.GetCellValue(self.grid.GetGridCursorRow(),
-                                                                            self.grid_rows.index(Columns.NAME))):
+                                                                            self.grid_cols.index(Columns.NAME))):
                 self.status(_("Invalid countdown row"))
             else:
                 self.status("Countdown started!")
@@ -877,6 +893,10 @@ class MainFrame(wx.Frame):
             self.switch_to_vid()
 
         self.num_in_player = num
+        self.current_playing_row = self.grid.GetGridCursorRow()
+        [self.grid.SetCellBackgroundColour(self.current_playing_row, col, Colors.ROW_PLAYING_NOW)
+         for col in range(self.grid.GetNumberCols())]
+        wx.CallAfter(self.grid.ForceRefresh)
 
         def delayed_run():
             threading.Thread(target=self.play_sync, args=(self.vol_control.GetValue(), sound_only)).start()
@@ -930,6 +950,12 @@ class MainFrame(wx.Frame):
 
     def stop_async(self, e=None, fade_out=True):
         self.fade_out_btn.Enable(False)
+
+        if self.current_playing_row is not None:
+            [self.grid.SetCellBackgroundColour(self.current_playing_row, col, Colors.ROW_SKIPPED)
+             for col in range(self.grid.GetNumberCols())]
+            wx.CallAfter(self.grid.ForceRefresh)
+
         if fade_out:
             threading.Thread(target=self.fade_out_stop_sync,
                              args=(self.fade_out_btn.GetLabel(),)).start()
@@ -1006,12 +1032,18 @@ class MainFrame(wx.Frame):
             self.time_label.SetLabel('Stop')
             self.switch_to_zad()
 
-            row = self.grid.GetGridCursorRow()
-            if row < self.grid.GetNumberRows() - 1 and self.get_num(row) == self.num_in_player:
-                self.grid.SetGridCursor(row + 1, 0)
-                self.grid.SelectRow(row + 1)
+            if self.grid.GetCellBackgroundColour(self.current_playing_row, 0) != Colors.ROW_SKIPPED:
+                [self.grid.SetCellBackgroundColour(self.current_playing_row, col, Colors.ROW_PLAYED_TO_END)
+                 for col in range(self.grid.GetNumberCols())]
+                wx.CallAfter(self.grid.ForceRefresh)
 
-            self.grid.MakeCellVisible(row, 0)
+                row = self.grid.GetGridCursorRow()
+                if row < self.grid.GetNumberRows() - 1 and row == self.current_playing_row:
+                    self.current_playing_row += 1
+                    self.grid.SetGridCursor(self.current_playing_row, 0)
+                    self.grid.SelectRow(self.current_playing_row)
+
+            self.grid.MakeCellVisible(self.current_playing_row, 0)
             self.grid.SetFocus()
             self.player_time_update_timer.Stop()
 
@@ -1081,7 +1113,7 @@ class MainFrame(wx.Frame):
             self.bg_player.window.time_slider.SetValue(pos)
             self.bg_player.window.time_label.SetLabel(time_remaining)
             if seeking_time:
-                self.bg_player.window.time_label.SetBackgroundColour((255, 200, 255, 255))
+                self.bg_player.window.time_label.SetBackgroundColour(Colors.ROW_PLAYING_NOW)
             else:
                 self.bg_player.window.time_label.SetBackgroundColour(
                     wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
