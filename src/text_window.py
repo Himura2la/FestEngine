@@ -11,8 +11,7 @@ class TextWindow(wx.Frame):
         self.parent = parent
         self.base_title = title
         self.main_fields = main_fields
-        wx.Frame.__init__(self, parent, title=title, size=(1024, 768))
-        self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
+        wx.Frame.__init__(self, parent, title=title, size=(800, 400))
 
         # ---------------------------------------------- Layout -----------------------------------------------------
         main_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -59,17 +58,18 @@ class TextWindow(wx.Frame):
         return self.c.fetchall()
 
     def _get_details(self, request_id):
-        self.c.execute("""
-            SELECT request_section_id, section_title, title, value, type
-            FROM   [values]
-            WHERE  request_id = ?
-        """, (request_id,))
+        base_query = "SELECT request_section_id, section_title, title, value, type FROM [values] "
+        if self.show_full_info:
+            self.c.execute(base_query + "WHERE request_id = ?", (request_id,))
+        else:
+            fields_list = "(%s)" % ",".join(['?' for _ in self.main_fields])
+
+            self.c.execute(base_query + "WHERE request_id = ? AND title IN " + fields_list,
+                           ([request_id] + self.main_fields))
         return self.c.fetchall()
 
     def load_item(self, list_item):
         data = self._get_details(list_item[0])
-        if not self.show_full_info:
-            data = list(filter(lambda r: r[2] in self.main_fields, data))
 
         section_i = 1
         request_section_id = -1
