@@ -4,9 +4,19 @@ environment:
       - ARCH: '64'
         PYTHON_PATH: C:\Python36-x64
         VLC_INSTALL_FLAGS: ''
+        BUILD_FLAGS: ''
       - ARCH: '32'
         PYTHON_PATH: C:\Python36
         VLC_INSTALL_FLAGS: '--x86'
+        BUILD_FLAGS: ''
+      - ARCH: '64'
+        PYTHON_PATH: C:\Python36-x64
+        VLC_INSTALL_FLAGS: ''
+        BUILD_FLAGS: '-d'
+      - ARCH: '32'
+        PYTHON_PATH: C:\Python36
+        VLC_INSTALL_FLAGS: '--x86'
+        BUILD_FLAGS: '-d'
 
 install:
     - |
@@ -17,7 +27,7 @@ install:
 build_script:
     - |
         cd "%APPVEYOR_BUILD_FOLDER%\bin"
-        python build.py
+        python build.py %BUILD_FLAGS%
 
 after_build:
     - |
