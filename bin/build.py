@@ -12,7 +12,7 @@ appimage_excludelist_url = 'https://raw.githubusercontent.com/AppImage/AppImages
 pyinst_flags = ['--clean', '-y', main_file]
 
 if not (len(sys.argv) > 1 and '-d' in sys.argv[1:]):  # Debug mode with console window
-    pyinst_flags.insert('--windowed')
+    pyinst_flags.insert(1, '--windowed')
 
 self_name = os.path.basename(sys.argv[0])
 print("--------------- %s started! ---------------" % self_name)
