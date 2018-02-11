@@ -7,14 +7,17 @@ name = 'FestEngine'
 bin_path = os.getcwd()
 sources_path = os.path.join('..', 'src')
 main_file = 'main.pyw'
-
-pyinst_flags = ['--clean', '--windowed', '-y', main_file]
 appimage_excludelist_url = 'https://raw.githubusercontent.com/AppImage/AppImages/master/excludelist'
+
+pyinst_flags = ['--clean', '-y', main_file]
+
+if not (len(sys.argv) > 1 and '-d' in sys.argv[1:]):  # Debug mode with console window
+    pyinst_flags.insert('--windowed')
 
 self_name = os.path.basename(sys.argv[0])
 print("--------------- %s started! ---------------" % self_name)
 
-no_vlc = len(sys.argv) == 2 and sys.argv[1] == '-novlc'
+no_vlc = len(sys.argv) > 1 and '-novlc' in sys.argv[1:]
 vlc_binaries = []
 vlc_path = None
 
