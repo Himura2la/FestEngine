@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 import time
+import argparse
 
 name = 'FestEngine'
 bin_path = os.getcwd()
@@ -11,26 +12,31 @@ appimage_excludelist_url = 'https://raw.githubusercontent.com/AppImage/AppImages
 
 pyinst_flags = ['--clean', '-y', main_file]
 
-if not (len(sys.argv) > 1 and '-d' in sys.argv[1:]):  # Debug mode with console window
+parser = argparse.ArgumentParser()
+parser.add_argument('vlc_path', nargs='?')
+parser.add_argument('-debug', action='store_true', help='Debug mode with console window')
+parser.add_argument('-novlc', action='store_true', help='Build completely without VLC')
+args = parser.parse_args()
+
+if args.debug:
+    name = 'FestEngine-debug'
+else:
     pyinst_flags.insert(1, '--windowed')
+
 
 self_name = os.path.basename(sys.argv[0])
 print("--------------- %s started! ---------------" % self_name)
 
-no_vlc = len(sys.argv) > 1 and '-novlc' in sys.argv[1:]
 vlc_binaries = []
 vlc_path = None
 
 if sys.platform.startswith('linux'):
     pyinst_flags.insert(0, '--strip')
 
-elif sys.platform == "win32" and not no_vlc:
-    if len(sys.argv) == 2:
-        vlc_path = sys.argv[1]
-    elif len(sys.argv) > 2:
-        print("Usage: python %s [vlc_path]" % self_name)
-        exit(1)
-    else:
+elif sys.platform == "win32" and not args.novlc:
+    if args.vlc_path:
+        vlc_path = args.vlc_path[0]
+    else:   # Trying to search find VLC
         try:
             from winreg import *  # Python 3
             with ConnectRegistry(None, HKEY_LOCAL_MACHINE) as reg:
@@ -47,7 +53,7 @@ elif sys.platform == "win32" and not no_vlc:
             import platform
 
             print("VLC not found. Install the %s VLC or pass the path to VLC as a parameter." %
-                  platform.architecture()[0])
+                    platform.architecture()[0])
             exit(1)
     print("Using VLC installation: %s" % vlc_path)
 

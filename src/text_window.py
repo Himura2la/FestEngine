@@ -3,6 +3,7 @@
 
 import wx
 import wx.richtext
+import wx._adv, wx._html, wx._xml  # Required by PyInstaller
 import sqlite3
 
 

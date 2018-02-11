@@ -59,7 +59,7 @@ target/
 
 \.idea/
 
-bin/FestEngine/
+bin/FestEngine*
 out/
 
 src/last_fest\.txt
