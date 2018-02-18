@@ -79,6 +79,7 @@
 - [#29](https://github.com/Himura2la/FestEngine/issues/29): Можно сделать резервный трек без видео для тех у кого видео.
 - [#26](https://github.com/Himura2la/FestEngine/issues/26): Можно заменить трек или задник участника, особенно полезно для тех кто заменяет трек на репетиции. Но не забудьте заменить трек во всех резервных копиях или следить за тем [откуда воспроизвоядся файлы](https://github.com/Himura2la/FestEngine/issues/34)
 - [#5](https://github.com/Himura2la/FestEngine/issues/5): Аналог Cosplay2-Timer. Можно вывенсти на проектор обратный отсчет до начала фестиваля или до конца перерыва. С этой штукой задержать начало намного сложнее \^\_\^
+- [#41](https://github.com/Himura2la/FestEngine/issues/41) (beta): Текстовое окно, которое поможет световику ставить свет на ленту и позволяет узнать полную информацию о каждой заявке прямо в Fest Engine.
 
 # [В планах](https://github.com/Himura2la/FestEngine/issues)
 
@@ -123,6 +124,7 @@ python3 ./FestEngine/src/main.pyw
 * [Hokori Tori 2017](https://vk.com/hokori_tori), Орёл
 * [СROSSxOVER - 2017](https://vk.com/crossover_42), Кемерово
 * [Интерактивный аниме показ "Танец духов"](https://vk.com/tulaanime11), 2017, Тула
+* [Седьмой Тульский Аниме-фестиваль Yuki no Odori](https://vk.com/tulaanimefest), 2018, Тула
 
 # Как это дебажить?
 
