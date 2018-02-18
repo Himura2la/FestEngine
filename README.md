@@ -92,12 +92,12 @@
 
 - Выбрать разрядность (x32 или x64) и придерживаться этой разрядности во всех дальнейших установках
 - Установить последний [Python 3](https://www.python.org/downloads/windows/) выбранной разядности. При установке отметить чекбокс **Добавить python.exe в PATH** (если это единственный Python, который у вас будет).
-- Открыть консоль или PowerShell от администратора и установить **wxPython** и [VLC Python Bindings](https://wiki.videolan.org/python_bindings) (библиотека для управления плеером VLC)
+- Открыть консоль или PowerShell от администратора и установить [wxPython](https://wxpython.org/) (для графического интерфейса) и [VLC Python Bindings](https://wiki.videolan.org/python_bindings) (для управления плеером VLC)
    ```ps
    pip install --upgrade setuptools pip
    pip install wxpython python-vlc
    ```
-- Установить последний [VLC](https://www.videolan.org/vlc/index.ru.html) **выбранной разядности** (если у вас ничего не запускается, проверьте разрядность VLC. Это common issue)
+- Установить [VLC 2](https://www.videolan.org/vlc/index.ru.html) **выбранной разядности** (если у вас ничего не запускается, проверьте разрядность VLC. Это common issue). VLC 3 пока нормально не поддерживается в **VLC Python Bindings**, если это уже не так, напишите нам плиз.
 - Установить [Git](https://git-scm.com/), [GitKraken](https://www.gitkraken.com/), [SourceTree](https://www.sourcetreeapp.com/) или [GitHub](https://desktop.github.com/) и cклонировать репозиторий: `git clone https://github.com/Himura2la/FestEngine.git`
 - Можно запускать Fest Engine. Из папки **src** выполнить `py main.pyw`
 - Качнуть [тестовые данные](https://drive.google.com/file/d/0B4v9WFUhaeVvRmdXcXNaRHB0THc/view) и запустить Fest Engine с данными.
