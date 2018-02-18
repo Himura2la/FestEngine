@@ -97,7 +97,7 @@
    pip install --upgrade setuptools pip
    pip install wxpython python-vlc
    ```
-- Установить [VLC 2](https://www.videolan.org/vlc/index.ru.html) **выбранной разядности** (если у вас ничего не запускается, проверьте разрядность VLC. Это common issue). VLC 3 пока нормально не поддерживается в **VLC Python Bindings**, если это уже не так, напишите нам плиз.
+- Установить последний [VLC 2](http://download.videolan.org/pub/videolan/vlc/) **выбранной разядности** (если у вас ничего не запускается, проверьте разрядность VLC. Это common issue). VLC 3 пока нормально не поддерживается в **VLC Python Bindings**, если это уже не так, напишите нам плиз.
 - Установить [Git](https://git-scm.com/), [GitKraken](https://www.gitkraken.com/), [SourceTree](https://www.sourcetreeapp.com/) или [GitHub](https://desktop.github.com/) и cклонировать репозиторий: `git clone https://github.com/Himura2la/FestEngine.git`
 - Можно запускать Fest Engine. Из папки **src** выполнить `py main.pyw`
 - Качнуть [тестовые данные](https://drive.google.com/file/d/0B4v9WFUhaeVvRmdXcXNaRHB0THc/view) и запустить Fest Engine с данными.
