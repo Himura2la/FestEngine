@@ -39,7 +39,7 @@ if sys.platform.startswith('linux'):
 
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
-        wx.Frame.__init__(self, parent, title=title, size=(700, 500))
+        wx.Frame.__init__(self, parent, title=title, size=(800, 400))
         self.Bind(wx.EVT_CLOSE, self.on_close, self)
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
 
@@ -344,8 +344,21 @@ class MainFrame(wx.Frame):
             else:
                 e.Skip()
 
-        self.grid.Bind(wx.EVT_KEY_DOWN, on_grid_key_down)
+        def grid_autosize_notes_col(e=None):
+            notes_col = self.grid_cols.index(Columns.NOTES)
+            w = self.grid.GetClientSize()[0] - self.grid.GetRowLabelSize()
+            col_sizes = sum([self.grid.GetColSize(i) for i in range(self.grid.GetNumberCols())])
+            free_space = w - col_sizes
+            notes_col_size = self.grid.GetColSize(notes_col)
+            target_notes_col_size = notes_col_size + free_space
+            if target_notes_col_size > 40:
+                self.grid.SetColSize(notes_col, target_notes_col_size)
+            if e:
+                e.Skip()
 
+        # Binded after loading data to prevent self.row_type() calls for incomplete grid
+
+        self.grid.Bind(wx.EVT_KEY_DOWN, on_grid_key_down)
         self.grid.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, play_if_track)  # For emergency situations
 
         main_sizer.Add(self.toolbar, 0, wx.EXPAND)
@@ -388,6 +401,8 @@ class MainFrame(wx.Frame):
             self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
             self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
             self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
+            self.grid.Bind(wx.EVT_SIZE, grid_autosize_notes_col)
+            grid_autosize_notes_col()
 
         wx.CallAfter(init)
 
