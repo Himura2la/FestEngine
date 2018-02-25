@@ -346,19 +346,6 @@ class MainFrame(wx.Frame):
             else:
                 e.Skip()
 
-        def grid_autosize_notes_col(e=None):
-            if self.grid_cols:
-                notes_col = self.grid_cols.index(Columns.NOTES)
-                w = self.grid.GetClientSize()[0] - self.grid.GetRowLabelSize()
-                col_sizes = sum([self.grid.GetColSize(i) for i in range(self.grid.GetNumberCols())])
-                free_space = w - col_sizes
-                notes_col_size = self.grid.GetColSize(notes_col)
-                target_notes_col_size = notes_col_size + free_space
-                if target_notes_col_size > 40:
-                    self.grid.SetColSize(notes_col, target_notes_col_size)
-            if e:
-                e.Skip()
-
         # Binded after loading data to prevent self.row_type() calls for incomplete grid
 
         self.grid.Bind(wx.EVT_KEY_DOWN, on_grid_key_down)
@@ -404,8 +391,7 @@ class MainFrame(wx.Frame):
             self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
             self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
             self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
-            self.grid.Bind(wx.EVT_SIZE, grid_autosize_notes_col)
-            grid_autosize_notes_col()
+            self.grid.Bind(wx.EVT_SIZE, self.grid_autosize_notes_col)
 
         wx.CallAfter(init)
 
@@ -429,6 +415,19 @@ class MainFrame(wx.Frame):
         full_page = self.grid.GetScrollPageSize(wx.VERTICAL)
         scroll_target = cell_origin - full_page / 6
         self.grid.Scroll((0, scroll_target))
+
+    def grid_autosize_notes_col(self, e=None):
+        if self.grid_cols:
+            notes_col = self.grid_cols.index(Columns.NOTES)
+            w = self.grid.GetClientSize()[0] - self.grid.GetRowLabelSize()
+            col_sizes = sum([self.grid.GetColSize(i) for i in range(self.grid.GetNumberCols())])
+            free_space = w - col_sizes
+            notes_col_size = self.grid.GetColSize(notes_col)
+            target_notes_col_size = notes_col_size + free_space
+            if target_notes_col_size > 40:
+                self.grid.SetColSize(notes_col, target_notes_col_size)
+        if e:
+            e.Skip()
 
     def status(self, text):
         self.status_bar.SetStatusText(text, 0)
@@ -698,6 +697,8 @@ class MainFrame(wx.Frame):
         self.SetLabel("%s: %s" % (Strings.APP_NAME, self.session_file_path))
 
         self.load_data_item.Enable(False)  # Safety is everything!
+
+        self.grid_autosize_notes_col()
 
     # --- Duplication from notes ---
 
