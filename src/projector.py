@@ -5,10 +5,10 @@ from constants import Config, Colors
 
 class ProjectorWindow(wx.Frame):
     def __init__(self, parent, screen=None):
-        if screen is None:
+        single_screen = wx.Display.GetCount() < 2
+        if screen is None or single_screen:
             screen = wx.Display.GetCount() - 1
         origin_x, origin_y, self.w, self.h = wx.Display(screen).GetGeometry().Get()
-        single_screen = wx.Display.GetCount() < 2
 
         self.parent = parent
         wx.Frame.__init__(self, parent, pos=(origin_x + 60, origin_y + 60), size=(self.w - 120, self.h - 120),
