@@ -71,7 +71,7 @@
 
 ## Предупреждение для разработчиков
 
-Код FestEngine выглядит дико и совсем не энтерпрайзно, но это не с проста. Главным принципом при разработке на данный момент является минималистичность: минимализация кодовой базы, времени разработки и фанатичное избегание всяческого вспомогательного кода. Это привело к тому что большенство кода находится в основном классе. Да, это не есть хорошо. Архитектура приложения -- не, не слышали. Считайте, что это спайк. Если у Вас есть время спроецировать этот спайк на нормальную модульную архитектуру, это будет просто замечательно, но у нас его, как видите, нету. Надо фесты вести, а не классы наследовать, да интерфейсы имплементить, сорян.
+Код FestEngine выглядит дико и совсем не энтерпрайзно, но это не с проста. Главным принципом при разработке на данный момент является минималистичность: минимализация кодовой базы, времени разработки и фанатичное избегание всяческого вспомогательного кода. Это привело к тому что большенство кода находится в основном классе и всяким вырвиглазностям типа `self.parent.parent`. Да, это не есть хорошо. Архитектура приложения -- не, не слышали. Считайте, что это спайк. Если у Вас есть время спроецировать этот спайк на нормальную модульную архитектуру, будет просто замечательно, но у нас его, как видите, нету. Надо фесты вести, а не классы наследовать, да интерфейсы имплементить.
 
 # Какие ещё киллер-фичи?
 
@@ -101,8 +101,9 @@
    ```
 - Установить последний [VLC 2](http://download.videolan.org/pub/videolan/vlc/) **выбранной разядности** (если у вас ничего не запускается, проверьте разрядность VLC. Это common issue). VLC 3 пока нормально не поддерживается в **VLC Python Bindings**, если это уже не так, напишите нам плиз.
 - Установить [Git](https://git-scm.com/), [GitKraken](https://www.gitkraken.com/), [SourceTree](https://www.sourcetreeapp.com/) или [GitHub](https://desktop.github.com/) и cклонировать репозиторий: `git clone https://github.com/Himura2la/FestEngine.git`
+- Скомпилировать локализацию путем запуска [msgfmt.bat](src/locale/msgfmt.bat)
 - Можно запускать Fest Engine. Из папки **src** выполнить `py main.pyw`
-- Качнуть [тестовые данные](https://drive.google.com/file/d/0B4v9WFUhaeVvRmdXcXNaRHB0THc/view) и запустить Fest Engine с данными.
+- Качнуть [тестовые данные](https://yadi.sk/d/fIT8QD_A3SGp8M) и запустить Fest Engine с данными.
 - Писать код в [PyCharm](https://www.jetbrains.com/pycharm/) или [Visual Studio Code](https://code.visualstudio.com/) и отправлять Pull-Request'ы.
 - Писать в [Gitter](https://gitter.im/FestEngine/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link), по поводу и без ))
 
@@ -112,11 +113,12 @@
 
 ```sh
 sudo apt install git python3 vlc -y
-git clone https://github.com/Himura2la/FestEngine.git
 sudo -H pip3 install --upgrade setuptools pip
 sudo -H pip3 install python-vlc
 sudo -H pip3 install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-16.04 wxPython
-python3 ./FestEngine/src/main.pyw
+git clone https://github.com/Himura2la/FestEngine.git
+cd FestEngine/src/locale && ./msgfmt.sh && cd ..
+python3 main.pyw
 ```
 
 # Кто это использует?
