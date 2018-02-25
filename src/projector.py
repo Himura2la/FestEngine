@@ -87,9 +87,12 @@ class ProjectorWindow(wx.Frame):
                 self._recalculate_font_size()
 
             def _recalculate_font_size(self, e=None):
-                font = self.countdown_text.GetFont()
-                font_height = self.GetSize().height / 3
+                width, height = self.GetSize()
+                width *= 3/4  # Assuming 4:3
+                base_size = height if height < width else width
+                font_height = base_size / 3
 
+                font = self.countdown_text.GetFont()
                 font.SetPixelSize(wx.Size(0, font_height))
                 self.countdown_text.SetFont(font)
 
