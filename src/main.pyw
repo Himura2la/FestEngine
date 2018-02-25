@@ -347,14 +347,15 @@ class MainFrame(wx.Frame):
                 e.Skip()
 
         def grid_autosize_notes_col(e=None):
-            notes_col = self.grid_cols.index(Columns.NOTES)
-            w = self.grid.GetClientSize()[0] - self.grid.GetRowLabelSize()
-            col_sizes = sum([self.grid.GetColSize(i) for i in range(self.grid.GetNumberCols())])
-            free_space = w - col_sizes
-            notes_col_size = self.grid.GetColSize(notes_col)
-            target_notes_col_size = notes_col_size + free_space
-            if target_notes_col_size > 40:
-                self.grid.SetColSize(notes_col, target_notes_col_size)
+            if self.grid_cols:
+                notes_col = self.grid_cols.index(Columns.NOTES)
+                w = self.grid.GetClientSize()[0] - self.grid.GetRowLabelSize()
+                col_sizes = sum([self.grid.GetColSize(i) for i in range(self.grid.GetNumberCols())])
+                free_space = w - col_sizes
+                notes_col_size = self.grid.GetColSize(notes_col)
+                target_notes_col_size = notes_col_size + free_space
+                if target_notes_col_size > 40:
+                    self.grid.SetColSize(notes_col, target_notes_col_size)
             if e:
                 e.Skip()
 
