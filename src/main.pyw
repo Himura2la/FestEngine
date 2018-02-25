@@ -327,9 +327,7 @@ class MainFrame(wx.Frame):
             if self.text_win:
                 text_win_load()
 
-        self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
-        self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
-        self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
+        # Binded after loading data to prevent self.row_type() calls for incomplete grid
 
         def play_if_track(e):
             if self.row_type(self.grid.GetGridCursorRow()) != 'countdown' and self.grid.GetGridCursorCol() != self.grid_cols.index(Columns.NOTES):
@@ -387,6 +385,9 @@ class MainFrame(wx.Frame):
                 self.load_files()
                 if self.config[Config.BG_TRACKS_DIR]:
                     self.on_bg_load_files()
+            self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
+            self.grid.Bind(wx.grid.EVT_GRID_SELECT_CELL, select_row)
+            self.grid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, select_row)
 
         wx.CallAfter(init)
 
@@ -710,15 +711,17 @@ class MainFrame(wx.Frame):
                 for cell in row.values():
                     self.grid.SetCellValue(new_row, cell['col'], cell['val'])
                     self.grid.SetCellBackgroundColour(new_row, cell['col'], Colors.DUP_ROW)
-                    self.set_cell_readonly(new_row, cell['col'])
+                    self.set_cell_readonly(new_row, cell['col'], True)
 
         self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
 
     def row_type(self, row):
-        row_color = self.grid.GetCellBackgroundColour(row, 0)
-        if row_color == Colors.DUP_ROW:
+        num = self.grid.GetCellValue(row, self.grid_cols.index(Columns.NUM))
+        notes = self.grid.GetCellValue(row, self.grid_cols.index(Columns.NOTES))
+
+        if notes and notes[0] == '<':
             return 'dup'
-        elif row_color == Colors.COUNTDOWN_ROW:
+        elif num == Strings.COUNTDOWN_ROW_TEXT_SHORT:
             return 'countdown'
         else:
             return 'track'
@@ -755,8 +758,9 @@ class MainFrame(wx.Frame):
         self.grid.SetCellValue(row_pos, self.grid_cols.index(Columns.NAME), message)
         self.grid.SetCellValue(row_pos, self.grid_cols.index(Columns.NOTES), "30m")  # Can be 15:35
 
-        [self.grid.SetCellBackgroundColour(row_pos, col, Colors.COUNTDOWN_ROW)
-         for col in range(self.grid.GetNumberCols())]
+        for col in range(self.grid.GetNumberCols()):
+            self.grid.SetCellBackgroundColour(row_pos, col, Colors.COUNTDOWN_ROW)
+            self.set_cell_readonly(row_pos, col)
 
         self.grid.SelectRow(row_pos)
 
