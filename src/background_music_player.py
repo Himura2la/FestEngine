@@ -201,10 +201,10 @@ class BackgroundMusicFrame(wx.Frame):
         self.top_toolbar.Add(self.fade_in_out_switch, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=3)
         self.fade_in_out_switch.Bind(wx.EVT_CHECKBOX, self.parent.fade_switched)
 
-        self.play_btn = wx.Button(self, label="Play (^+F3)", size=(80, toolbar_base_height + 2))
+        self.play_btn = wx.Button(self, label="Play (^+F4)", size=(80, toolbar_base_height + 2))
         self.play_btn.Enable(False)
         self.top_toolbar.Add(self.play_btn, 0)
-        self.play_btn.Bind(wx.EVT_BUTTON, parent.background_play)
+        self.play_btn.Bind(wx.EVT_BUTTON, lambda e: parent.background_play(from_grid=True))
         # Forwarding events through the main window, because this frame is optional and may be absent.
 
         self.pause_btn = wx.ToggleButton(self, label="Pause (F3)", size=(80, toolbar_base_height + 2))
@@ -269,11 +269,20 @@ class BackgroundMusicFrame(wx.Frame):
 
         self.Bind(wx.EVT_CLOSE, parent.on_bg_player_win_close)
 
-        f3_id, shift_f3_id = wx.NewId(), wx.NewId()
+        f3_id, f4_id, shift_f4_id, esc_id, shift_esc_id = wx.NewId(), wx.NewId(), wx.NewId(), wx.NewId(), wx.NewId()
         self.Bind(wx.EVT_MENU, parent.play_pause_bg, id=f3_id)
-        self.Bind(wx.EVT_MENU, lambda e: parent.background_play(from_grid=True), id=shift_f3_id)
+        self.Bind(wx.EVT_MENU, parent.background_play, id=f4_id)
+        self.Bind(wx.EVT_MENU, lambda e: parent.background_play(from_grid=True), id=shift_f4_id)
+
+        self.Bind(wx.EVT_MENU, parent.end_show, id=esc_id)
+        self.Bind(wx.EVT_MENU, parent.emergency_stop, id=shift_esc_id)
+
         self.SetAcceleratorTable(wx.AcceleratorTable([(wx.ACCEL_NORMAL, wx.WXK_F3, f3_id),
-                                                      (wx.ACCEL_SHIFT, wx.WXK_F3, shift_f3_id)]))
+                                                      (wx.ACCEL_NORMAL, wx.WXK_F4, f4_id),
+                                                      (wx.ACCEL_SHIFT, wx.WXK_F4, shift_f4_id),
+
+                                                      (wx.ACCEL_NORMAL, wx.WXK_ESCAPE, esc_id),
+                                                      (wx.ACCEL_SHIFT, wx.WXK_ESCAPE, shift_esc_id)]))
 
     def set_volume_from_slider(self, e=None):
         self.parent.background_volume = self.vol_slider.GetValue()  # Forwards to player

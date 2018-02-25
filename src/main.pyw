@@ -30,7 +30,6 @@ gettext.translation('main', os.path.join(os.path.dirname(os.path.realpath(__file
 if sys.platform.startswith('linux'):
     try:
         import ctypes
-
         x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11'))
         x11.XInitThreads()
     except Exception as x_init_threads_ex:
@@ -194,9 +193,9 @@ class MainFrame(wx.Frame):
         self.bg_fade_switch.Check(self.bg_player.fade_in_out)
         self.Bind(wx.EVT_MENU, self.fade_switched, self.bg_fade_switch)
 
-        self.bg_play_item = menu_bg_music.Append(wx.ID_ANY, _("&Play Next"))
-        self.Bind(wx.EVT_MENU, self.background_play, self.bg_play_item)
-        self.bg_play_item.Enable(False)
+        self.play_bg_item = menu_bg_music.Append(wx.ID_ANY, _("&Play Selected Item"))
+        self.Bind(wx.EVT_MENU, lambda e: self.background_play(from_grid=True), self.play_bg_item)
+        self.play_bg_item.Enable(False)
 
         self.bg_pause_switch = menu_bg_music.Append(wx.ID_ANY, _("&Pause"), kind=wx.ITEM_CHECK)
         self.bg_pause_switch.Enable(False)
@@ -206,32 +205,35 @@ class MainFrame(wx.Frame):
 
         # --- Fire (Play) ---
         menu_play = wx.Menu()
-        emergency_stop_item = menu_play.Append(wx.ID_ANY, _("&Emergency Stop All\tEsc"))
+        emergency_stop_item = menu_play.Append(wx.ID_ANY, _("&Emergency Stop All\tShift+Esc"))
         show_zad_item = menu_play.Append(wx.ID_ANY, _("Show &ZAD\tF1"))
         play_track_item = menu_play.Append(wx.ID_ANY, _("&Play Sound/Video\tF2"))
-        clear_zad_item = menu_play.Append(wx.ID_ANY, _("&Clear ZAD\tShift+F1"))
-        no_show_item = menu_play.Append(wx.ID_ANY, _("&No Show"))
+        end_show_item = menu_play.Append(wx.ID_ANY, _("&End Show (Clear ZAD + Fade Out)\tEsc"))
+        no_show_item = menu_play.Append(wx.ID_ANY, _("&Black Screen"))
         menu_play.AppendSeparator()
-        play_pause_bg = menu_play.Append(wx.ID_ANY, _("Play/Pause &Background\tF3"))
-        self.play_bg_item = menu_play.Append(wx.ID_ANY, _("Play &Selected BG Track\tShift+F3"))
-        self.play_bg_item.Enable(False)
+        play_pause_bg_end_show_item = menu_play.Append(wx.ID_ANY, _("Play/Pause &Background + End Show\tF3"))
+        self.play_next_bg_item = menu_play.Append(wx.ID_ANY, _("Play &Next BG Track\tF4"))
+        self.play_next_bg_item.Enable(False)
 
         self.Bind(wx.EVT_MENU, self.emergency_stop, emergency_stop_item)
         self.Bind(wx.EVT_MENU, self.show_zad, show_zad_item)
         self.Bind(wx.EVT_MENU, self.play_async, play_track_item)
-        self.Bind(wx.EVT_MENU, self.clear_zad, clear_zad_item)
+        self.Bind(wx.EVT_MENU, self.end_show, end_show_item)
         self.Bind(wx.EVT_MENU, lambda e: self.clear_zad(e, True), no_show_item)
-        self.Bind(wx.EVT_MENU, self.play_pause_bg, play_pause_bg)
-        self.Bind(wx.EVT_MENU, lambda e: self.background_play(from_grid=True), self.play_bg_item)
+        self.Bind(wx.EVT_MENU, self.play_pause_bg_end_show, play_pause_bg_end_show_item)
+        self.Bind(wx.EVT_MENU, self.background_play, self.play_next_bg_item)
 
         self.SetAcceleratorTable(wx.AcceleratorTable([
-            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, emergency_stop_item.GetId()),
+            wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_ESCAPE, emergency_stop_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F1, show_zad_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F2, play_track_item.GetId()),
-            wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_F1, clear_zad_item.GetId()),
-            # wx.AcceleratorEntry(wx.ACCEL_CRTL, wx.WXK_F1, no_show_item.GetId()),  # OS captures them
-            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F3, play_pause_bg.GetId()),
-            wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_F3, self.play_bg_item.GetId())]))
+            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, end_show_item.GetId()),
+
+            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F3, play_pause_bg_end_show_item.GetId()),
+            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F4, self.play_next_bg_item.GetId()),
+            wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_F4, self.play_bg_item.GetId())]))
+
+        # In the end of `background_music_player.py` it is repeated
 
         menu_bar.Append(menu_play, _("&Fire"))
 
@@ -498,7 +500,7 @@ class MainFrame(wx.Frame):
     def on_bg_player_win_close(self, e):
         self.bg_player.window.Destroy()
         self.bg_player.window = None
-        self.play_bg_item.Enable(False)
+        self.play_next_bg_item.Enable(False)
 
     def ensure_proj_win(self, e=None):
         no_window = not self.proj_win
@@ -587,9 +589,12 @@ class MainFrame(wx.Frame):
             self.image_status("No show")
         self.status(status)
 
+    def end_show(self, e=None):
+        self.stop_async()
+        self.clear_zad()
+
     def emergency_stop(self, e=None):
-        if self.proj_win:
-            self.clear_zad()
+        self.clear_zad()
         self.stop_async(fade_out=False)
 
         bg_fade_state = self.bg_player.fade_in_out
@@ -970,6 +975,9 @@ class MainFrame(wx.Frame):
         wx.CallAfter(ui_upd)
 
     def stop_async(self, e=None, fade_out=True):
+        if not self.is_playing:
+            return
+
         self.fade_out_btn.Enable(False)
 
         if self.current_playing_row is not None:
@@ -1027,9 +1035,12 @@ class MainFrame(wx.Frame):
                 6: 'Ended',
                 7: 'Error'}[state_int]
 
+    @property
+    def is_playing(self):
+        return self.player.get_state() in range(1, 4)  # Playing or going to play
+
     def player_time_update(self, e=None):
-        player_state = self.player.get_state()
-        if player_state in range(1, 4):  # Playing or going to play
+        if self.is_playing:
             track_length, track_time = self.player.get_length(), self.player.get_time()
 
             if sys.platform == "win32":  # FIXME: Don't know why it does not reach the end on win32
@@ -1044,7 +1055,7 @@ class MainFrame(wx.Frame):
             time_remaining = '-%02d:%02d' % divmod(track_length / 1000 - track_time / 1000, 60)
             self.time_label.SetLabel(time_elapsed)
 
-            status = u'%s №%s V:%d T:%s' % (self.player_state_parse(player_state), self.num_in_player,
+            status = u'%s №%s V:%d T:%s' % (self.player_state_parse(self.player.get_state()), self.num_in_player,
                                             self.player.audio_get_volume(), time_remaining)
             if 'Fading' not in self.player_status:
                 self.player_status = status
@@ -1079,7 +1090,7 @@ class MainFrame(wx.Frame):
             return
 
         self.bg_player.load_files(self.config[Config.BG_TRACKS_DIR])
-        self.bg_play_item.Enable(True)
+        self.play_next_bg_item.Enable(True)
 
     def fade_switched(self, e):
         value = bool(e.Int)
@@ -1089,7 +1100,7 @@ class MainFrame(wx.Frame):
         elif isinstance(e.EventObject, wx.Menu) and self.bg_player.window:
             self.bg_player.window.fade_in_out_switch.SetValue(value)
 
-    def background_play(self, e=None, from_grid=True):
+    def background_play(self, e=None, from_grid=False):
         if not self.bg_player.playlist:
             self.bg_player_status = "Forced playlist loading..."
             self.on_bg_load_files()
@@ -1153,7 +1164,7 @@ class MainFrame(wx.Frame):
             if player_state != vlc.State.Paused and self.bg_player.window:
                 self.bg_player.window.time_slider.SetValue(0)
             if player_state == vlc.State.Ended:
-                self.background_play(from_grid=False)
+                self.background_play()
 
     def on_bg_seek(self, e):
         self.bg_player.player.set_time(e.Int)
@@ -1170,9 +1181,13 @@ class MainFrame(wx.Frame):
             if state == vlc.State.Paused:
                 self.background_pause(paused=False)
             else:
-                self.background_play(from_grid=False)
+                self.background_play()
         else:
             self.background_pause(paused=True)
+
+    def play_pause_bg_end_show(self, e=None):
+        self.play_pause_bg()
+        self.end_show()
 
     # -------------------------------------------------- Text Window --------------------------------------------------
 
