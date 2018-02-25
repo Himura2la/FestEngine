@@ -129,6 +129,9 @@ class MainFrame(wx.Frame):
         self.prefer_audio = menu_file.Append(wx.ID_ANY, _("&Prefer No Video (fallback)"), kind=wx.ITEM_CHECK)
         self.prefer_audio.Check(False)
 
+        self.auto_zad = menu_file.Append(wx.ID_ANY, _("Auto Show &ZAD with Sound"), kind=wx.ITEM_CHECK)
+        self.auto_zad.Check(True)
+
         menu_file.AppendSeparator()
 
         self.Bind(wx.EVT_MENU, lambda _: webbrowser.open('https://github.com/Himura2la/FestEngine'),
@@ -207,6 +210,7 @@ class MainFrame(wx.Frame):
         menu_play = wx.Menu()
         emergency_stop_item = menu_play.Append(wx.ID_ANY, _("&Emergency Stop All\tShift+Esc"))
         show_zad_item = menu_play.Append(wx.ID_ANY, _("Show &ZAD\tF1"))
+        clear_zad_item = menu_play.Append(wx.ID_ANY, _("&Clear ZAD\tShift+F1"))
         play_track_item = menu_play.Append(wx.ID_ANY, _("&Play Sound/Video\tF2"))
         end_show_item = menu_play.Append(wx.ID_ANY, _("&End Show (Clear ZAD + Fade Out)\tEsc"))
         no_show_item = menu_play.Append(wx.ID_ANY, _("&Black Screen"))
@@ -217,6 +221,7 @@ class MainFrame(wx.Frame):
 
         self.Bind(wx.EVT_MENU, self.emergency_stop, emergency_stop_item)
         self.Bind(wx.EVT_MENU, self.show_zad, show_zad_item)
+        self.Bind(wx.EVT_MENU, self.clear_zad, clear_zad_item)
         self.Bind(wx.EVT_MENU, self.play_async, play_track_item)
         self.Bind(wx.EVT_MENU, self.end_show, end_show_item)
         self.Bind(wx.EVT_MENU, lambda e: self.clear_zad(e, True), no_show_item)
@@ -226,6 +231,7 @@ class MainFrame(wx.Frame):
         self.SetAcceleratorTable(wx.AcceleratorTable([
             wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_ESCAPE, emergency_stop_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F1, show_zad_item.GetId()),
+            wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_F1, clear_zad_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F2, play_track_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, end_show_item.GetId()),
 
@@ -556,7 +562,7 @@ class MainFrame(wx.Frame):
         self.zad_btn.SetValue(True)
         self.proj_win.switch_to_images()
 
-    def show_zad(self, e):
+    def show_zad(self, e=None):
         if self.get_num(self.grid.GetGridCursorRow()) == 'countdown':
             self.play_async()
             return
@@ -919,6 +925,8 @@ class MainFrame(wx.Frame):
         if not sound_only:
             self.ensure_proj_win()
             self.switch_to_vid()
+        elif self.auto_zad.IsChecked():
+            self.show_zad()
 
         self.num_in_player = num
         self.current_playing_row = self.grid.GetGridCursorRow()
