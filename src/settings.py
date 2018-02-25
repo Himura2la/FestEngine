@@ -8,11 +8,13 @@ import wx
 
 from constants import Config, FileTypes
 
-def path_on_this_pc(path, session_file_path):
+
+def path_make_abs(path, session_file_path):
         if os.path.isabs(path):
             return path
-        else: # this is relative, so we calculate a path relative to a directory where the .fest file resides
+        else:  # this is relative, so we calculate a path relative to a directory where the .fest file resides
             return os.path.normpath(os.path.join(os.path.dirname(session_file_path), path))
+
 
 class SettingsDialog(wx.Dialog):
     def __init__(self, session_file_path, config, parent):
@@ -65,13 +67,13 @@ class SettingsDialog(wx.Dialog):
         self.configs_grid.Add(self.filename_re, 1, wx.EXPAND)
 
         self.bg_tracks = wx.DirPickerCtrl(self.panel)
-        self.bg_tracks.SetPath(path_on_this_pc(self.config[Config.BG_TRACKS_DIR], self.session_file_path))
+        self.bg_tracks.SetPath(path_make_abs(self.config[Config.BG_TRACKS_DIR], self.session_file_path))
         self.configs_grid.Add(wx.StaticText(self.panel, label=_("Background Tracks Dir")), 0, wx.ALIGN_CENTER_VERTICAL)
         self.configs_grid.Add(self.bg_tracks, 1, wx.EXPAND)
 
         img_wc = "Images ({0})|{0}".format(";".join(["*.%s" % x for x in FileTypes.img_extensions]))
         self.bg_zad = wx.FilePickerCtrl(self.panel, wildcard=img_wc)
-        self.bg_zad.SetPath(path_on_this_pc(self.config[Config.BG_ZAD_PATH], self.session_file_path))
+        self.bg_zad.SetPath(path_make_abs(self.config[Config.BG_ZAD_PATH], self.session_file_path))
         self.configs_grid.Add(wx.StaticText(self.panel, label=_("Background ZAD Path")), 0, wx.ALIGN_CENTER_VERTICAL)
         self.configs_grid.Add(self.bg_zad, 1, wx.EXPAND)
 
@@ -180,11 +182,11 @@ class SettingsDialog(wx.Dialog):
     def config_to_ui(self):
         self.screens_combobox.SetSelection(self.config[Config.PROJECTOR_SCREEN])
         self.filename_re.SetValue(self.config[Config.FILENAME_RE])
-        self.bg_tracks.SetPath(path_on_this_pc(self.config[Config.BG_TRACKS_DIR], self.session_file_path))
-        self.bg_zad.SetPath(path_on_this_pc(self.config[Config.BG_ZAD_PATH], self.session_file_path))
+        self.bg_tracks.SetPath(path_make_abs(self.config[Config.BG_TRACKS_DIR], self.session_file_path))
+        self.bg_zad.SetPath(path_make_abs(self.config[Config.BG_ZAD_PATH], self.session_file_path))
         [self.rm_dir() for i in range(len(self.dir_pickers))]
         dirs = self.config[Config.FILES_DIRS]
-        [self.add_dir(path) for path in [path_on_this_pc(d, self.session_file_path) for d in dirs]]
+        [self.add_dir(path) for path in [path_make_abs(d, self.session_file_path) for d in dirs]]
         self.panel.SetSizerAndFit(self.top_sizer)
         self.Fit()
         self.SetSize((800, self.GetSize()[1]))

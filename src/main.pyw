@@ -20,7 +20,7 @@ import wx.grid
 from background_music_player import BackgroundMusicPlayer
 from constants import Config, Colors, Columns, FileTypes, Strings
 from projector import ProjectorWindow
-from settings import SettingsDialog, path_on_this_pc
+from settings import SettingsDialog, path_make_abs
 from logger import Logger
 from file_replacer import FileReplacer
 from text_window import TextWindow
@@ -91,6 +91,10 @@ class MainFrame(wx.Frame):
         self.bg_player_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.on_background_timer, self.bg_player_timer)
 
+        self.bg_tracks_dir = path_make_abs(self.config[Config.BG_TRACKS_DIR], self.session_file_path)
+        self.files_dirs = [path_make_abs(d, self.session_file_path) for d in self.config[Config.FILES_DIRS]]
+
+
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
 
@@ -107,11 +111,11 @@ class MainFrame(wx.Frame):
             self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(session_folder)),
                       menu_file.Append(wx.ID_ANY, _("Open &Folder with '%s'") % session_file))
 
-        for folder in self.get_files_dirs():
+        for folder in self.files_dirs:
             self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(folder)),
                       menu_file.Append(wx.ID_ANY, _("Open '%s' Folder") % os.path.basename(folder)))
 
-        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(self.get_bg_tracks_dir()),
+        self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(self.bg_tracks_dir),
                   menu_file.Append(wx.ID_ANY, _("Open &Background Music Folder")))
 
         menu_file.AppendSeparator()
@@ -583,15 +587,12 @@ class MainFrame(wx.Frame):
         else:
             delayed_run()
 
-    def get_zad_path(self):
-        return path_on_this_pc(self.config[Config.BG_ZAD_PATH], self.session_file_path)
-
     def clear_zad(self, e=None, no_show=False, status=u"ZAD Cleared"):
         if not self.proj_win:
             return
         self.proj_win.switch_to_images()
         if self.config[Config.BG_ZAD_PATH] and not no_show:
-            self.proj_win.load_zad(self.get_zad_path(), True)
+            self.proj_win.load_zad(path_make_abs(self.config[Config.BG_ZAD_PATH], self.session_file_path), True)
             self.image_status("Background")
         else:
             self.proj_win.no_show()
@@ -615,21 +616,14 @@ class MainFrame(wx.Frame):
 
     # -------------------------------------------------- Data --------------------------------------------------
 
-    def get_files_dirs(self):
-        dirs = self.config[Config.FILES_DIRS]
-        if not dirs:
-            return list()
-        return [path_on_this_pc(d, self.session_file_path) for d in dirs]
-
     def load_files(self, e=None):
-        dirs = self.get_files_dirs()
         filename_re = self.config[Config.FILENAME_RE]
-        if not dirs or not all([os.path.isdir(d) for d in dirs]) or not filename_re:
+        if not self.files_dirs or not all([os.path.isdir(d) for d in self.files_dirs]) or not filename_re:
             msg = _("No filename regular expression or ZAD path is invalid or MP3 path is invalid.\n"
                     "Please specify valid paths to folders with your files, and regular\n"
                     "expression that parses your filenames in settings or .fest file.\n\n"
                     "Directories: %s\n"
-                    "Filename RegEx: %s") % (", ".join(dirs), filename_re)
+                    "Filename RegEx: %s") % (", ".join(self.files_dirs), filename_re)
             wx.MessageBox(msg, _("Path Error"), wx.OK | wx.ICON_ERROR, self)
             return
 
@@ -656,7 +650,7 @@ class MainFrame(wx.Frame):
         self.grid_cols = [r if r != 'num' else Columns.NUM
                           for r in group_names if r[0] != '_'] + [Columns.FILES, Columns.NOTES]
 
-        all_files = [[os.path.join(d, path) for path in os.listdir(d)] for d in dirs]
+        all_files = [[os.path.join(d, path) for path in os.listdir(d)] for d in self.files_dirs]
         all_files = [item for sublist in all_files for item in sublist]  # Flatten
 
         for file_path in all_files:
@@ -1100,18 +1094,15 @@ class MainFrame(wx.Frame):
 
     # -------------------------------------------- Background Music Player --------------------------------------------
 
-    def get_bg_tracks_dir(self):
-        return path_on_this_pc(self.config[Config.BG_TRACKS_DIR], self.session_file_path)
-
     def on_bg_load_files(self, e=None):
-        if not self.config[Config.BG_TRACKS_DIR] or not os.path.isdir(self.get_bg_tracks_dir()):
+        if not self.config[Config.BG_TRACKS_DIR] or not os.path.isdir(self.bg_tracks_dir):
             msg = _("Background MP3 path is invalid. Please specify a\n"
                     "valid path with your background tracks in settings.\n\n"
                     "Found path: %s") % self.config[Config.BG_TRACKS_DIR]
             d = wx.MessageBox(msg, "Path Error", wx.OK | wx.ICON_ERROR, self)
             return
 
-        self.bg_player.load_files(self.get_bg_tracks_dir())
+        self.bg_player.load_files(self.bg_tracks_dir)
         self.play_next_bg_item.Enable(True)
 
     def fade_switched(self, e):
