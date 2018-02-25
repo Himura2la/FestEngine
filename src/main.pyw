@@ -392,7 +392,7 @@ class MainFrame(wx.Frame):
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def grid_set_shape(self, new_rows, new_cols, readonly_cols=None):
+    def grid_set_shape(self, new_rows, new_cols, readonly=False):
         current_rows, current_cols = self.grid.GetNumberRows(), self.grid.GetNumberCols()
         if current_rows > 0:
             self.grid.DeleteRows(0, current_rows, False)
@@ -401,10 +401,8 @@ class MainFrame(wx.Frame):
             self.grid.DeleteCols(0, current_cols - new_cols, False)
         elif new_cols > current_cols:
             self.grid.AppendCols(new_cols - current_cols)
-        if readonly_cols:
-            [self.grid.SetReadOnly(row, col)
-             for row in range(new_rows)
-             for col in range(new_cols) if col in readonly_cols]
+
+        [self.set_cell_readonly(row, col, readonly) for row in range(new_rows) for col in range(new_cols)]
 
     def grid_align_viewpoint(self):  # https://stackoverflow.com/a/15894331/3399377
         row = self.grid.GetGridCursorRow()
@@ -667,8 +665,7 @@ class MainFrame(wx.Frame):
                     self.grid.SetCellValue(i, j, ", ".join(sorted([ext for ext in data['files'].keys()])))
                 elif row in data:
                     self.grid.SetCellValue(i, j, data[row])
-
-            [self.grid.SetReadOnly(i, a) for a in range(len(self.grid_cols) - 1)]
+                self.set_cell_readonly(i, j)
             i += 1
 
         self.grid.AutoSizeColumns()
@@ -713,7 +710,7 @@ class MainFrame(wx.Frame):
                 for cell in row.values():
                     self.grid.SetCellValue(new_row, cell['col'], cell['val'])
                     self.grid.SetCellBackgroundColour(new_row, cell['col'], Colors.DUP_ROW)
-                    self.grid.SetReadOnly(new_row, cell['col'])
+                    self.set_cell_readonly(new_row, cell['col'])
 
         self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
 
@@ -739,6 +736,11 @@ class MainFrame(wx.Frame):
         row = self.grid.GetGridCursorRow()
         if self.row_type(row) != 'track':  # Extra check, this method is very dangerous.
             self.grid.DeleteRows(row)
+
+    def set_cell_readonly(self, row, col, force_readonly=False):
+        editable = self.row_type(row) == 'countdown' and col == self.grid_cols.index(Columns.NAME) or \
+                   col == self.grid_cols.index(Columns.NOTES)
+        self.grid.SetReadOnly(row, col, not editable or force_readonly)
 
     # --- Countdown timer ---
 
@@ -797,13 +799,13 @@ class MainFrame(wx.Frame):
         if not default_bg_in_dataset:
             default_bg_in_dataset = self.grid.GetDefaultCellBackgroundColour()
         rows, cols = len(dataset), len(dataset[0]['cols'])
-        readonly_cols = [col for col in range(cols) if self.grid.GetColLabelValue(col) != Columns.NOTES or readonly]
 
-        self.grid_set_shape(rows, cols, readonly_cols)
+        self.grid_set_shape(rows, cols, readonly)
         for row in range(rows):
             for col in range(cols):
                 if dataset[row]['color'] != default_bg_in_dataset:
                     self.grid.SetCellBackgroundColour(row, col, dataset[row]['color'])
+                    self.set_cell_readonly(row, col)
                 self.grid.SetCellValue(row, col, dataset[row]['cols'][col])
 
     def search(self, e=None):
