@@ -185,20 +185,21 @@ class SettingsDialog(wx.Dialog):
         self.bg_tracks.SetPath(path_make_abs(self.config[Config.BG_TRACKS_DIR], self.session_file_path))
         self.bg_zad.SetPath(path_make_abs(self.config[Config.BG_ZAD_PATH], self.session_file_path))
         [self.rm_dir() for i in range(len(self.dir_pickers))]
-        dirs = self.config[Config.FILES_DIRS]
-        [self.add_dir(path) for path in [path_make_abs(d, self.session_file_path) for d in dirs]]
+        [self.add_dir(path_make_abs(path, self.session_file_path)) for path in self.config[Config.FILES_DIRS]]
         self.panel.SetSizerAndFit(self.top_sizer)
         self.Fit()
         self.SetSize((800, self.GetSize()[1]))
-        self.validate_all_paths()
+        self.ui_to_config()  # For validation
 
-    def validate_all_paths(self):
-        self.validate_path(self.bg_tracks, _("Invalid Background Tracks Dir"))
-        for picker in self.dir_pickers:
-            self.validate_path(picker, _("Invalid Files dir"))
-        self.validate_path(self.bg_zad, _("Invalid Background ZAD Path"))
+    def path_validate(self, widget, msg):
+        if not widget.GetPath() or os.path.exists(widget.GetPath()):
+            return widget.GetPath()
+        else:
+            wx.MessageBox("%s:\n%s" % (msg, widget.GetPath()), _("Path Error"), wx.OK | wx.ICON_WARNING, self)
+            widget.SetPath("")
+            return ""
 
-    def try_relative_path(self, path):
+    def path_try_relative(self, path):
         session_file_dir = os.path.dirname(os.path.normpath(self.session_file_path)) + os.sep
         if path.startswith(session_file_dir):
             return path[len(session_file_dir):]
@@ -207,18 +208,13 @@ class SettingsDialog(wx.Dialog):
     def ui_to_config(self):
         self.config[Config.PROJECTOR_SCREEN] = self.screens_combobox.GetSelection()
         self.config[Config.FILENAME_RE] = self.filename_re.GetValue()
-        self.config[Config.BG_TRACKS_DIR] = self.try_relative_path(self.validate_path(self.bg_tracks, _("Invalid Background Tracks Dir")))
-        self.config[Config.FILES_DIRS] = [self.try_relative_path(self.validate_path(picker, _("Invalid Files dir"))) for picker in
+        self.config[Config.BG_TRACKS_DIR] = self.path_try_relative(self.path_validate(
+                                                        self.bg_tracks, _("Invalid Background Tracks Dir")))
+        self.config[Config.FILES_DIRS] = [self.path_try_relative(self.path_validate(
+                                                        picker, _("Invalid Files dir"))) for picker in
                                           self.dir_pickers]
-        self.config[Config.BG_ZAD_PATH] = self.try_relative_path(self.validate_path(self.bg_zad, _("Invalid Background ZAD Path")))
-
-    def validate_path(self, widget, msg):
-        if not widget.GetPath() or os.path.exists(widget.GetPath()):
-            return widget.GetPath()
-        else:
-            wx.MessageBox("%s:\n%s" % (msg, widget.GetPath()), _("Path Error"), wx.OK | wx.ICON_WARNING, self)
-            widget.SetPath("")
-            return ""
+        self.config[Config.BG_ZAD_PATH] = self.path_try_relative(self.path_validate(
+                                                        self.bg_zad, _("Invalid Background ZAD Path")))
 
     def on_ok(self, e):
         path = self.session_picker.GetPath()
