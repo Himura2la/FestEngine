@@ -31,9 +31,9 @@ class BackgroundMusicPlayer(object):
         self.window.fade_in_out_switch.SetValue(self.fade_in_out)
         self.window.vol_slider.SetValue(self.volume)
         self.window.set_volume_from_slider()
-        self.parent.play_bg_item.Enable(True)
         if self.playlist:
             self.load_playlist_to_grid()
+            self.parent.play_bg_item.Enable(True)
         if self.player.get_state() in {vlc.State.Playing, vlc.State.Paused}:
             self.window.lock_btn.Enable(True)
 

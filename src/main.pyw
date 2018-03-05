@@ -91,7 +91,7 @@ class MainFrame(wx.Frame):
         self.bg_player_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.on_background_timer, self.bg_player_timer)
 
-        self.bg_tracks_dir = path_make_abs(self.config[Config.BG_TRACKS_DIR], self.session_file_path)
+        self.bg_tracks_dir = None
         self.files_dirs = [path_make_abs(d, self.session_file_path) for d in self.config[Config.FILES_DIRS]]
 
 
@@ -219,7 +219,8 @@ class MainFrame(wx.Frame):
         end_show_item = menu_play.Append(wx.ID_ANY, _("&End Show (Clear ZAD + Fade Out)\tEsc"))
         no_show_item = menu_play.Append(wx.ID_ANY, _("&Black Screen"))
         menu_play.AppendSeparator()
-        play_pause_bg_end_show_item = menu_play.Append(wx.ID_ANY, _("Play/Pause &Background + End Show\tF3"))
+        self.play_pause_bg_end_show_item = menu_play.Append(wx.ID_ANY, _("Play/Pause &Background + End Show\tF3"))
+        self.play_pause_bg_end_show_item.Enable(False)
         self.play_next_bg_item = menu_play.Append(wx.ID_ANY, _("Play &Next BG Track\tF4"))
         self.play_next_bg_item.Enable(False)
 
@@ -229,7 +230,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.play_async, play_track_item)
         self.Bind(wx.EVT_MENU, self.end_show, end_show_item)
         self.Bind(wx.EVT_MENU, lambda e: self.clear_zad(e, True), no_show_item)
-        self.Bind(wx.EVT_MENU, self.play_pause_bg_end_show, play_pause_bg_end_show_item)
+        self.Bind(wx.EVT_MENU, self.play_pause_bg_end_show, self.play_pause_bg_end_show_item)
         self.Bind(wx.EVT_MENU, self.background_play, self.play_next_bg_item)
 
         self.SetAcceleratorTable(wx.AcceleratorTable([
@@ -239,7 +240,7 @@ class MainFrame(wx.Frame):
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F2, play_track_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, end_show_item.GetId()),
 
-            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F3, play_pause_bg_end_show_item.GetId()),
+            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F3, self.play_pause_bg_end_show_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F4, self.play_next_bg_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_F4, self.play_bg_item.GetId())]))
 
@@ -510,7 +511,7 @@ class MainFrame(wx.Frame):
     def on_bg_player_win_close(self, e):
         self.bg_player.window.Destroy()
         self.bg_player.window = None
-        self.play_next_bg_item.Enable(False)
+        self.play_bg_item.Enable(False)
 
     def ensure_proj_win(self, e=None):
         no_window = not self.proj_win
@@ -1095,6 +1096,7 @@ class MainFrame(wx.Frame):
     # -------------------------------------------- Background Music Player --------------------------------------------
 
     def on_bg_load_files(self, e=None):
+        self.bg_tracks_dir = path_make_abs(self.config[Config.BG_TRACKS_DIR], self.session_file_path)
         if not self.config[Config.BG_TRACKS_DIR] or not os.path.isdir(self.bg_tracks_dir):
             msg = _("Background MP3 path is invalid. Please specify a\n"
                     "valid path with your background tracks in settings.\n\n"
@@ -1104,6 +1106,7 @@ class MainFrame(wx.Frame):
 
         self.bg_player.load_files(self.bg_tracks_dir)
         self.play_next_bg_item.Enable(True)
+        self.play_pause_bg_end_show_item.Enable(True)
 
     def fade_switched(self, e):
         value = bool(e.Int)
