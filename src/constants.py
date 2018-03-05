@@ -14,6 +14,8 @@ class Config:
     COUNTDOWN_TIME_FMT = "Countdown Time Format"
     C2_DATABASE_PATH = "Cosplay2 Database Path"
     TEXT_WIN_FIELDS = "Main Fields in Text Window"
+    COUNTDOWN_OPENING_TEXT = "Countdown Opening Text"
+    COUNTDOWN_INTERMISSION_TEXT = "Countdown Intermission Text"
 
 
 class Columns:
@@ -26,8 +28,6 @@ class Columns:
 
 class Strings:
     APP_NAME = "Fest Engine"
-    COUNTDOWN_FIRST_TEXT = "До начала фестиваля"
-    COUNTDOWN_DEFAULT_TEXT = "До конца перерыва"
     COUNTDOWN_ROW_TEXT_FULL = "break"
     COUNTDOWN_ROW_TEXT_SHORT = "brk"
 

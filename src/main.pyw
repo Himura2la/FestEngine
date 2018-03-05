@@ -44,6 +44,20 @@ class MainFrame(wx.Frame):
 
         self.player_time_update_interval_ms = 300
         self.fade_out_delays_ms = 10
+        self.logger = Logger(self)
+        base_config = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1,  # The last one
+                       Config.VLC_ARGUMENTS: "--file-caching=1000 --no-drop-late-frames --no-skip-frames",
+                       Config.FILENAME_RE: "^(?P<num>\d{1,3})\W{1,3}(?P<name>.*)$",
+                       Config.BG_TRACKS_DIR: "",
+                       Config.BG_ZAD_PATH: "",
+                       Config.FILES_DIRS: [""],
+                       Config.BG_FADE_STOP_DELAYS: 0.03,
+                       Config.BG_FADE_PAUSE_DELAYS: 0.01,
+                       Config.C2_DATABASE_PATH: "",
+                       Config.TEXT_WIN_FIELDS: ["Пожелания по сценическому свету (необязательно)"],
+                       Config.COUNTDOWN_OPENING_TEXT: u"До начала фестиваля",
+                       Config.COUNTDOWN_INTERMISSION_TEXT: u"До конца перерыва",
+                       Config.COUNTDOWN_TIME_FMT: u"Ждём Вас в %s ^_^"}
 
         self.config_ok = False
         self.session_file_path = ""
@@ -51,7 +65,11 @@ class MainFrame(wx.Frame):
             self.session_file_path = open(Config.LAST_SESSION_PATH, 'r').read()
             if os.path.isfile(self.session_file_path):
                 try:
-                    self.config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
+                    loaded_config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
+                    config_keys_diff = set(base_config.keys()) - set(loaded_config.keys())
+                    if config_keys_diff:
+                        self.logger.log("[WARNING] Config file is missing the following keys: " + str(config_keys_diff))
+                    self.config = {**base_config, **loaded_config}  # Merging base config with loaded
                     self.config_ok = True
                 except json.decoder.JSONDecodeError as e:
                     msg = _("Unfortunately, you broke the JSON format...\n"
@@ -59,19 +77,8 @@ class MainFrame(wx.Frame):
                           ("\n(%s)" % self.session_file_path, str(e))
                     wx.MessageBox(msg, "JSON Error", wx.OK | wx.ICON_ERROR, self)
         if not self.config_ok:
-            self.config = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1,  # The last one
-                           Config.VLC_ARGUMENTS: "--file-caching=1000 --no-drop-late-frames --no-skip-frames",
-                           Config.FILENAME_RE: "^(?P<num>\d{1,3})\W(?P<name>.*)$",
-                           Config.BG_TRACKS_DIR: "",
-                           Config.BG_ZAD_PATH: "",
-                           Config.FILES_DIRS: [""],
-                           Config.BG_FADE_STOP_DELAYS: 0.03,
-                           Config.BG_FADE_PAUSE_DELAYS: 0.01,
-                           Config.COUNTDOWN_TIME_FMT: u"Ждём Вас в %s ^_^",
-                           Config.C2_DATABASE_PATH: "",
-                           Config.TEXT_WIN_FIELDS: ["Пожелания по сценическому свету (необязательно)"]}
+            self.config = base_config
 
-        self.logger = Logger(self)
         self.proj_win = None
         self.text_win = None
         self.req_id_fiend_number = None
@@ -93,7 +100,6 @@ class MainFrame(wx.Frame):
 
         self.bg_tracks_dir = None
         self.files_dirs = [path_make_abs(d, self.session_file_path) for d in self.config[Config.FILES_DIRS]]
-
 
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
@@ -157,9 +163,11 @@ class MainFrame(wx.Frame):
 
         menu_item.AppendSeparator()
 
-        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(False, message=Strings.COUNTDOWN_DEFAULT_TEXT),
+        self.Bind(wx.EVT_MENU,
+                  lambda e: self.add_countdown_row(False, message=self.config[Config.COUNTDOWN_INTERMISSION_TEXT]),
                   menu_item.Append(wx.ID_ANY, _("&Add intermission (countdown) above")))
-        self.Bind(wx.EVT_MENU, lambda e: self.add_countdown_row(True, message=Strings.COUNTDOWN_DEFAULT_TEXT),
+        self.Bind(wx.EVT_MENU,
+                  lambda e: self.add_countdown_row(True, message=self.config[Config.COUNTDOWN_INTERMISSION_TEXT]),
                   menu_item.Append(wx.ID_ANY, _("&Add intermission (countdown) below")))
 
         menu_bar.Append(menu_item, _("&Item"))
@@ -702,7 +710,7 @@ class MainFrame(wx.Frame):
         self.grid.AutoSizeColumns()
         self.status("Loaded %d items" % i)
 
-        self.add_countdown_row(False, 0, Strings.COUNTDOWN_FIRST_TEXT)
+        self.add_countdown_row(False, 0, self.config[Config.COUNTDOWN_OPENING_TEXT])
 
         self.SetLabel("%s: %s" % (Strings.APP_NAME, self.session_file_path))
 
