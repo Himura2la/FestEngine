@@ -130,6 +130,7 @@ python3 main.pyw
 * [СROSSxOVER - 2017](https://vk.com/crossover_42), Кемерово
 * [Интерактивный аниме показ "Танец духов"](https://vk.com/tulaanime11), 2017, Тула
 * [Седьмой Тульский Аниме-фестиваль Yuki no Odori](https://vk.com/tulaanimefest), 2018, Тула
+* [Косплей-дефиле на UnityCon](https://vk.com/unityconcosplay), 2018, Москва
 
 # Как это дебажить?
 
