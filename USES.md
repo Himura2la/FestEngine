@@ -5,3 +5,4 @@
 | [Интерактивный аниме показ "Танец духов"](https://vk.com/tulaanime11) | Тула | 10 декабря 2017 г. | [@Himura2la](https://github.com/Himura2la) |
 | [Седьмой Тульский Аниме-фестиваль Yuki no Odori](https://vk.com/tulaanimefest) | Тула | 17 февраля 2018 г. | [@Himura2la](https://github.com/Himura2la) |
 | [Косплей-дефиле на UnityCon](https://vk.com/unityconcosplay) | Москва | 11 марта 2018 г. | [@Himura2la](https://github.com/Himura2la) |
+| [AtomCosCon 2018](https://vk.com/cosfest) | Дубна (МО) | 5 мая 2018г. | [DESTINXXX](https://vk.com/destinxxx) |
