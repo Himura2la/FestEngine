@@ -1248,7 +1248,7 @@ class MainFrame(wx.Frame):
             self.text_win.load(item)
         else:
             self.logger.log("[Text Window] Item '%s' not found in row %d of 'self.text_win.list'." % (req_id, self.req_id_field_number))
-            self.logger.log("[self.text_win.list]\n%s" % str(self.text_win.list))
+            self.logger.log("\tself.text_win.list:\n%s" % str(self.text_win.list))
             self.text_win.clear(_("Item not found in the database. Watch the log."))
 
 
