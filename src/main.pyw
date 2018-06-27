@@ -81,7 +81,7 @@ class MainFrame(wx.Frame):
 
         self.proj_win = None
         self.text_win = None
-        self.req_id_fiend_number = None
+        self.req_id_field_number = None
         self.filename_re = None
         self.grid_cols = None
         self.data = {}
@@ -1221,7 +1221,7 @@ class MainFrame(wx.Frame):
                 self.status("No Cosplay2 Database")
                 return
             self.text_win = TextWindow(self, _('Text Data'), self.config[Config.TEXT_WIN_FIELDS])
-            self.req_id_fiend_number = self.text_win.LIST_FIELDS.index('requests.number')  # The № value in Cosplay2
+            self.req_id_field_number = self.text_win.LIST_FIELDS.index('requests.number')  # The № value in Cosplay2
             self.text_win.Show()
             self.text_win.load_db(self.config[Config.C2_DATABASE_PATH])
             self.status("Text Window Created")
@@ -1243,12 +1243,13 @@ class MainFrame(wx.Frame):
         self.text_win_full_info.Enable(False)
 
     def text_win_load(self, req_id):
-        item = next((x for x in self.text_win.list if str(x[self.req_id_fiend_number]) == req_id), None)
+        item = next((x for x in self.text_win.list if str(x[self.req_id_field_number]) == req_id), None)
         if item:
             self.text_win.load(item)
         else:
-            self.status("Text Not Found !!!")
-            self.text_win.clear(_("Item not found in the database"))
+            self.logger.log("[Text Window] Item '%s' not found in row %d of 'self.text_win.list'." % (req_id, self.req_id_field_number))
+            self.logger.log("[self.text_win.list]\n%s" % str(self.text_win.list))
+            self.text_win.clear(_("Item not found in the database. Watch the log."))
 
 
 if __name__ == "__main__":
