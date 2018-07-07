@@ -80,6 +80,7 @@ class MainFrame(wx.Frame):
                             "Please fix the configuration file%s ASAP.\n\nDetails: %s") % \
                           ("\n(%s)" % self.session_file_path, str(e))
                     wx.MessageBox(msg, "JSON Error", wx.OK | wx.ICON_ERROR, self)
+        self.session_file_path = os.path.normpath(self.session_file_path)
         if not self.config_ok:
             self.config = base_config
 
@@ -1221,13 +1222,20 @@ class MainFrame(wx.Frame):
 
     def text_win_show(self, e):
         if e.Selection:
-            if Config.C2_DATABASE_PATH not in self.config or not os.path.exists(self.config[Config.C2_DATABASE_PATH]):
-                self.status("No Cosplay2 Database")
+            if Config.C2_DATABASE_PATH not in self.config or not Config.C2_DATABASE_PATH:
+                self.status(_("No Cosplay2 database in config"))
+                return
+            db_path = os.path.normpath(self.config[Config.C2_DATABASE_PATH])
+            if not os.path.isabs(db_path):
+                session_file_dir = os.path.dirname(self.session_file_path)
+                db_path = os.path.join(session_file_dir, db_path)
+            if not os.path.exists(db_path):
+                self.status(_("Cosplay2 database not found"))
                 return
             self.text_win = TextWindow(self, _('Text Data'), self.config[Config.TEXT_WIN_FIELDS])
             self.req_id_field_number = self.text_win.LIST_FIELDS.index('requests.number')  # The № value in Cosplay2
             self.text_win.Show()
-            self.text_win.load_db(self.config[Config.C2_DATABASE_PATH])
+            self.text_win.load_db(db_path)
             self.status("Text Window Created")
             self.text_win_full_info.Enable(True)
         elif self.text_win:

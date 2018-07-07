@@ -3,16 +3,12 @@ import sys
 import subprocess
 import shutil
 import json
-
 import wx
-
 from constants import Config, FileTypes
 
 
 def path_make_abs(path, session_file_path):
-    if not path:
-        return path
-    elif os.path.isabs(path):
+    if not path or os.path.isabs(path):
         return path
     else:  # this is relative, so we calculate a path relative to a directory where the .fest file resides
         return os.path.normpath(os.path.join(os.path.dirname(session_file_path), path))
@@ -202,9 +198,9 @@ class SettingsDialog(wx.Dialog):
             return ""
 
     def path_try_relative(self, path):
-        session_file_dir = os.path.dirname(os.path.normpath(self.session_file_path)) + os.sep
-        if path.startswith(session_file_dir):
-            return '.' + os.sep + path[len(session_file_dir):]
+        session_file_dir = os.path.dirname(self.session_file_path) + os.sep
+        if os.path.normpath(path).startswith(session_file_dir):
+            return './' + os.path.relpath(path, session_file_dir).replace(os.sep, '/')
         return path
 
     def ui_to_config(self):
