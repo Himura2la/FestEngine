@@ -1222,14 +1222,11 @@ class MainFrame(wx.Frame):
 
     def text_win_show(self, e):
         if e.Selection:
-            if Config.C2_DATABASE_PATH not in self.config or not Config.C2_DATABASE_PATH:
+            if Config.C2_DATABASE_PATH not in self.config or not self.config[Config.C2_DATABASE_PATH]:
                 self.status(_("No Cosplay2 database in config"))
                 return
-            db_path = os.path.normpath(self.config[Config.C2_DATABASE_PATH])
-            if not os.path.isabs(db_path):
-                session_file_dir = os.path.dirname(self.session_file_path)
-                db_path = os.path.join(session_file_dir, db_path)
-            if not os.path.exists(db_path):
+            db_path = path_make_abs(self.config[Config.C2_DATABASE_PATH], self.session_file_path)
+            if not os.path.isfile(db_path):
                 self.status(_("Cosplay2 database not found"))
                 return
             self.text_win = TextWindow(self, _('Text Data'), self.config[Config.TEXT_WIN_FIELDS])

@@ -11,7 +11,8 @@ def path_make_abs(path, session_file_path):
     if not path or os.path.isabs(path):
         return path
     else:  # this is relative, so we calculate a path relative to a directory where the .fest file resides
-        return os.path.normpath(os.path.join(os.path.dirname(session_file_path), path))
+        session_file_dir = os.path.dirname(session_file_path)
+        return os.path.normpath(os.path.join(session_file_dir, path))
 
 
 class SettingsDialog(wx.Dialog):
