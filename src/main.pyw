@@ -25,7 +25,11 @@ from logger import Logger
 from file_replacer import FileReplacer
 from text_window import TextWindow
 
-gettext.translation('main', os.path.join(os.path.dirname(os.path.realpath(__file__)), 'locale'), ['ru']).install()
+locale_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'locale')
+if os.path.isfile(os.path.join(locale_dir, 'ru', 'LC_MESSAGES', 'main.mo')):
+    gettext.translation('main', locale_dir, ['ru']).install()
+else:
+    def _(s): return s
 
 if sys.platform.startswith('linux'):
     try:
