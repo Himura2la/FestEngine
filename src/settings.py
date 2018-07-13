@@ -17,7 +17,8 @@ def path_make_abs(path, session_file_path):
 
 class SettingsDialog(wx.Dialog):
     def __init__(self, session_file_path, config, parent):
-        wx.Dialog.__init__(self, parent, title="Settings", style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+        dialog_style = (wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+        wx.Dialog.__init__(self, parent, title=_("Settings"), style=dialog_style)
         self.session_file_path = session_file_path
         self.config = config
 
@@ -33,13 +34,20 @@ class SettingsDialog(wx.Dialog):
 
         session_sizer = wx.BoxSizer(wx.HORIZONTAL)
         session_sizer.Add(wx.StaticText(self.panel, label=_("Current Fest")), 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 5)
-        self.session_picker = wx.FilePickerCtrl(self.panel, style=wx.FLP_SAVE | wx.FLP_USE_TEXTCTRL,
-                                                wildcard="Fest Engine sessions (*.fest)|*.fest;*.fest_bkp")
+        self.session_picker = wx.FilePickerCtrl(
+            self.panel,
+            style=wx.FLP_SAVE | wx.FLP_USE_TEXTCTRL,
+            wildcard="Fest Engine sessions (*.fest)|*.fest;*.fest_bkp"
+        )
         self.Bind(wx.EVT_FILEPICKER_CHANGED, self.on_fest_selected, self.session_picker)
         self.session_picker.SetPath(self.session_file_path)
         session_sizer.Add(self.session_picker, 1, wx.EXPAND | wx.ALL, 5)
-        session_sizer.Add(wx.StaticLine(self.panel, style=wx.LI_VERTICAL), 0, wx.EXPAND | wx.TOP | wx.BOTTOM | wx.RIGHT,
-                          5)
+        session_sizer.Add(
+            wx.StaticLine(self.panel, style=wx.LI_VERTICAL),
+            0,
+            wx.EXPAND | wx.TOP | wx.BOTTOM | wx.RIGHT,
+            5
+        )
         self.session_file_edit_btn = wx.Button(self.panel, wx.ID_ANY, _("All Settings"))
         self.Bind(wx.EVT_BUTTON, self.on_file_edit, self.session_file_edit_btn)
         session_sizer.Add(self.session_file_edit_btn, 0, wx.TOP | wx.RIGHT, 5)
@@ -52,33 +60,62 @@ class SettingsDialog(wx.Dialog):
         self.configs_grid = wx.FlexGridSizer(rows=5, cols=2, hgap=5, vgap=5)
         self.configs_grid.AddGrowableCol(1)
 
+        # choose the projector screen
         self.screens_combobox = wx.Choice(self.panel)
-        screen_names = ["%d: %s (%d,%d) %dx%d" % ((i, wx.Display(i).GetName()) + wx.Display(i).GetGeometry().Get())
-                        for i in range(wx.Display.GetCount())]
+        screen_names = ["%d: %s (%d,%d) %dx%d" % (
+            (i, wx.Display(i).GetName()) + wx.Display(i).GetGeometry().Get()
+        ) for i in range(wx.Display.GetCount())]
         self.screens_combobox.SetItems(screen_names)
         self.screens_combobox.SetSelection(self.config[Config.PROJECTOR_SCREEN])
         self.configs_grid.Add(wx.StaticText(self.panel, label=_("Projector Screen")), 0, wx.ALIGN_CENTER_VERTICAL)
         self.configs_grid.Add(self.screens_combobox, 1, wx.EXPAND)
 
+        # filename regex
         self.filename_re = wx.TextCtrl(self.panel)
         self.filename_re.SetValue(self.config[Config.FILENAME_RE])
-        self.configs_grid.Add(wx.StaticText(self.panel, label=_("Filename RegEx")), 0, wx.ALIGN_CENTER_VERTICAL)
+        self.configs_grid.Add(
+            wx.StaticText(self.panel, label=_("Filename RegEx")), 0, wx.ALIGN_CENTER_VERTICAL
+        )
         self.configs_grid.Add(self.filename_re, 1, wx.EXPAND)
 
-        self.dbpath = wx.FilePickerCtrl(self.panel)
-        self.dbpath.SetPath(path_make_abs(self.config[Config.C2_DATABASE_PATH], self.session_file_path))
-        self.configs_grid.Add(wx.StaticText(self.panel, label=_("SQLite database")), 0, wx.ALIGN_CENTER_VERTICAL)
+        # database filepicker
+        self.dbpath = wx.FilePickerCtrl(
+            self.panel,
+            wildcard="Database files|*.sqlite;*.db;*.data"
+        )
+        self.dbpath.SetInitialDirectory(self.session_file_path)
+        self.dbpath.SetPath(
+            path_make_abs(
+                self.config[Config.C2_DATABASE_PATH],
+                self.session_file_path
+            )
+        )
+        self.configs_grid.Add(
+            wx.StaticText(self.panel,label=_("SQLite database")),
+            0,
+            wx.ALIGN_CENTER_VERTICAL
+        )
         self.configs_grid.Add(self.dbpath, 1, wx.EXPAND)
 
+        # background tracks dirpicker
         self.bg_tracks = wx.DirPickerCtrl(self.panel)
-        self.bg_tracks.SetPath(path_make_abs(self.config[Config.BG_TRACKS_DIR], self.session_file_path))
-        self.configs_grid.Add(wx.StaticText(self.panel, label=_("Background Tracks Dir")), 0, wx.ALIGN_CENTER_VERTICAL)
+        self.bg_tracks.SetPath(
+            path_make_abs(
+                self.config[Config.BG_TRACKS_DIR],
+                self.session_file_path
+            )
+        )
+        self.configs_grid.Add(
+            wx.StaticText(self.panel, label=_("Background Tracks Dir")), 0, wx.ALIGN_CENTER_VERTICAL
+        )
         self.configs_grid.Add(self.bg_tracks, 1, wx.EXPAND)
 
         img_wc = "Images ({0})|{0}".format(";".join(["*.%s" % x for x in FileTypes.img_extensions]))
         self.bg_zad = wx.FilePickerCtrl(self.panel, wildcard=img_wc)
         self.bg_zad.SetPath(path_make_abs(self.config[Config.BG_ZAD_PATH], self.session_file_path))
-        self.configs_grid.Add(wx.StaticText(self.panel, label=_("Background ZAD Path")), 0, wx.ALIGN_CENTER_VERTICAL)
+        self.configs_grid.Add(
+            wx.StaticText(self.panel, label=_("Background ZAD Path")), 0, wx.ALIGN_CENTER_VERTICAL
+        )
         self.configs_grid.Add(self.bg_zad, 1, wx.EXPAND)
 
         self.top_sizer.Add(self.configs_grid, 0, wx.EXPAND | wx.ALL, 5)
@@ -185,7 +222,9 @@ class SettingsDialog(wx.Dialog):
 
     def config_to_ui(self):
         self.screens_combobox.SetSelection(self.config[Config.PROJECTOR_SCREEN])
-        self.dbpath.SetPath(self.config[Config.C2_DATABASE_PATH])
+        self.dbpath.SetPath(
+            path_make_abs(self.config[Config.C2_DATABASE_PATH], self.session_file_path)
+        )
         self.filename_re.SetValue(self.config[Config.FILENAME_RE])
         self.bg_tracks.SetPath(path_make_abs(self.config[Config.BG_TRACKS_DIR], self.session_file_path))
         self.bg_zad.SetPath(path_make_abs(self.config[Config.BG_ZAD_PATH], self.session_file_path))
@@ -223,7 +262,10 @@ class SettingsDialog(wx.Dialog):
             )
         )
         self.config[Config.C2_DATABASE_PATH] = self.path_try_relative(
-            self.dbpath.GetPath()
+            self.path_validate(
+                self.dbpath,
+                _("SQLite database not found")
+            )
         )
         self.config[Config.FILES_DIRS] = [self.path_try_relative(
             self.path_validate(
