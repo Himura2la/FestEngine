@@ -65,6 +65,11 @@ class SettingsDialog(wx.Dialog):
         self.configs_grid.Add(wx.StaticText(self.panel, label=_("Filename RegEx")), 0, wx.ALIGN_CENTER_VERTICAL)
         self.configs_grid.Add(self.filename_re, 1, wx.EXPAND)
 
+        self.dbpath = wx.FilePickerCtrl(self.panel)
+        self.dbpath.SetPath(path_make_abs(self.config[Config.C2_DATABASE_PATH], self.session_file_path))
+        self.configs_grid.Add(wx.StaticText(self.panel, label=_("SQLite database")), 0, wx.ALIGN_CENTER_VERTICAL)
+        self.configs_grid.Add(self.dbpath, 1, wx.EXPAND)
+
         self.bg_tracks = wx.DirPickerCtrl(self.panel)
         self.bg_tracks.SetPath(path_make_abs(self.config[Config.BG_TRACKS_DIR], self.session_file_path))
         self.configs_grid.Add(wx.StaticText(self.panel, label=_("Background Tracks Dir")), 0, wx.ALIGN_CENTER_VERTICAL)
@@ -180,6 +185,7 @@ class SettingsDialog(wx.Dialog):
 
     def config_to_ui(self):
         self.screens_combobox.SetSelection(self.config[Config.PROJECTOR_SCREEN])
+        self.dbpath.SetPath(self.config[Config.C2_DATABASE_PATH])
         self.filename_re.SetValue(self.config[Config.FILENAME_RE])
         self.bg_tracks.SetPath(path_make_abs(self.config[Config.BG_TRACKS_DIR], self.session_file_path))
         self.bg_zad.SetPath(path_make_abs(self.config[Config.BG_ZAD_PATH], self.session_file_path))
@@ -204,16 +210,33 @@ class SettingsDialog(wx.Dialog):
             return './' + os.path.relpath(path, session_file_dir).replace(os.sep, '/')
         return path
 
+    ###
+    # Save selected values from UI to JSON config.
+    ###
     def ui_to_config(self):
         self.config[Config.PROJECTOR_SCREEN] = self.screens_combobox.GetSelection()
         self.config[Config.FILENAME_RE] = self.filename_re.GetValue()
-        self.config[Config.BG_TRACKS_DIR] = self.path_try_relative(self.path_validate(
-                                                        self.bg_tracks, _("Invalid Background Tracks Dir")))
-        self.config[Config.FILES_DIRS] = [self.path_try_relative(self.path_validate(
-                                                        picker, _("Invalid Files dir"))) for picker in
-                                          self.dir_pickers]
-        self.config[Config.BG_ZAD_PATH] = self.path_try_relative(self.path_validate(
-                                                        self.bg_zad, _("Invalid Background ZAD Path")))
+        self.config[Config.BG_TRACKS_DIR] = self.path_try_relative(
+            self.path_validate(
+                self.bg_tracks,
+                _("Invalid Background Tracks Dir")
+            )
+        )
+        self.config[Config.C2_DATABASE_PATH] = self.path_try_relative(
+            self.dbpath.GetPath()
+        )
+        self.config[Config.FILES_DIRS] = [self.path_try_relative(
+            self.path_validate(
+                picker,
+                _("Invalid Files dir")
+            )
+        ) for picker in self.dir_pickers]
+        self.config[Config.BG_ZAD_PATH] = self.path_try_relative(
+            self.path_validate(
+                self.bg_zad,
+                _("Invalid Background ZAD Path")
+            )
+        )
 
     def on_ok(self, e):
         path = self.session_picker.GetPath()
