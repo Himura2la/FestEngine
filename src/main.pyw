@@ -29,7 +29,8 @@ locale_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'locale')
 if os.path.isfile(os.path.join(locale_dir, 'ru', 'LC_MESSAGES', 'main.mo')):
     gettext.translation('main', locale_dir, ['ru']).install()
 else:
-    def _(s): return s
+    import builtins
+    builtins.__dict__['_'] = lambda t: t
 
 if sys.platform.startswith('linux'):
     try:
