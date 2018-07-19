@@ -220,7 +220,7 @@ class MainFrame(wx.Frame):
 
         self.bg_pause_switch = menu_bg_music.Append(wx.ID_ANY, _("&Pause"), kind=wx.ITEM_CHECK)
         self.bg_pause_switch.Enable(False)
-        self.Bind(wx.EVT_MENU, self.background_pause, self.bg_pause_switch)
+        self.Bind(wx.EVT_MENU, self.background_set_pause, self.bg_pause_switch)
 
         menu_bar.Append(menu_bg_music, _("&Background Music"))
 
@@ -624,7 +624,7 @@ class MainFrame(wx.Frame):
 
         bg_fade_state = self.bg_player.fade_in_out
         self.bg_player.fade_in_out = False
-        self.background_pause(paused=True)
+        self.background_set_pause(paused=True)
         self.bg_player.fade_in_out = bg_fade_state
 
         self.status("EMERGENCY STOP !!!")
@@ -1140,7 +1140,7 @@ class MainFrame(wx.Frame):
         else:
             self.bg_player.switch_track_async(from_grid)
 
-    def background_pause(self, e=None, paused=None):
+    def background_set_pause(self, e=None, paused=None):
         value = bool(e.Int) if e else paused
         self.bg_player.pause_async(value)
         if not e or isinstance(e.EventObject, wx.ToggleButton):
@@ -1209,15 +1209,17 @@ class MainFrame(wx.Frame):
             return
         if play:
             if state == vlc.State.Paused:
-                self.background_pause(paused=False)
+                self.background_set_pause(paused=False)
             else:
                 self.background_play()
         else:
-            self.background_pause(paused=True)
+            self.background_set_pause(paused=True)
+        return play
 
     def play_pause_bg_end_show(self, e=None):
-        self.play_pause_bg()
-        self.end_show()
+        bg_started = self.play_pause_bg()
+        if bg_started:
+            self.end_show()
 
     # -------------------------------------------------- Text Window --------------------------------------------------
 
