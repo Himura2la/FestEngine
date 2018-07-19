@@ -215,7 +215,7 @@ class BackgroundMusicFrame(wx.Frame):
             self.pause_btn.Enable(False)
 
         self.top_toolbar.Add(self.pause_btn, 0)
-        self.pause_btn.Bind(wx.EVT_TOGGLEBUTTON, parent.background_pause)
+        self.pause_btn.Bind(wx.EVT_TOGGLEBUTTON, parent.background_set_pause)
 
         self.vol_slider = wx.Slider(self, value=0, minValue=0, maxValue=150)
         self.top_toolbar.Add(self.vol_slider, 1, wx.EXPAND)
