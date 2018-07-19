@@ -65,7 +65,7 @@ class MainFrame(wx.Frame):
                        Config.COUNTDOWN_TIME_FMT: u"Ждём Вас в %s ^_^"}
 
         self.config_ok = False
-        self.session_file_path = ""
+        self.session_file_path = ''
         if os.path.isfile(Config.LAST_SESSION_PATH):
             self.session_file_path = open(Config.LAST_SESSION_PATH, 'r').read()
             if os.path.isfile(self.session_file_path):
@@ -81,7 +81,7 @@ class MainFrame(wx.Frame):
                             "Please fix the configuration file%s ASAP.\n\nDetails: %s") % \
                           ("\n(%s)" % self.session_file_path, str(e))
                     wx.MessageBox(msg, "JSON Error", wx.OK | wx.ICON_ERROR, self)
-        self.session_file_path = os.path.normpath(self.session_file_path)
+
         if not self.config_ok:
             self.config = base_config
 

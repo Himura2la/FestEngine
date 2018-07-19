@@ -159,6 +159,7 @@ class SettingsDialog(wx.Dialog):
     def on_fest_selected(self, e=None, first_run=False):
         fest_file_exists = os.path.isfile(e.Path) if e else False
         if fest_file_exists:
+            self.session_file_path = os.path.normpath(e.Path)
             try:
                 self.config = json.load(open(e.Path, 'r', encoding='utf-8'))
             except json.decoder.JSONDecodeError as e:
@@ -223,7 +224,7 @@ class SettingsDialog(wx.Dialog):
             shutil.copy(path, self.session_file_path)
         else:
             ext = '.fest'
-            self.session_file_path = path if path.find(ext) == len(path) - len(ext) else path + ext
+            self.session_file_path = path if path.endswith(ext) else path + ext
 
         with open(Config.LAST_SESSION_PATH, 'w') as f:
             f.write(self.session_file_path)
