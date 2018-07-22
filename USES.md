@@ -8,3 +8,4 @@
 | [AtomCosCon 2018](https://vk.com/cosfest) | Дубна (МО) | 5 мая 2018г. | [destinyx](https://vk.com/destinxxx) |
 | [СROSSxOVER 2018](https://vk.com/crossover_42) | Кемерово | 30 июня 2018 г. | [@Oreolek](https://github.com/Oreolek) |
 | [ANI-SHINAI 2018](http://ani-shinai.ru/) | Калуга | 14 июля 2018г. | [@Himura2la](https://github.com/Himura2la) |
+| [GAC-fest 2018](https://vk.com/gacfest2018) | Тула | 21 июля 2018г. | [@Himura2la](https://github.com/Himura2la) |
