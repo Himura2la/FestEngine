@@ -146,22 +146,22 @@ class SettingsDialog(wx.Dialog):
             dir_picker.SetPath(path)
         else:  # Assuming manual adding
             self.top_sizer.Layout()
-            size = self.GetSize()
-            size[1] += dir_picker.GetSize()[1]
-            self.SetSize(size)
+            size = self.GetClientSize()
+            size[1] += dir_picker.GetClientSize()[1]
+            self.SetClientSize(size)
         self.dir_pickers.append(dir_picker)
 
     def rm_dir(self, e=None):
-        last_picker_height = self.dir_pickers[-1].GetSize()[1]
+        last_picker_height = self.dir_pickers[-1].GetClientSize()[1]
         last_picker = len(self.dir_pickers) - 1
         if last_picker > 0 or not e:  # No limits on manual removing
             del self.dir_pickers[-1]
             self.pickers_sizer.Hide(last_picker)
             self.pickers_sizer.Remove(last_picker)
             self.top_sizer.Layout()
-            size = self.GetSize()
+            size = self.GetClientSize()
             size[1] -= last_picker_height
-            self.SetSize(size)
+            self.SetClientSize(size)
 
     def enable_settings(self, enabled):
         def process_children(sizer):
@@ -204,8 +204,8 @@ class SettingsDialog(wx.Dialog):
         [self.rm_dir() for i in range(len(self.dir_pickers))]
         [self.add_dir(path_make_abs(path, self.session_file_path)) for path in self.config[Config.FILES_DIRS]]
         self.panel.SetSizerAndFit(self.top_sizer)
-        self.Fit()
-        self.SetSize((800, self.GetSize()[1]))
+        self.top_sizer.Fit(self)
+        self.SetClientSize((self.GetClientSize()[0] + 300, self.GetClientSize()[1]))
         self.ui_to_config()  # For validation
 
     def path_validate(self, widget, msg):
