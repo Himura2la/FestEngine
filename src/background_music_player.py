@@ -1,4 +1,5 @@
 import os
+import sys
 import threading
 import time
 
@@ -41,7 +42,7 @@ class BackgroundMusicPlayer(object):
         file_paths = [os.path.join(bg_music_dir, f) for f in sorted(os.listdir(bg_music_dir))]
         self.playlist = [{'title': os.path.basename(p).rsplit('.', 1)[0],
                           'path': p,
-                          'color': Colors.ROW_NEVER_PLAYED}
+                          'color': None}
                          for p in file_paths if os.path.isfile(p) and os.path.basename(p).rsplit('.', 1)[1] in FileTypes.audio_extensions]
         if self.window:
             self.load_playlist_to_grid()
@@ -53,7 +54,8 @@ class BackgroundMusicPlayer(object):
         for i in range(len(self.playlist)):
             self.window.grid.SetCellValue(i, 0, self.playlist[i]['title'])
             self.window.grid.SetReadOnly(i, 0)
-            self.window.grid.SetCellBackgroundColour(i, 0, self.playlist[i]['color'])
+            if self.playlist[i]['color']:
+                self.window.grid.SetCellBackgroundColour(i, 0, self.playlist[i]['color'])
         self.window.grid.AutoSize()
         self.window.Layout()
         self.window.play_btn.Enable(True)
@@ -191,11 +193,13 @@ class BackgroundMusicWindow(wx.Frame):
         wx.Frame.__init__(self, main_window, title='Background Music Player', size=(400, 500))
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
 
+        win = sys.platform.startswith('win')
+
         # ---------------------------------------------- Layout -----------------------------------------------------
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.top_toolbar = wx.BoxSizer(wx.HORIZONTAL)
-        toolbar_base_height = 20
+        toolbar_base_height = 20 if win else 30
 
         self.fade_in_out_switch = wx.CheckBox(self, label='FAD')
         self.top_toolbar.Add(self.fade_in_out_switch, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=3)
@@ -221,7 +225,7 @@ class BackgroundMusicWindow(wx.Frame):
         self.top_toolbar.Add(self.vol_slider, 1, wx.EXPAND)
         self.vol_slider.Bind(wx.EVT_SLIDER, self.set_volume_from_slider)
 
-        self.vol_label = wx.StaticText(self, label='VOL', size=(50, -1), style=wx.ALIGN_LEFT)
+        self.vol_label = wx.StaticText(self, label='VOL', size=(60, -1), style=wx.ALIGN_LEFT)
         self.top_toolbar.Add(self.vol_label, 0, wx.ALIGN_CENTER_VERTICAL)
 
         # --- Table ---
@@ -257,7 +261,7 @@ class BackgroundMusicWindow(wx.Frame):
         self.time_slider.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.main_window.on_bg_seek)
         self.time_slider.Bind(wx.EVT_COMMAND_SCROLL_THUMBTRACK, self.on_seeking)
 
-        self.time_label = wx.StaticText(self, label='Stopped', size=(50, -1), style=wx.ALIGN_CENTER)
+        self.time_label = wx.StaticText(self, label='Stopped', size=(60, -1), style=wx.ALIGN_CENTER)
         self.bottom_toolbar.Add(self.time_label, 0, wx.ALIGN_CENTER_VERTICAL)
 
         main_sizer.Add(self.top_toolbar, 0, wx.EXPAND)
