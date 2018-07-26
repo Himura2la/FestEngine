@@ -12,7 +12,7 @@ class TextWindow(wx.Frame):
     DETAILS_FIELDS = ['request_section_id', 'section_title', 'title', 'value']
 
     def __init__(self, parent, title, main_fields):
-        self.parent = parent
+        self.main_window = parent
         self.base_title = title
         self.main_fields = main_fields
         wx.Frame.__init__(self, parent, title=title, size=(800, 400))
@@ -39,7 +39,7 @@ class TextWindow(wx.Frame):
         self.db = None
         self.c = None
 
-        self.Bind(wx.EVT_CLOSE, parent.on_text_win_close)
+        self.Bind(wx.EVT_CLOSE, self.main_window.on_text_win_close)
 
     def load_db(self, db_path):
         self.db = sqlite3.connect(db_path, isolation_level=None)

@@ -11,7 +11,7 @@ from constants import Colors, FileTypes, Config
 
 class BackgroundMusicPlayer(object):
     def __init__(self, parent):
-        self.parent = parent
+        self.main_window = parent
 
         self.timer_update_ms = 500
         self.volume = 50
@@ -26,14 +26,14 @@ class BackgroundMusicPlayer(object):
 
     def show_window(self):
         if not self.window:
-            self.window = BackgroundMusicFrame(self.parent)
+            self.window = BackgroundMusicWindow(self.main_window)
         self.window.Show()
         self.window.fade_in_out_switch.SetValue(self.fade_in_out)
         self.window.vol_slider.SetValue(self.volume)
         self.window.set_volume_from_slider()
         if self.playlist:
             self.load_playlist_to_grid()
-            self.parent.play_bg_item.Enable(True)
+            self.main_window.play_bg_item.Enable(True)
         if self.player.get_state() in {vlc.State.Playing, vlc.State.Paused}:
             self.window.lock_btn.Enable(True)
 
@@ -57,13 +57,13 @@ class BackgroundMusicPlayer(object):
         self.window.grid.AutoSize()
         self.window.Layout()
         self.window.play_btn.Enable(True)
-        player_state = self.parent.bg_player.player.get_state()
+        player_state = self.main_window.bg_player.player.get_state()
         if player_state in range(5):  # If playing
             self.window.pause_btn.SetValue(player_state == vlc.State.Paused)
 
     def switch_track_async(self, from_grid=True):
         threading.Thread(target=self.switch_track_sync, args=(from_grid,)).start()
-        self.parent.bg_player_timer_start(self.timer_update_ms)
+        self.main_window.bg_player_timer_start(self.timer_update_ms)
 
     def switch_track_sync(self, from_grid=True):
         if not self.playlist:
@@ -72,7 +72,7 @@ class BackgroundMusicPlayer(object):
             if self.player.get_state() in {vlc.State.Playing, vlc.State.Paused}:
                 self.playlist[self.current_track_i]['color'] = Colors.ROW_SKIPPED
                 if self.fade_in_out and self.player.get_state() == vlc.State.Playing:
-                    self.fade_out_sync(self.parent.config[Config.BG_FADE_STOP_DELAYS])  # Blocks thread
+                    self.fade_out_sync(self.main_window.config[Config.BG_FADE_STOP_DELAYS])  # Blocks thread
             else:
                 self.playlist[self.current_track_i]['color'] = Colors.ROW_PLAYED_TO_END
         if self.window:
@@ -85,8 +85,8 @@ class BackgroundMusicPlayer(object):
         else:
             self.current_track_i = (self.current_track_i + 1) % len(self.playlist)
 
-        self.parent.bg_player.play_sync()
-        self.parent.bg_pause_switch.Enable(True)
+        self.main_window.bg_player.play_sync()
+        self.main_window.bg_pause_switch.Enable(True)
 
     def _fade_sync(self, vol_range, delay):
         window_exists = self.window
@@ -97,8 +97,8 @@ class BackgroundMusicPlayer(object):
         for i in vol_range:
             self.player.audio_set_volume(i)
             vol_msg = 'Vol: %d' % self.player.audio_get_volume()
-            wx.CallAfter(lambda: self.parent.set_bg_player_status('Fading %s... %s' %
-                                                                  ('in' if vol_range[0] < vol_range[-1] else 'out',
+            wx.CallAfter(lambda: self.main_window.set_bg_player_status('Fading %s... %s' %
+                                                                       ('in' if vol_range[0] < vol_range[-1] else 'out',
                                                                    vol_msg)))
             if window_exists:
                 def ui_upd():
@@ -107,7 +107,7 @@ class BackgroundMusicPlayer(object):
                 wx.CallAfter(ui_upd)
             time.sleep(delay)
 
-        wx.CallAfter(lambda: self.parent.set_bg_player_status(vol_msg))
+        wx.CallAfter(lambda: self.main_window.set_bg_player_status(vol_msg))
 
         if window_exists:
             def ui_upd():
@@ -124,15 +124,15 @@ class BackgroundMusicPlayer(object):
     def play_sync(self):
         self.player.set_media(self.vlc_instance.media_new(self.playlist[self.current_track_i]['path']))
         if self.player.play() != 0:  # [Play] button is pushed here!
-            wx.CallAfter(lambda: self.parent.set_bg_player_status("Playback FAILED !!!"))
+            wx.CallAfter(lambda: self.main_window.set_bg_player_status("Playback FAILED !!!"))
             return
 
         state = self.player.get_state()
         start = time.time()
         while state != vlc.State.Playing:
             state = self.player.get_state()
-            status = "%s [%fs]" % (self.parent.player_state_parse(state), (time.time() - start))
-            wx.CallAfter(lambda: self.parent.set_bg_player_status(status))
+            status = "%s [%fs]" % (self.main_window.player_state_parse(state), (time.time() - start))
+            wx.CallAfter(lambda: self.main_window.set_bg_player_status(status))
             time.sleep(0.005)
 
         self.playlist[self.current_track_i]['color'] = Colors.ROW_PLAYING_NOW
@@ -153,14 +153,14 @@ class BackgroundMusicPlayer(object):
             self.player.audio_set_mute(False)
             self.player.audio_set_volume(volume)
             status = "Trying to unmute... [%fs]" % (time.time() - start)
-            wx.CallAfter(lambda: self.parent.set_bg_player_status(status))
+            wx.CallAfter(lambda: self.main_window.set_bg_player_status(status))
             time.sleep(0.005)
 
         if self.fade_in_out:
-            self.fade_in_sync(self.parent.config[Config.BG_FADE_STOP_DELAYS])
+            self.fade_in_sync(self.main_window.config[Config.BG_FADE_STOP_DELAYS])
 
-        wx.CallAfter(lambda: self.parent.set_bg_player_status("%s Vol:%d" %
-                                                              (self.parent.player_state_parse(self.player.get_state()),
+        wx.CallAfter(lambda: self.main_window.set_bg_player_status("%s Vol:%d" %
+                                                                   (self.main_window.player_state_parse(self.player.get_state()),
                                                                self.player.audio_get_volume())))
 
     def pause_async(self, paused):
@@ -168,14 +168,14 @@ class BackgroundMusicPlayer(object):
             return
         threading.Thread(target=self.pause_sync, args=(paused,)).start()
         if not paused:
-            self.parent.bg_player_timer_start(self.timer_update_ms)
+            self.main_window.bg_player_timer_start(self.timer_update_ms)
 
     def pause_sync(self, paused):
         if self.fade_in_out and paused:
-            self.fade_out_sync(self.parent.config[Config.BG_FADE_PAUSE_DELAYS])
+            self.fade_out_sync(self.main_window.config[Config.BG_FADE_PAUSE_DELAYS])
         self.player.set_pause(paused)
         if self.fade_in_out and not paused:
-            self.fade_in_sync(self.parent.config[Config.BG_FADE_PAUSE_DELAYS])
+            self.fade_in_sync(self.main_window.config[Config.BG_FADE_PAUSE_DELAYS])
 
 
 #    |  ^
@@ -185,10 +185,10 @@ class BackgroundMusicPlayer(object):
 #    v  |
 
 
-class BackgroundMusicFrame(wx.Frame):
-    def __init__(self, parent):
-        self.parent = parent
-        wx.Frame.__init__(self, parent, title='Background Music Player', size=(400, 500))
+class BackgroundMusicWindow(wx.Frame):
+    def __init__(self, main_window):
+        self.main_window = main_window
+        wx.Frame.__init__(self, main_window, title='Background Music Player', size=(400, 500))
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
 
         # ---------------------------------------------- Layout -----------------------------------------------------
@@ -199,23 +199,23 @@ class BackgroundMusicFrame(wx.Frame):
 
         self.fade_in_out_switch = wx.CheckBox(self, label='FAD')
         self.top_toolbar.Add(self.fade_in_out_switch, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=3)
-        self.fade_in_out_switch.Bind(wx.EVT_CHECKBOX, self.parent.fade_switched)
+        self.fade_in_out_switch.Bind(wx.EVT_CHECKBOX, self.main_window.fade_switched)
 
         self.play_btn = wx.Button(self, label="Play (^+F4)", size=(80, toolbar_base_height + 2))
         self.play_btn.Enable(False)
         self.top_toolbar.Add(self.play_btn, 0)
-        self.play_btn.Bind(wx.EVT_BUTTON, lambda e: parent.background_play(from_grid=True))
+        self.play_btn.Bind(wx.EVT_BUTTON, lambda e: main_window.background_play(from_grid=True))
         # Forwarding events through the main window, because this frame is optional and may be absent.
 
         self.pause_btn = wx.ToggleButton(self, label="Pause (F3)", size=(80, toolbar_base_height + 2))
 
         try:
-            self.pause_btn.Enable(self.parent.bg_player.player.get_state() in range(5))
+            self.pause_btn.Enable(self.main_window.bg_player.player.get_state() in range(5))
         except AttributeError:
             self.pause_btn.Enable(False)
 
         self.top_toolbar.Add(self.pause_btn, 0)
-        self.pause_btn.Bind(wx.EVT_TOGGLEBUTTON, parent.background_set_pause)
+        self.pause_btn.Bind(wx.EVT_TOGGLEBUTTON, main_window.background_set_pause)
 
         self.vol_slider = wx.Slider(self, value=0, minValue=0, maxValue=150)
         self.top_toolbar.Add(self.vol_slider, 1, wx.EXPAND)
@@ -254,7 +254,7 @@ class BackgroundMusicFrame(wx.Frame):
         self.time_slider = wx.Slider(self, value=0, minValue=0, maxValue=1)
         self.bottom_toolbar.Add(self.time_slider, 1, wx.EXPAND)
         self.time_slider.Enable(False)
-        self.time_slider.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.parent.on_bg_seek)
+        self.time_slider.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.main_window.on_bg_seek)
         self.time_slider.Bind(wx.EVT_COMMAND_SCROLL_THUMBTRACK, self.on_seeking)
 
         self.time_label = wx.StaticText(self, label='Stopped', size=(50, -1), style=wx.ALIGN_CENTER)
@@ -267,15 +267,15 @@ class BackgroundMusicFrame(wx.Frame):
         self.SetSizer(main_sizer)
         self.Layout()
 
-        self.Bind(wx.EVT_CLOSE, parent.on_bg_player_win_close)
+        self.Bind(wx.EVT_CLOSE, main_window.on_bg_player_win_close)
 
         f3_id, f4_id, shift_f4_id, esc_id, shift_esc_id = wx.NewId(), wx.NewId(), wx.NewId(), wx.NewId(), wx.NewId()
-        self.Bind(wx.EVT_MENU, parent.play_pause_bg, id=f3_id)
-        self.Bind(wx.EVT_MENU, parent.background_play, id=f4_id)
-        self.Bind(wx.EVT_MENU, lambda e: parent.background_play(from_grid=True), id=shift_f4_id)
+        self.Bind(wx.EVT_MENU, main_window.play_pause_bg, id=f3_id)
+        self.Bind(wx.EVT_MENU, main_window.background_play, id=f4_id)
+        self.Bind(wx.EVT_MENU, lambda e: main_window.background_play(from_grid=True), id=shift_f4_id)
 
-        self.Bind(wx.EVT_MENU, parent.end_show, id=esc_id)
-        self.Bind(wx.EVT_MENU, parent.emergency_stop, id=shift_esc_id)
+        self.Bind(wx.EVT_MENU, main_window.end_show, id=esc_id)
+        self.Bind(wx.EVT_MENU, main_window.emergency_stop, id=shift_esc_id)
 
         self.SetAcceleratorTable(wx.AcceleratorTable([(wx.ACCEL_NORMAL, wx.WXK_F3, f3_id),
                                                       (wx.ACCEL_NORMAL, wx.WXK_F4, f4_id),
@@ -285,9 +285,9 @@ class BackgroundMusicFrame(wx.Frame):
                                                       (wx.ACCEL_SHIFT, wx.WXK_ESCAPE, shift_esc_id)]))
 
     def set_volume_from_slider(self, e=None):
-        self.parent.background_volume = self.vol_slider.GetValue()  # Forwards to player
-        self.vol_label.SetLabel('VOL: %d' % self.parent.background_volume)  # Gets from player
+        self.main_window.background_volume = self.vol_slider.GetValue()  # Forwards to player
+        self.vol_label.SetLabel('VOL: %d' % self.main_window.background_volume)  # Gets from player
 
     def on_seeking(self, e):
-        self.parent.bg_player_timer_start(False)
-        self.parent.on_background_timer(seeking_time=e.Int)
+        self.main_window.bg_player_timer_start(False)
+        self.main_window.on_background_timer(seeking_time=e.Int)

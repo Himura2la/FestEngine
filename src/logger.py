@@ -4,12 +4,12 @@ import wx
 
 class Logger(object):
     def __init__(self, parent):
-        self.parent = parent
+        self.main_window = parent
         self.log_win = None
         self.log_text = "Init" + os.linesep
 
     def open_window(self, pre_close_func):
-        self.log_win = LogWindow(self.parent)
+        self.log_win = LogWindow(self.main_window)
         self.log_win.Show()
         self.log_win.append_message(self.log_text)
 
@@ -26,8 +26,8 @@ class Logger(object):
 
 
 class LogWindow(wx.Dialog):
-    def __init__(self, parent):
-        wx.Dialog.__init__(self, parent, title="FestEngine Log", style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+    def __init__(self, main_window):
+        wx.Dialog.__init__(self, main_window, title="FestEngine Log", style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.text_ctrl = wx.TextCtrl(self, style=wx.TE_READONLY | wx.TE_MULTILINE)

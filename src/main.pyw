@@ -41,7 +41,7 @@ if sys.platform.startswith('linux'):
         print("XInitThreads() call failed:", x_init_threads_ex)
 
 
-class MainFrame(wx.Frame):
+class MainWindow(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title, size=(800, 400))
         self.Bind(wx.EVT_CLOSE, self.on_close, self)
@@ -1270,5 +1270,5 @@ class MainFrame(wx.Frame):
 
 if __name__ == "__main__":
     app = wx.App(False if len(sys.argv) > 1 and sys.argv[1] == '-v' else True)
-    frame = MainFrame(None, Strings.APP_NAME)
+    frame = MainWindow(None, Strings.APP_NAME)
     app.MainLoop()

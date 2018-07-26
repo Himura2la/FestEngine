@@ -5,12 +5,13 @@ from constants import Config, Colors
 
 class ProjectorWindow(wx.Frame):
     def __init__(self, parent, screen=None):
+        self.main_window = parent
+
         run_windowed = wx.Display.GetCount() <= screen or wx.Display.GetCount() < 2
         if screen is None or run_windowed:
-            screen = wx.Display.GetFromWindow(parent)
+            screen = wx.Display.GetFromWindow(self.main_window)
         origin_x, origin_y, self.w, self.h = wx.Display(screen).GetGeometry().Get()
 
-        self.parent = parent
         wx.Frame.__init__(self, parent, pos=(origin_x + 60, origin_y + 60), size=(self.w - 120, self.h - 120),
                           title='Projector Window',
                           style=wx.DEFAULT_FRAME_STYLE | (0 if run_windowed else wx.STAY_ON_TOP))
@@ -25,9 +26,10 @@ class ProjectorWindow(wx.Frame):
         class ImagesPanel(wx.Panel):
             def __init__(self, parent):
                 wx.Panel.__init__(self, parent)
+                self.proj_window = parent
 
                 self.SetBackgroundColour(wx.BLACK)
-                self.drawable_bitmap = wx.Bitmap(wx.Image(parent.w, parent.h))
+                self.drawable_bitmap = wx.Bitmap(wx.Image(self.proj_window.w, self.proj_window.h))
                 self.SetBackgroundStyle(wx.BG_STYLE_ERASE)
 
                 self.Bind(wx.EVT_SIZE, self.on_size)
@@ -55,7 +57,8 @@ class ProjectorWindow(wx.Frame):
         class CountdownPanel(wx.Panel):
             def __init__(self, parent):
                 wx.Panel.__init__(self, parent)
-                self.parent = parent
+                self.proj_window = parent
+                self.main_window = self.proj_window.main_window
                 self.timer = wx.Timer()
                 self.timer.Bind(wx.EVT_TIMER, self.update_time)
                 self.time_left = timedelta()
@@ -110,7 +113,7 @@ class ProjectorWindow(wx.Frame):
                 self.time_end = self.time_started + timedelta(minutes=minutes)
 
                 self.info_text.SetLabel(text)
-                self.time_text.SetLabel(self.parent.parent.config[Config.COUNTDOWN_TIME_FMT] %
+                self.time_text.SetLabel(self.main_window.config[Config.COUNTDOWN_TIME_FMT] %
                                         self.time_end.strftime("%H:%M"))
                 self.update_time()
 
@@ -119,8 +122,8 @@ class ProjectorWindow(wx.Frame):
 
                 if self.time_left < timedelta(seconds=1):
                     def ui_upd():
-                        self.parent.switch_to_images()
-                        self.parent.parent.clear_zad(status=u"Poehali !!!")
+                        self.switch_to_images()
+                        self.main_window.clear_zad(status=u"Poehali !!!")
                     wx.CallAfter(ui_upd)
                     return
 
@@ -129,7 +132,7 @@ class ProjectorWindow(wx.Frame):
                 def ui_upd():
                     self.countdown_text.SetLabel(string_time[:string_time.find('.')])
                     self.Layout()
-                    self.parent.parent.image_status("Countdown: %s" % string_time)
+                    self.main_window.image_status("Countdown: %s" % string_time)
                 wx.CallAfter(ui_upd)
 
         self.countdown_panel = CountdownPanel(self)
@@ -145,7 +148,7 @@ class ProjectorWindow(wx.Frame):
         if not run_windowed:
             self.ShowFullScreen(True, wx.FULLSCREEN_ALL)
 
-        self.Bind(wx.EVT_CLOSE, parent.on_proj_win_close)
+        self.Bind(wx.EVT_CLOSE, self.main_window.on_proj_win_close)
 
     def load_zad(self, file_path, fit=True):
         img = wx.Image(file_path, wx.BITMAP_TYPE_ANY)

@@ -10,9 +10,10 @@ from constants import FileTypes
 class FileReplacer(wx.Dialog):
     def __init__(self, parent, num):
         wx.Dialog.__init__(self, parent, title=_(u"Replace File for №%s") % num)
+        self.main_window = parent
         top_sizer = wx.BoxSizer(wx.VERTICAL)
 
-        files = [path for ext, path in parent.data[num]['files'].items()]
+        files = [path for ext, path in self.main_window.data[num]['files'].items()]
 
         self.src_file_chooser = wx.RadioBox(self, label=_("Select which file to replace"),
                                             choices=files, majorDimension=1, style=wx.RA_SPECIFY_COLS)
