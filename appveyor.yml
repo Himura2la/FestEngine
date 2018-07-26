@@ -1,4 +1,5 @@
 skip_non_tags: true
+image: Visual Studio 2017
 environment:
     matrix:
       - ARCH: '64'
@@ -9,19 +10,19 @@ environment:
         VLC_INSTALL_FLAGS: '--x86'
 
 install:
-    - |
+    - cmd: |
         SET PATH=%PYTHON_PATH%;%PYTHON_PATH%\\Scripts;%PATH%
         pip install pyinstaller python-vlc wxpython
         choco install -y --no-progress %VLC_INSTALL_FLAGS% vlc --version 2.2.8
 
 build_script:
-    - |
+    - cmd: |
         cd "%APPVEYOR_BUILD_FOLDER%\bin"
         python build.py
         python build.py -d
 
 after_build:
-    - |
+    - cmd: |
         cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine-debug"
         del MSVCP140.dll VCRUNTIME140.dll api-ms-*
         md ".\locale\ru\LC_MESSAGES"
@@ -40,13 +41,18 @@ after_build:
         echo --- Packing a Minimal version ---
         7z a ..\festengine-win%ARCH%-minimal.zip *
 
+test: off
+
 artifacts:
-    - path: bin\festengine-win$(arch)-debug.zip
-      name: FestEngine Windows $(arch)bit Debug
-    - path: bin\festengine-win$(arch)-full.zip
-      name: FestEngine Windows $(arch)bit Full
-    - path: bin\festengine-win$(arch)-minimal.zip
-      name: FestEngine Windows $(arch)bit Minimal
+    - name: FestEngine Windows $(arch)bit Debug
+      path: bin\festengine-win$(arch)-debug.zip
+      type: zip
+    - name: FestEngine Windows $(arch)bit Full
+      path: bin\festengine-win$(arch)-full.zip
+      type: zip
+    - name: FestEngine Windows $(arch)bit Minimal
+      path: bin\festengine-win$(arch)-minimal.zip
+      type: zip
 
 deploy:
     description: 'Auto-created Release'
