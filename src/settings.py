@@ -61,6 +61,7 @@ class SettingsDialog(wx.Dialog):
         screen_names = ["%d: %s (%d,%d) %dx%d" % (
             (i, wx.Display(i).GetName()) + wx.Display(i).GetGeometry().Get()
         ) for i in range(wx.Display.GetCount())]
+        screen_names += [_('Windowed (for debugging)')]
         self.screens_combobox.SetItems(screen_names)
         self.screens_combobox.SetSelection(self.config[Config.PROJECTOR_SCREEN])
         self.configs_grid.Add(wx.StaticText(self.panel, label=_("Projector Screen")), 0, wx.ALIGN_CENTER_VERTICAL)
