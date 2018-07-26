@@ -65,7 +65,10 @@ else:
 dist_path = os.path.abspath(os.curdir)
 os.chdir(sources_path)
 
-pyinst_cmd = ['pyinstaller', '-n', name, '--distpath', dist_path] + vlc_binaries + pyinst_flags
+hidden_imports = ['wx._adv', 'wx._html', 'wx._xml']
+hidden_imports = sum((['--hidden-import', i] for i in hidden_imports), [])
+
+pyinst_cmd = ['pyinstaller', '-n', name, '--distpath', dist_path] + vlc_binaries + hidden_imports + pyinst_flags
 
 print("Running:", " ".join(pyinst_cmd))
 
