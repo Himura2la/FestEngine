@@ -230,8 +230,9 @@ class MainFrame(wx.Frame):
         show_zad_item = menu_play.Append(wx.ID_ANY, _("Show &ZAD\tF1"))
         clear_zad_item = menu_play.Append(wx.ID_ANY, _("&Clear ZAD\tShift+F1"))
         play_track_item = menu_play.Append(wx.ID_ANY, _("&Play Sound/Video\tF2"))
+        fade_out_item = menu_play.Append(wx.ID_ANY, _("&Fade Out\tShift+F2"))
         end_show_item = menu_play.Append(wx.ID_ANY, _("&End Show (Clear ZAD + Fade Out)\tEsc"))
-        no_show_item = menu_play.Append(wx.ID_ANY, _("&Black Screen"))
+        no_show_item = menu_play.Append(wx.ID_ANY, _("&Black Screen\tAlt+F1"))
         menu_play.AppendSeparator()
         self.play_pause_bg_end_show_item = menu_play.Append(wx.ID_ANY, _("Play/Pause &Background + End Show\tF3"))
         self.play_pause_bg_end_show_item.Enable(False)
@@ -242,6 +243,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.show_zad, show_zad_item)
         self.Bind(wx.EVT_MENU, self.clear_zad, clear_zad_item)
         self.Bind(wx.EVT_MENU, self.play_async, play_track_item)
+        self.Bind(wx.EVT_MENU, self.stop_async, fade_out_item)
         self.Bind(wx.EVT_MENU, self.end_show, end_show_item)
         self.Bind(wx.EVT_MENU, lambda e: self.clear_zad(e, True), no_show_item)
         self.Bind(wx.EVT_MENU, self.play_pause_bg_end_show, self.play_pause_bg_end_show_item)
@@ -252,7 +254,9 @@ class MainFrame(wx.Frame):
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F1, show_zad_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_F1, clear_zad_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F2, play_track_item.GetId()),
+            wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_F2, fade_out_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_ESCAPE, end_show_item.GetId()),
+            wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_F1, no_show_item.GetId()),
 
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F3, self.play_pause_bg_end_show_item.GetId()),
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F4, self.play_next_bg_item.GetId()),
