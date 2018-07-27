@@ -3,17 +3,23 @@ image: Visual Studio 2017
 environment:
     matrix:
       - ARCH: '64'
+        VLC_VERSION: 'latest'
         PYTHON_PATH: C:\Python36-x64
         VLC_INSTALL_FLAGS: ''
+      - ARCH: '64'
+        VLC_VERSION: 'v2.2.8'
+        PYTHON_PATH: C:\Python36-x64
+        VLC_INSTALL_FLAGS: '--version 2.2.8'
       - ARCH: '32'
+        VLC_VERSION: 'v2.2.8'
         PYTHON_PATH: C:\Python36
-        VLC_INSTALL_FLAGS: '--x86'
+        VLC_INSTALL_FLAGS: '--x86 --version 2.2.8'
 
 install:
     - cmd: |
         SET PATH=%PYTHON_PATH%;%PYTHON_PATH%\\Scripts;%PATH%
         pip install pyinstaller python-vlc wxpython
-        choco install -y --no-progress %VLC_INSTALL_FLAGS% vlc --version 2.2.8
+        choco install -y --no-progress %VLC_INSTALL_FLAGS% vlc
 
 build_script:
     - cmd: |
@@ -23,32 +29,36 @@ build_script:
 
 after_build:
     - cmd: |
-        cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine-debug"
-        del MSVCP140.dll VCRUNTIME140.dll api-ms-*
-        md ".\locale\ru\LC_MESSAGES"
-        python %PYTHON_PATH%\Tools\i18n\msgfmt.py -o ".\locale\ru\LC_MESSAGES\main.mo" "%APPVEYOR_BUILD_FOLDER%\src\locale\ru\LC_MESSAGES\main.po"
-        echo --- Packing a Debug version ---
-        7z a ..\festengine-win%ARCH%-debug.zip *
+        if "%ARCH%" == "64" (
+            cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine-debug"
+            del MSVCP140.dll VCRUNTIME140.dll api-ms-*
+            md ".\locale\ru\LC_MESSAGES"
+            python %PYTHON_PATH%\Tools\i18n\msgfmt.py -o ".\locale\ru\LC_MESSAGES\main.mo" "%APPVEYOR_BUILD_FOLDER%\src\locale\ru\LC_MESSAGES\main.po"
+            echo --- Packing a Debug version ---
+            7z a ..\festengine-win%ARCH%-VLC_%VLC_VERSION%-debug.zip *
+        )
         cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine"
         del MSVCP140.dll VCRUNTIME140.dll api-ms-*  # GPL does not allow...
         md ".\locale\ru\LC_MESSAGES"
         python %PYTHON_PATH%\Tools\i18n\msgfmt.py -o ".\locale\ru\LC_MESSAGES\main.mo" "%APPVEYOR_BUILD_FOLDER%\src\locale\ru\LC_MESSAGES\main.po"
         echo --- Packing a Full version ---
-        7z a ..\festengine-win%ARCH%-full.zip *
-        echo --- Minimalizing ---
-        cd ..
-        .\minimalize.bat
-        echo --- Packing a Minimal version ---
-        7z a ..\festengine-win%ARCH%-minimal.zip *
+        7z a ..\festengine-win%ARCH%-VLC_%VLC_VERSION%-full.zip *
+        if "%VLC_VERSION%" == "latest" (
+            echo --- Minimalizing ---
+            cd ..
+            .\minimalize.bat
+            echo --- Packing a Minimal version ---
+            7z a ..\festengine-win%ARCH%-minimal.zip *
+        )
 
 test: off
 
 artifacts:
-    - name: FestEngine Windows $(arch)bit Debug
-      path: bin\festengine-win$(arch)-debug.zip
+    - name: FestEngine Windows $(arch)bit VLC %(vlc_version) Debug
+      path: bin\festengine-win$(arch)-VLC_%(vlc_version)-debug.zip
       type: zip
-    - name: FestEngine Windows $(arch)bit Full
-      path: bin\festengine-win$(arch)-full.zip
+    - name: FestEngine Windows $(arch)bit VLC %(vlc_version) Full
+      path: bin\festengine-win$(arch)-VLC_%(vlc_version)-full.zip
       type: zip
     - name: FestEngine Windows $(arch)bit Minimal
       path: bin\festengine-win$(arch)-minimal.zip
