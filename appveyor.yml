@@ -4,20 +4,23 @@ image: Visual Studio 2017
 environment:
     matrix:
       - ARCH: '64'
-        VLC_VERSION: 'latest'
-        PYTHON_PATH: C:\Python36-x64
-        VLC_INSTALL_FLAGS: ''
+        VLC: 'latest'
       - ARCH: '64'
-        VLC_VERSION: '2.2.8'
-        PYTHON_PATH: C:\Python36-x64
-        VLC_INSTALL_FLAGS: '--version 2.2.8'
+        VLC: '2.2.8'
       - ARCH: '32'
-        VLC_VERSION: '2.2.8'
-        PYTHON_PATH: C:\Python36
-        VLC_INSTALL_FLAGS: '--x86 --version 2.2.8'
+        VLC: '2.2.8'
 
 install:
-    - ps: if ($env:VLC_VERSION -eq "latest") {$env:VLC_VERSION = ((choco list vlc | Select-String -Pattern "^vlc [\d\.]* \[Approved\]") -split " ")[1]}
+    - ps: |
+        if ($env:ARCH -eq "32") {
+            $env:VLC_INSTALL_FLAGS = "--x86"; $env:PYTHON_PATH = "C:\Python36"} else {$env:PYTHON_PATH = "C:\Python36-x64"
+        }
+        if ($env:VLC -eq "latest") {
+            $env:VLC_VERSION = ((choco list vlc | Select-String -Pattern "^vlc [\d\.]* \[Approved\]") -split " ")[1]
+        } else {
+            $env:VLC_VERSION = $env:VLC
+            $env:VLC_INSTALL_FLAGS += " --version $env:VLC_VERSION"
+        }
     - cmd: |
         set PATH=%PYTHON_PATH%;%PYTHON_PATH%\Scripts;%PATH%
         python -m pip install --upgrade pip
@@ -47,7 +50,7 @@ after_build:
         python %PYTHON_PATH%\Tools\i18n\msgfmt.py -o ".\locale\ru\LC_MESSAGES\main.mo" "%APPVEYOR_BUILD_FOLDER%\src\locale\ru\LC_MESSAGES\main.po"
         echo --- Packing a Full version ---
         7z a ..\festengine-win%ARCH%-VLCv%VLC_VERSION%-full.zip *
-    - if [%VLC_VERSION%]==[latest] (
+    - if [%VLC%]==[latest] (
         echo --- Minimalizing a Full version --- &&
         cd "%APPVEYOR_BUILD_FOLDER%\bin\" &&
         .\minimalize.bat &&
