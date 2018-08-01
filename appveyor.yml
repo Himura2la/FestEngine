@@ -1,14 +1,22 @@
 skip_non_tags: true
-shallow_clone: true
+clone_depth: 1
 image: Visual Studio 2017
 environment:
+    APPVEYOR_RDP_PASSWORD:
+        secure: MPAYz75AKBf954hdYvzz2VoCxy5RJLBdg0fajQ1SQUU=
     matrix:
-      - ARCH: '64'
-        VLC: 'latest'
-      - ARCH: '64'
-        VLC: '2.2.8'
-      - ARCH: '32'
-        VLC: '2.2.8'
+        - ARCH: '64'
+          VLC: 'latest'
+        - ARCH: '64'
+          VLC: '2.2.8'
+        - ARCH: '32'
+          VLC: '2.2.8'
+
+# init:
+#     - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
+# on_finish:
+#   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
     - ps: |
@@ -24,28 +32,48 @@ install:
     - cmd: |
         set PATH=%PYTHON_PATH%;%PYTHON_PATH%\Scripts;%PATH%
         python -m pip install --upgrade pip
-        pip install pyinstaller python-vlc wxpython
+        pip install pyinstaller python-vlc wxpython pywinauto
         choco install -y --no-progress %VLC_INSTALL_FLAGS% vlc
 
 build_script:
     - cmd: |
+        echo --- build_script ---
         cd "%APPVEYOR_BUILD_FOLDER%\bin"
+        echo --- Building a Full version ---
         python build.py
+        echo --- Building a Debug version ---
         python build.py -d
 
 after_build:
+    - cmd: |
+        echo --- after_build (Cleaning MS DLLs) ---
+        cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine-debug"
+        del MSVCP140.dll VCRUNTIME140.dll api-ms-*
+        cd "..\FestEngine"
+        del MSVCP140.dll VCRUNTIME140.dll api-ms-*  # GPL does not allow...
+
+before_test:
+    - cmd: |
+        echo --- before_test (Downloading test data) ---
+        cd "%APPVEYOR_BUILD_FOLDER%\test"
+        git lfs checkout
+        7z x .\data.7z
+
+test_script:
+    - cmd: python -m unittest discover "%APPVEYOR_BUILD_FOLDER%\test"
+
+after_test:
+    - cmd: echo --- after_test (Building Localization and Packing) ---
     - if [%ARCH%]==[64] (
-        echo --- Building a Debug version --- &&
+        echo --- Preparing a Debug version --- &&
         cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine-debug" &&
-        del MSVCP140.dll VCRUNTIME140.dll api-ms-* &&
         md ".\locale\ru\LC_MESSAGES" &&
         python %PYTHON_PATH%\Tools\i18n\msgfmt.py -o ".\locale\ru\LC_MESSAGES\main.mo" "%APPVEYOR_BUILD_FOLDER%\src\locale\ru\LC_MESSAGES\main.po" &&
         echo --- Packing a Debug version --- &&
         7z a ..\festengine-win%ARCH%-VLCv%VLC_VERSION%-debug.zip *)
     - cmd: |
-        echo --- Building a Full version ---
+        echo --- Preparing a Full version ---
         cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine"
-        del MSVCP140.dll VCRUNTIME140.dll api-ms-*  # GPL does not allow...
         md ".\locale\ru\LC_MESSAGES"
         python %PYTHON_PATH%\Tools\i18n\msgfmt.py -o ".\locale\ru\LC_MESSAGES\main.mo" "%APPVEYOR_BUILD_FOLDER%\src\locale\ru\LC_MESSAGES\main.po"
         echo --- Packing a Full version ---
@@ -56,8 +84,6 @@ after_build:
         .\minimalize.bat &&
         echo --- Packing a Minimal version --- &&
         7z a .\festengine-win%ARCH%-minimal.zip .\FestEngine\*)
-
-test: off
 
 artifacts:
     - name: FestEngine Windows $(arch)bit VLC $(vlc_version) Debug
@@ -80,3 +106,4 @@ deploy:
     prerelease: true
     on:
         appveyor_repo_tag: true
+
