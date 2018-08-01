@@ -53,11 +53,12 @@ after_build:
         del MSVCP140.dll VCRUNTIME140.dll api-ms-*  # GPL does not allow...
 
 before_test:
-    - cmd: |
-        echo --- before_test (Downloading test data) ---
-        cd "%APPVEYOR_BUILD_FOLDER%\test"
-        git lfs checkout
+    - ps: |
+        echo "--- before_test (Downloading test data) ---"
+        cd "$env:APPVEYOR_BUILD_FOLDER\test\data"
+        git submodule init; git submodule update
         7z x .\data.7z
+        mv .\data\* .
 
 test_script:
     - cmd: python -m unittest discover "%APPVEYOR_BUILD_FOLDER%\test"
