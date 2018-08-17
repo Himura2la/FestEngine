@@ -145,6 +145,9 @@ class MainWindow(wx.Frame):
         self.prefer_audio = menu_file.Append(wx.ID_ANY, _("&Prefer No Video (fallback)"), kind=wx.ITEM_CHECK)
         self.prefer_audio.Check(False)
 
+        self.end_show_on_bg = menu_file.Append(wx.ID_ANY, _("&End show on BG Music Start"), kind=wx.ITEM_CHECK)
+        self.end_show_on_bg.Check(False)
+
         self.auto_zad = menu_file.Append(wx.ID_ANY, _("Auto Show &ZAD with Sound"), kind=wx.ITEM_CHECK)
         self.auto_zad.Check(True)
 
@@ -234,7 +237,7 @@ class MainWindow(wx.Frame):
         end_show_item = menu_play.Append(wx.ID_ANY, _("&End Show (Clear ZAD + Fade Out)\tEsc"))
         no_show_item = menu_play.Append(wx.ID_ANY, _("&Black Screen\tAlt+F1"))
         menu_play.AppendSeparator()
-        self.play_pause_bg_end_show_item = menu_play.Append(wx.ID_ANY, _("Play/Pause &Background + End Show\tF3"))
+        self.play_pause_bg_end_show_item = menu_play.Append(wx.ID_ANY, _("Play/Pause &Background (+ End Show)\tF3"))
         self.play_pause_bg_end_show_item.Enable(False)
         self.play_next_bg_item = menu_play.Append(wx.ID_ANY, _("Play &Next BG Track\tF4"))
         self.play_next_bg_item.Enable(False)
@@ -1222,7 +1225,7 @@ class MainWindow(wx.Frame):
 
     def play_pause_bg_end_show(self, e=None):
         bg_started = self.play_pause_bg()
-        if bg_started:
+        if bg_started and self.end_show_on_bg.IsChecked():
             self.end_show()
 
     # -------------------------------------------------- Text Window --------------------------------------------------

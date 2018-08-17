@@ -122,7 +122,7 @@ class ProjectorWindow(wx.Frame):
 
                 if self.time_left < timedelta(seconds=1):
                     def ui_upd():
-                        self.switch_to_images()
+                        self.proj_window.switch_to_images()
                         self.main_window.clear_zad(status=u"Poehali !!!")
                     wx.CallAfter(ui_upd)
                     return
