@@ -9,3 +9,4 @@
 | [СROSSxOVER 2018](https://vk.com/crossover_42) | Кемерово | 30 июня 2018 г. | [@Oreolek](https://github.com/Oreolek) |
 | [ANI-SHINAI 2018](http://ani-shinai.ru/) | Калуга | 14 июля 2018г. | [@Himura2la](https://github.com/Himura2la) |
 | [GAC-fest 2018](https://vk.com/gacfest2018) | Тула | 21 июля 2018г. | [@Himura2la](https://github.com/Himura2la) |
+| [ГРЕЧА-фест 2018](https://vk.com/grechafest2018) | Брянск | 18 августа 2018г. | [@Himura2la](https://github.com/Himura2la) |
