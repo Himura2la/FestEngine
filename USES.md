@@ -10,3 +10,5 @@
 | [ANI-SHINAI 2018](http://ani-shinai.ru/) | Калуга | 14 июля 2018г. | [@Himura2la](https://github.com/Himura2la) |
 | [GAC-fest 2018](https://vk.com/gacfest2018) | Тула | 21 июля 2018г. | [@Himura2la](https://github.com/Himura2la) |
 | [ГРЕЧА-фест 2018](https://vk.com/grechafest2018) | Брянск | 18 августа 2018г. | [@Himura2la](https://github.com/Himura2la) |
+| [Gakko 10](https://vk.com/club85877017) | Белгород | 26 августа 2018г. |
+
