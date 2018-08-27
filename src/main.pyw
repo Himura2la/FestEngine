@@ -44,6 +44,7 @@ if sys.platform.startswith('linux'):
 class MainWindow(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title, size=(800, 400))
+        self.baseTitle = title + " | "
         self.Bind(wx.EVT_CLOSE, self.on_close, self)
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
 
@@ -69,6 +70,7 @@ class MainWindow(wx.Frame):
         if os.path.isfile(Config.LAST_SESSION_PATH):
             self.session_file_path = open(Config.LAST_SESSION_PATH, 'r').read()
             if os.path.isfile(self.session_file_path):
+                self.SetTitle(self.baseTitle + self.session_file_path)
                 try:
                     loaded_config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
                     config_keys_diff = set(base_config.keys()) - set(loaded_config.keys())
@@ -507,6 +509,7 @@ class MainWindow(wx.Frame):
             action = settings_dialog.ShowModal()
 
             self.session_file_path = settings_dialog.session_file_path  # To be sure.
+            self.SetTitle(self.baseTitle + self.session_file_path)
             self.config = settings_dialog.config                        # Maybe redundant
             self.config_ok = action in {wx.ID_SAVE, wx.ID_OPEN}
 
