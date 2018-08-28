@@ -70,7 +70,6 @@ class MainWindow(wx.Frame):
         if os.path.isfile(Config.LAST_SESSION_PATH):
             self.session_file_path = open(Config.LAST_SESSION_PATH, 'r').read()
             if os.path.isfile(self.session_file_path):
-                self.SetTitle(self.baseTitle + self.session_file_path)
                 try:
                     loaded_config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
                     config_keys_diff = set(base_config.keys()) - set(loaded_config.keys())
@@ -78,6 +77,7 @@ class MainWindow(wx.Frame):
                         self.logger.log("[WARNING] Config file is missing the following keys: " + str(config_keys_diff))
                     self.config = {**base_config, **loaded_config}  # Merging base config with loaded
                     self.config_ok = True
+                    self.SetTitle(self.baseTitle + os.path.abspath(self.session_file_path))
                 except json.decoder.JSONDecodeError as e:
                     msg = _("Unfortunately, you broke the JSON format...\n"
                             "Please fix the configuration file%s ASAP.\n\nDetails: %s") % \
@@ -509,7 +509,7 @@ class MainWindow(wx.Frame):
             action = settings_dialog.ShowModal()
 
             self.session_file_path = settings_dialog.session_file_path  # To be sure.
-            self.SetTitle(self.baseTitle + self.session_file_path)
+            self.SetTitle(self.baseTitle + os.path.abspath(self.session_file_path))
             self.config = settings_dialog.config                        # Maybe redundant
             self.config_ok = action in {wx.ID_SAVE, wx.ID_OPEN}
 
