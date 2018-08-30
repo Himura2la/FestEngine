@@ -49,6 +49,7 @@ class FreshStartTests(unittest.TestCase):
         main_window.close()
 
     def tearDown(self):
+        self.setUp()  # Remove last_fest.txt in the end.
         for backup in glob.glob(r"..\..\test\data\*.bkp.fest"):
             os.remove(backup)
 
