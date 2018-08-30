@@ -933,10 +933,11 @@ class MainWindow(wx.Frame):
             return
         try:
             files = self.data[num]['files'].items()  # (ext, path)
+            is_stream = any([file[0] == 'm3u' for file in files])
             video_files = [file[1] for file in files if file[0] in FileTypes.video_extensions]
 
             if video_files and not self.prefer_audio.IsChecked():
-                file_path = video_files[0]
+                file_path = open(video_files[0], 'r').read() if is_stream else video_files[0]
                 sound_only = False
             else:
                 audio_files = [file[1] for file in files if file[0] in FileTypes.audio_extensions]
