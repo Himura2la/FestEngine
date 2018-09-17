@@ -15,6 +15,15 @@ def path_make_abs(path, session_file_path):
         return os.path.normpath(os.path.join(session_file_dir, path))
 
 
+def path_session_try_to_relative(path):
+    session_file_stat = os.lstat(path)
+    fest_engine_run_location = os.lstat(os.path.abspath(__file__))
+    if session_file_stat.st_dev != fest_engine_run_location.st_dev:
+        return os.path.abspath(path)
+    else:
+        return os.path.relpath(path, os.path.abspath(__file__))
+
+
 class SettingsDialog(wx.Dialog):
     def __init__(self, session_file_path, config, parent):
         wx.Dialog.__init__(self,
@@ -265,8 +274,8 @@ class SettingsDialog(wx.Dialog):
             ext = '.fest'
             self.session_file_path = path if path.endswith(ext) else path + ext
 
-        with open(Config.LAST_SESSION_PATH, 'w') as f:
-            f.write(self.session_file_path)
+        with open(Config.LAST_SESSION_PATH, 'w', encoding='utf-8') as f:
+            f.write(path_session_try_to_relative(self.session_file_path))
 
         if e.Id == wx.ID_SAVE:
             self.ui_to_config()
