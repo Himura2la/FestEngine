@@ -67,7 +67,18 @@ class MainWindow(wx.Frame):
         self.config_ok = False
         self.session_file_path = ''
         if os.path.isfile(Config.LAST_SESSION_PATH):
-            self.session_file_path = open(Config.LAST_SESSION_PATH, 'r').read()
+            try:
+                self.session_file_path = open(Config.LAST_SESSION_PATH, 'r', encoding='utf-8').read()
+            except UnicodeDecodeError as e:
+                try:
+                    self.session_file_path = open(Config.LAST_SESSION_PATH, 'r', encoding='latin-1').read()
+                except UnicodeDecodeError as e:
+                    print("Fail to read last session file.")
+                    self.session_file_path = ''
+
+            if not os.path.isabs(self.session_file_path):
+                self.session_file_path = os.path.normpath(os.path.join(os.path.abspath(__file__), self.session_file_path))
+
             if os.path.isfile(self.session_file_path):
                 try:
                     loaded_config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
