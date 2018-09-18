@@ -17,7 +17,11 @@ def path_make_abs(path, session_file_path):
 
 def path_session_try_to_relative(path):
     session_file_stat = os.lstat(path)
-    fest_engine_run_location = os.lstat(os.path.abspath(__file__))
+    if getattr(sys, 'frozen', False):
+        work_dir = sys._MEIPASS
+    else:
+        work_dir = os.path.dirname(os.path.abspath(__file__))
+    fest_engine_run_location = os.lstat(work_dir)
     if session_file_stat.st_dev != fest_engine_run_location.st_dev:
         return os.path.abspath(path)
     else:
