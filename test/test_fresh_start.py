@@ -28,10 +28,11 @@ class FreshStartTests(unittest.TestCase):
 
         settings = app.Settings
         settings['Current Fest:Edit'].set_text(os.path.abspath(sample_fest_path))
-        time.sleep(0.1)
+        time.sleep(0.5)
         settings.Load.click()
 
-        app['Restart Required'].Yes.click()
+        app['Restart Required'].NoButton.click()
+        app.wxWindowNR.MenuSelect("Main -> Exit")
 
         app.wait_for_process_exit(1)
 
