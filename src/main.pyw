@@ -6,6 +6,7 @@ import os
 import re
 import sys
 import threading
+import subprocess
 import time
 import webbrowser
 import json
@@ -529,10 +530,11 @@ class MainWindow(wx.Frame):
 
         if prev_config[Config.FILES_DIRS] != self.config[Config.FILES_DIRS] or \
                         prev_config[Config.FILENAME_RE] != self.config[Config.FILENAME_RE]:
-            with wx.MessageDialog(self, _("You may want to restart FestEngine. Exit now?"),
+            with wx.MessageDialog(self, _("You may want to restart FestEngine. Do it?"),
                                   _("Restart Required"), wx.YES_NO | wx.ICON_INFORMATION) as restart_dialog:
                 action = restart_dialog.ShowModal()
                 if action == wx.ID_YES:
+                    subprocess.Popen([sys.executable] + sys.argv)
                     self.on_close()
 
     def on_proj_win_close(self, e):
