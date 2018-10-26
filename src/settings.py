@@ -278,7 +278,7 @@ class SettingsDialog(wx.Dialog):
             ext = '.fest'
             self.session_file_path = path if path.endswith(ext) else path + ext
 
-        with open(Config.LAST_SESSION_PATH, 'w', encoding='utf-8') as f:
+        with open(Config.LAST_SESSION_PATH, 'w', encoding='utf-8-sig') as f:
             f.write(path_session_try_to_relative(self.session_file_path))
 
         if e.Id == wx.ID_SAVE:

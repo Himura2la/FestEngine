@@ -69,7 +69,7 @@ class MainWindow(wx.Frame):
         self.session_file_path = ''
         if os.path.isfile(Config.LAST_SESSION_PATH):
             try:
-                self.session_file_path = open(Config.LAST_SESSION_PATH, 'r', encoding='utf-8').read()
+                self.session_file_path = open(Config.LAST_SESSION_PATH, 'r', encoding='utf-8-sig').read()
             except UnicodeDecodeError as e:
                 try:
                     self.session_file_path = open(Config.LAST_SESSION_PATH, 'r', encoding='latin-1').read()
