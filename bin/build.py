@@ -95,4 +95,7 @@ if p.poll() == 0 and sys.platform.startswith('linux'):
     print("--- Removing:", libs_to_exclude)
     [os.remove(lib) for lib in libs_to_exclude]
 
+os.chdir(os.path.join(bin_path, name, 'plugins'))
+os.remove('plugins.dat') if os.path.exists('plugins.dat') else None  # Remove plugins cache
+
 print("--------------- Ready! ---------------")

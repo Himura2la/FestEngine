@@ -32,7 +32,7 @@ class FreshStartTests(unittest.TestCase):
         settings.Load.click()
 
         app['Restart Required'].NoButton.click()
-        app.wxWindowNR.MenuSelect("Main -> Exit")
+        app.wxWindowNR.menu_select("Main -> Exit")
 
         app.wait_for_process_exit(1)
 
