@@ -190,7 +190,7 @@ class SettingsDialog(wx.Dialog):
         if fest_file_exists:
             self.session_file_path = os.path.normpath(e.Path)
             try:
-                self.config = json.load(open(e.Path, 'r', encoding='utf-8'))
+                self.config = json.load(open(e.Path, 'r', encoding='utf-8-sig'))
             except json.decoder.JSONDecodeError as e:
                 msg = _("Unfortunately, you broke the JSON format...\n"
                         "Please fix the configuration file%s ASAP.\n\nDetails: %s") % ("", str(e))
@@ -308,7 +308,7 @@ class SettingsDialog(wx.Dialog):
             action = restart_dialog.ShowModal()
             if action == wx.ID_OK:
                 try:
-                    self.config = json.load(open(config_path, 'r', encoding='utf-8'))
+                    self.config = json.load(open(config_path, 'r', encoding='utf-8-sig'))
                     self.EndModal(wx.ID_OPEN)
                 except json.decoder.JSONDecodeError as e:
                     msg = _("Unfortunately, you broke the JSON format...\n"

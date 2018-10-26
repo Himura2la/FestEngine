@@ -82,7 +82,7 @@ class MainWindow(wx.Frame):
 
             if os.path.isfile(self.session_file_path):
                 try:
-                    loaded_config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
+                    loaded_config = json.load(open(self.session_file_path, 'r', encoding='utf-8-sig'))
                     config_keys_diff = set(base_config.keys()) - set(loaded_config.keys())
                     if config_keys_diff:
                         self.logger.log("[WARNING] Config file is missing the following keys: " + str(config_keys_diff))
