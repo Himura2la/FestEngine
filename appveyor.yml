@@ -56,9 +56,7 @@ before_test:
     - ps: |
         echo "--- before_test (Downloading test data) ---"
         cd "$env:APPVEYOR_BUILD_FOLDER\test\data"
-        git submodule init; git submodule update
-        7z x .\data.7z
-        mv .\data\* .
+        git submodule update --init
 
 test_script:
     - cmd: python -m unittest discover "%APPVEYOR_BUILD_FOLDER%\test"
