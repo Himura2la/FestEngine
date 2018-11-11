@@ -278,13 +278,13 @@ class SettingsDialog(wx.Dialog):
             ext = '.fest'
             self.session_file_path = path if path.endswith(ext) else path + ext
 
-        with open(Config.LAST_SESSION_PATH, 'w', encoding='utf-8-sig') as f:
-            f.write(path_session_try_to_relative(self.session_file_path))
-
         if e.Id == wx.ID_SAVE:
             self.ui_to_config()
             json.dump(self.config, open(self.session_file_path, 'w', encoding='utf-8'),
                       ensure_ascii=False, indent=4)
+
+        with open(Config.LAST_SESSION_PATH, 'w', encoding='utf-8-sig') as f:
+            f.write(path_session_try_to_relative(self.session_file_path))
 
         self.EndModal(e.Id)
 
