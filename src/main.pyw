@@ -203,7 +203,7 @@ class MainWindow(wx.Frame):
 
         # --- Text Window ---
         text_win_menu = wx.Menu()
-        self.text_win_show_item = text_win_menu.Append(wx.ID_ANY, _("&Enable"), kind=wx.ITEM_CHECK)
+        self.text_win_show_item = text_win_menu.Append(wx.ID_ANY, _("&Show"), kind=wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.text_win_show, self.text_win_show_item)
         self.text_win_full_info = text_win_menu.Append(wx.ID_ANY, _("&Full Info"), kind=wx.ITEM_CHECK)
         self.text_win_full_info.Enable(False)

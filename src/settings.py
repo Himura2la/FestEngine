@@ -249,7 +249,7 @@ class SettingsDialog(wx.Dialog):
         self.config[Config.C2_DATABASE_PATH] = self.path_try_relative(
             self.path_validate(
                 self.db_path,
-                _("SQLite database not found")
+                _("Cosplay2 database not found")
             )
         )
         self.config[Config.FILES_DIRS] = [
