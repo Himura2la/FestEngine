@@ -277,10 +277,16 @@ class SettingsDialog(wx.Dialog):
             ext = '.fest'
             self.session_file_path = path if path.endswith(ext) else path + ext
 
+        tool_fest_file_set(self.session_file_path)
+
         with open(Config.LAST_SESSION_PATH, 'w', encoding='utf-8') as f:
             f.write(tool_path_from_workdir(self.session_file_path))
 
         if e.Id == wx.ID_SAVE:
+            #For normal path translation .fest file must exist
+            f = open(self.session_file_path, 'w', encoding='utf-8')
+            f.close()
+            
             self.ui_to_config()
             json.dump(self.config, open(self.session_file_path, 'w', encoding='utf-8'),
                       ensure_ascii=False, indent=4)
