@@ -13,4 +13,4 @@
 | [Gakko 10](https://vk.com/club85877017) | Белгород | 26 августа 2018г. | [@Himura2la](https://github.com/Himura2la) |
 | [Главная сцена на DatFest 2018](http://datfest.ru) | Москва | 2 сентября 2018г. | [@Himura2la](https://github.com/Himura2la) |
 | [Mira Kamen Convention 2018](https://vk.com/mkfest) | Калуга | 17 ноября 2018г. | [Toki-chan](https://vk.com/toki__chan) |
-
+| [Tatakae! 3+1](https://vk.com/tata4old) | Старый Оскол | 12 января 2019г. | [@Himura2la](https://github.com/Himura2la) |
