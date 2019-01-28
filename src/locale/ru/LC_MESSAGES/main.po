@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-11-26 20:56+0300\n"
-"PO-Revision-Date: 2018-11-26 21:12+0300\n"
+"POT-Creation-Date: 2019-01-28 04:25+0300\n"
+"PO-Revision-Date: 2019-01-28 04:25+0300\n"
 "Last-Translator: Himura\n"
 "Language-Team: FestEngine Team\n"
 "Language: ru\n"
@@ -136,12 +136,12 @@ msgid "&Fade In/Out Enabled"
 msgstr "&Плавный переход звука"
 
 #: ..\main.pyw:232
-msgid "&Play Selected Item"
-msgstr "&Включить выделенный трек"
+msgid "&Play Selected Item\tF4"
+msgstr "&Включить выделенный трек\tF4"
 
 #: ..\main.pyw:236
-msgid "&Pause"
-msgstr "&Пауза"
+msgid "&Pause\tF3"
+msgstr "&Пауза\tF3"
 
 #: ..\main.pyw:240
 msgid "&Background Music"
@@ -180,8 +180,8 @@ msgid "Play/Pause &Background (+ End Show)\tF3"
 msgstr "Play/Pause &фоновой музыки (+ прервать номер)\tF3"
 
 #: ..\main.pyw:254
-msgid "Play &Next BG Track\tF4"
-msgstr "Включить &следующий фоновый трек\tShift+F3"
+msgid "Play &Next BG Track\tShift+F4"
+msgstr "Включить &следующий фоновый трек\tShift+F4"
 
 #: ..\main.pyw:282
 msgid "&Fire"
@@ -197,7 +197,7 @@ msgstr "Поиск"
 
 #: ..\main.pyw:327
 msgid "Right-click to quit search"
-msgstr "Кликните правой кнопкой чтобы выйти из поиска"
+msgstr "Кликните правой кнопкой, чтобы выйти из поиска"
 
 #: ..\main.pyw:533
 msgid "You may want to restart FestEngine. Do it?"
@@ -314,8 +314,8 @@ msgid "Invalid countdown row"
 msgstr "Неверная строка обратного отсчета"
 
 #: ..\main.pyw:959
-msgid "Nothing to play for №%s"
-msgstr "Нечего включить для №%s"
+msgid "Nothing to play for %s%s"
+msgstr "Нечего включить для %s%s"
 
 #: ..\main.pyw:988
 msgid "Playback FAILED !!!"
@@ -364,8 +364,7 @@ msgid ""
 msgstr ""
 "Привет! ^_^ Для начала, укажи новый или существующий файл феста.\n"
 "Он будет автоматически загружаться при запуске пока его не сменишь.\n"
-"Если возникают сложности с настройками, обратитесь к меню \"Файл | О "
-"программе\"\n"
+"Если возникают сложности с настройками, открой \"Файл | О программе\"\n"
 "Ваш фест будет лучшим!"
 
 #: ..\settings.py:51
