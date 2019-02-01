@@ -31,7 +31,6 @@ install:
         }
     - cmd: |
         set PATH=%PYTHON_PATH%;%PYTHON_PATH%\Scripts;%PATH%
-        python -m pip install --upgrade pip
         pip install pyinstaller python-vlc wxpython pywinauto
         choco install -y --no-progress %VLC_INSTALL_FLAGS% vlc
 
