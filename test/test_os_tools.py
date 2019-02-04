@@ -1,5 +1,10 @@
 import unittest
-import src.os_tools as t
+
+# Ugly hack to allow absolute import from the root folder
+import sys, os
+sys.path.insert(0, os.path.abspath('../..'))
+
+from src import os_tools as t
 import pathlib as path
 
 
