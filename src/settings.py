@@ -288,7 +288,7 @@ class SettingsDialog(wx.Dialog):
 
         tool_fest_file_set(self.session_file_path)
         with open(Config.LAST_SESSION_PATH, 'w', encoding='utf-8-sig') as f:
-            f.write(path_session_try_to_relative(self.session_file_path))
+            f.write(tool_path_from_workdir(self.session_file_path))
 
         self.EndModal(e.Id)
 
