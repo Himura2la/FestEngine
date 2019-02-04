@@ -12,11 +12,11 @@ environment:
         - ARCH: '32'
           VLC: '2.2.8'
 
-# init:
-#     - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#init:
+#    - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
-# on_finish:
-#   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#on_finish:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
     - ps: |
@@ -31,7 +31,6 @@ install:
         }
     - cmd: |
         set PATH=%PYTHON_PATH%;%PYTHON_PATH%\Scripts;%PATH%
-        python -m pip install --upgrade pip
         pip install pyinstaller python-vlc wxpython pywinauto
         choco install -y --no-progress %VLC_INSTALL_FLAGS% vlc
 
@@ -53,12 +52,10 @@ after_build:
         del MSVCP140.dll VCRUNTIME140.dll api-ms-*  # GPL does not allow...
 
 before_test:
-    - ps: |
+    - cmd: |
         echo "--- before_test (Downloading test data) ---"
-        cd "$env:APPVEYOR_BUILD_FOLDER\test\data"
-        git submodule init; git submodule update
-        7z x .\data.7z
-        mv .\data\* .
+        cd "%APPVEYOR_BUILD_FOLDER%\test\data"
+        git submodule update --init
 
 test_script:
     - cmd: python -m unittest discover "%APPVEYOR_BUILD_FOLDER%\test"

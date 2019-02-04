@@ -191,7 +191,7 @@ class SettingsDialog(wx.Dialog):
             self.session_file_path = tool_abs_path_from_fest_file(e.Path)
             tool_fest_file_set(self.session_file_path)
             try:
-                self.config = json.load(open(e.Path, 'r', encoding='utf-8'))
+                self.config = json.load(open(e.Path, 'r', encoding='utf-8-sig'))
             except json.decoder.JSONDecodeError as e:
                 msg = _("Unfortunately, you broke the JSON format...\n"
                         "Please fix the configuration file%s ASAP.\n\nDetails: %s") % ("", str(e))
@@ -248,7 +248,7 @@ class SettingsDialog(wx.Dialog):
         self.config[Config.C2_DATABASE_PATH] = self.path_try_relative(
             self.path_validate(
                 self.db_path,
-                _("SQLite database not found")
+                _("Cosplay2 database not found")
             )
         )
         self.config[Config.FILES_DIRS] = [
@@ -277,19 +277,18 @@ class SettingsDialog(wx.Dialog):
             ext = '.fest'
             self.session_file_path = path if path.endswith(ext) else path + ext
 
-        tool_fest_file_set(self.session_file_path)
-
-        with open(Config.LAST_SESSION_PATH, 'w', encoding='utf-8') as f:
-            f.write(tool_path_from_workdir(self.session_file_path))
-
         if e.Id == wx.ID_SAVE:
             #For normal path translation .fest file must exist
             f = open(self.session_file_path, 'w', encoding='utf-8')
             f.close()
-            
+
             self.ui_to_config()
             json.dump(self.config, open(self.session_file_path, 'w', encoding='utf-8'),
                       ensure_ascii=False, indent=4)
+
+        tool_fest_file_set(self.session_file_path)
+        with open(Config.LAST_SESSION_PATH, 'w', encoding='utf-8-sig') as f:
+            f.write(path_session_try_to_relative(self.session_file_path))
 
         self.EndModal(e.Id)
 
@@ -313,7 +312,7 @@ class SettingsDialog(wx.Dialog):
             action = restart_dialog.ShowModal()
             if action == wx.ID_OK:
                 try:
-                    self.config = json.load(open(config_path, 'r', encoding='utf-8'))
+                    self.config = json.load(open(config_path, 'r', encoding='utf-8-sig'))
                     self.EndModal(wx.ID_OPEN)
                 except json.decoder.JSONDecodeError as e:
                     msg = _("Unfortunately, you broke the JSON format...\n"

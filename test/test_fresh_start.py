@@ -28,10 +28,11 @@ class FreshStartTests(unittest.TestCase):
 
         settings = app.Settings
         settings['Current Fest:Edit'].set_text(os.path.abspath(sample_fest_path))
-        time.sleep(0.1)
+        time.sleep(0.5)
         settings.Load.click()
 
-        app['Restart Required'].Yes.click()
+        app['Restart Required'].NoButton.click()
+        app.wxWindowNR.menu_select("Main -> Exit")
 
         app.wait_for_process_exit(1)
 
@@ -49,6 +50,7 @@ class FreshStartTests(unittest.TestCase):
         main_window.close()
 
     def tearDown(self):
+        self.setUp()  # Remove last_fest.txt in the end.
         for backup in glob.glob(r"..\..\test\data\*.bkp.fest"):
             os.remove(backup)
 

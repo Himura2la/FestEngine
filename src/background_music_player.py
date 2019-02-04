@@ -205,7 +205,7 @@ class BackgroundMusicWindow(wx.Frame):
         self.top_toolbar.Add(self.fade_in_out_switch, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, border=3)
         self.fade_in_out_switch.Bind(wx.EVT_CHECKBOX, self.main_window.fade_switched)
 
-        self.play_btn = wx.Button(self, label="Play (^+F4)", size=(80, toolbar_base_height + 2))
+        self.play_btn = wx.Button(self, label="Play (F4)", size=(80, toolbar_base_height + 2))
         self.play_btn.Enable(False)
         self.top_toolbar.Add(self.play_btn, 0)
         self.play_btn.Bind(wx.EVT_BUTTON, lambda e: main_window.background_play(from_grid=True))
@@ -275,8 +275,8 @@ class BackgroundMusicWindow(wx.Frame):
 
         f3_id, f4_id, shift_f4_id, esc_id, shift_esc_id = wx.NewId(), wx.NewId(), wx.NewId(), wx.NewId(), wx.NewId()
         self.Bind(wx.EVT_MENU, main_window.play_pause_bg, id=f3_id)
-        self.Bind(wx.EVT_MENU, main_window.background_play, id=f4_id)
-        self.Bind(wx.EVT_MENU, lambda e: main_window.background_play(from_grid=True), id=shift_f4_id)
+        self.Bind(wx.EVT_MENU, lambda e: main_window.background_play(from_grid=True), id=f4_id)
+        self.Bind(wx.EVT_MENU, main_window.background_play, id=shift_f4_id)
 
         self.Bind(wx.EVT_MENU, main_window.end_show, id=esc_id)
         self.Bind(wx.EVT_MENU, main_window.emergency_stop, id=shift_esc_id)

@@ -6,6 +6,7 @@ import os
 import re
 import sys
 import threading
+import subprocess
 import time
 import webbrowser
 import json
@@ -69,7 +70,7 @@ class MainWindow(wx.Frame):
         self.session_file_path = ''
         if os.path.isfile(Config.LAST_SESSION_PATH):
             try:
-                self.session_file_path = open(Config.LAST_SESSION_PATH, 'r', encoding='utf-8').read()
+                self.session_file_path = open(Config.LAST_SESSION_PATH, 'r', encoding='utf-8-sig').read()
             except UnicodeDecodeError:
                 try:
                     self.session_file_path = open(Config.LAST_SESSION_PATH, 'r', encoding='latin-1').read()
@@ -81,7 +82,7 @@ class MainWindow(wx.Frame):
 
             if os.path.isfile(self.session_file_path):
                 try:
-                    loaded_config = json.load(open(self.session_file_path, 'r', encoding='utf-8'))
+                    loaded_config = json.load(open(self.session_file_path, 'r', encoding='utf-8-sig'))
                     config_keys_diff = set(base_config.keys()) - set(loaded_config.keys())
                     if config_keys_diff:
                         self.logger.log("[WARNING] Config file is missing the following keys: " + str(config_keys_diff))
@@ -207,7 +208,7 @@ class MainWindow(wx.Frame):
 
         # --- Text Window ---
         text_win_menu = wx.Menu()
-        self.text_win_show_item = text_win_menu.Append(wx.ID_ANY, _("&Enable"), kind=wx.ITEM_CHECK)
+        self.text_win_show_item = text_win_menu.Append(wx.ID_ANY, _("&Show"), kind=wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.text_win_show, self.text_win_show_item)
         self.text_win_full_info = text_win_menu.Append(wx.ID_ANY, _("&Full Info"), kind=wx.ITEM_CHECK)
         self.text_win_full_info.Enable(False)
@@ -233,11 +234,11 @@ class MainWindow(wx.Frame):
         self.bg_fade_switch.Check(self.bg_player.fade_in_out)
         self.Bind(wx.EVT_MENU, self.fade_switched, self.bg_fade_switch)
 
-        self.play_bg_item = menu_bg_music.Append(wx.ID_ANY, _("&Play Selected Item"))
+        self.play_bg_item = menu_bg_music.Append(wx.ID_ANY, _("&Play Selected Item\tF4"))
         self.Bind(wx.EVT_MENU, lambda e: self.background_play(from_grid=True), self.play_bg_item)
         self.play_bg_item.Enable(False)
 
-        self.bg_pause_switch = menu_bg_music.Append(wx.ID_ANY, _("&Pause"), kind=wx.ITEM_CHECK)
+        self.bg_pause_switch = menu_bg_music.Append(wx.ID_ANY, _("&Pause\tF3"), kind=wx.ITEM_CHECK)
         self.bg_pause_switch.Enable(False)
         self.Bind(wx.EVT_MENU, self.background_set_pause, self.bg_pause_switch)
 
@@ -255,7 +256,7 @@ class MainWindow(wx.Frame):
         menu_play.AppendSeparator()
         self.play_pause_bg_end_show_item = menu_play.Append(wx.ID_ANY, _("Play/Pause &Background (+ End Show)\tF3"))
         self.play_pause_bg_end_show_item.Enable(False)
-        self.play_next_bg_item = menu_play.Append(wx.ID_ANY, _("Play &Next BG Track\tF4"))
+        self.play_next_bg_item = menu_play.Append(wx.ID_ANY, _("Play &Next BG Track\tShift+F4"))
         self.play_next_bg_item.Enable(False)
 
         self.Bind(wx.EVT_MENU, self.emergency_stop, emergency_stop_item)
@@ -278,8 +279,8 @@ class MainWindow(wx.Frame):
             wx.AcceleratorEntry(wx.ACCEL_ALT, wx.WXK_F1, no_show_item.GetId()),
 
             wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F3, self.play_pause_bg_end_show_item.GetId()),
-            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F4, self.play_next_bg_item.GetId()),
-            wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_F4, self.play_bg_item.GetId())]))
+            wx.AcceleratorEntry(wx.ACCEL_NORMAL, wx.WXK_F4, self.play_bg_item.GetId()),
+            wx.AcceleratorEntry(wx.ACCEL_SHIFT, wx.WXK_F4, self.play_next_bg_item.GetId())]))
 
         # In the end of `background_music_player.py` it is repeated
 
@@ -422,8 +423,8 @@ class MainWindow(wx.Frame):
 
         self.vol_control.SetValue(self.player.audio_get_volume())
 
-        self.player_status = "VLC v.%s: %s" % \
-                             (vlc.libvlc_get_version(), self.player_state_parse(self.player.get_state()))
+        self.player_status = "VLC %s: %s" % \
+                             (vlc.libvlc_get_version().decode(), self.player_state_parse(self.player.get_state()))
         self.bg_player_status = "Background Player: %s" % self.player_state_parse(self.bg_player.player.get_state())
 
         self.Show(True)
@@ -535,10 +536,11 @@ class MainWindow(wx.Frame):
 
         if prev_config[Config.FILES_DIRS] != self.config[Config.FILES_DIRS] or \
                         prev_config[Config.FILENAME_RE] != self.config[Config.FILENAME_RE]:
-            with wx.MessageDialog(self, _("You may want to restart FestEngine. Exit now?"),
+            with wx.MessageDialog(self, _("You may want to restart FestEngine. Do it?"),
                                   _("Restart Required"), wx.YES_NO | wx.ICON_INFORMATION) as restart_dialog:
                 action = restart_dialog.ShowModal()
                 if action == wx.ID_YES:
+                    subprocess.Popen([sys.executable] + sys.argv)
                     self.on_close()
 
     def on_proj_win_close(self, e):
@@ -951,16 +953,17 @@ class MainWindow(wx.Frame):
             return
         try:
             files = self.data[num]['files'].items()  # (ext, path)
+            is_stream = any([file[0] == 'm3u' for file in files])
             video_files = [file[1] for file in files if file[0] in FileTypes.video_extensions]
 
             if video_files and not self.prefer_audio.IsChecked():
-                file_path = video_files[0]
+                file_path = open(video_files[0], 'r').read() if is_stream else video_files[0]
                 sound_only = False
             else:
                 audio_files = [file[1] for file in files if file[0] in FileTypes.audio_extensions]
                 file_path, sound_only = (audio_files[0], True) if audio_files else (video_files[0], False)
         except IndexError:
-            self.player_status = _(u"Nothing to play for №%s") % num
+            self.player_status = _(u'Nothing to play for %s%s') % ('№', num)
             return
         self.play_pause_bg(play=False)
         self.player.set_media(self.vlc_instance.media_new(file_path))
