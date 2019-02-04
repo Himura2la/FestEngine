@@ -27,7 +27,7 @@ def __get_fest_file_path(fest_file_path=None):
 
     if __get_fest_file_path.fest_file_path == '':
         if fest_file_path == None:
-            return __get_work_dir()
+            return Path("")
         else:
             __get_fest_file_path.fest_file_path = fest_file_path
     return Path(__get_fest_file_path.fest_file_path)
@@ -134,10 +134,10 @@ def tool_fest_file_set(fest_file_path):
     __get_fest_file_path(fest_file_path)
 
 
-#If fest file is not set work dir will be returned
-def tool_fest_file_get():
+#If fest file is not set Path('.') will be returned
+def tool_fest_file_path_get():
     return __get_fest_file_path()
 
 
-def tool_work_dir_get():
+def tool_work_dir_path_get():
     return __get_work_dir()
