@@ -30,6 +30,9 @@ def __get_fest_file_path(fest_file_path=None):
             return Path("")
         else:
             __get_fest_file_path.fest_file_path = fest_file_path
+    else:
+        if fest_file_path != __get_fest_file_path.fest_file_path and fest_file_path != None:
+            __get_fest_file_path.fest_file_path = fest_file_path
     return Path(__get_fest_file_path.fest_file_path)
 
 
