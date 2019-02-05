@@ -11,7 +11,7 @@ from pathlib import Path, PureWindowsPath
 class PathTools:
     def __init__(self):
         if getattr(sys, 'frozen', False):
-            self.work_dir = sys._MEIPASS
+            self.work_dir = Path(sys._MEIPASS)
         else:
             self.work_dir = Path(__file__).resolve().parent
         self.fest_file = None
@@ -41,6 +41,8 @@ class PathTools:
     def _prepare_paths(self, path, anchor):
         if os.name == 'posix' and '\\' in str(path):
             path = Path(PureWindowsPath(path).as_posix())
+        else:
+            path = Path(path)
 
         if anchor is None:
             anchor = self.work_dir
@@ -49,7 +51,6 @@ class PathTools:
             if anchor.is_file():
                 anchor = anchor.parent
 
-        path = Path(path)
         return (path, anchor)
 
     def _can_make_rel(self, path, anchor):
