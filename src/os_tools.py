@@ -8,139 +8,57 @@ import os
 import sys
 from pathlib import Path, PureWindowsPath
 
-
-def __get_work_dir():
-    if 'work_dir' not in __get_work_dir.__dict__:
-        __get_work_dir.work_dir = ''
-
-    if __get_work_dir.work_dir == '':
+class PathTools:
+    def __init__(self):
         if getattr(sys, 'frozen', False):
-            work_dir = sys._MEIPASS
+            self.work_dir = sys._MEIPASS
         else:
-            work_dir = Path(__file__).resolve().parent
-    return Path(work_dir)
+            self.work_dir = Path(__file__).resolve().parent
+        self.fest_file = None
 
+    def get_work_dir(self):
+        return str(self.work_dir)
 
-def __get_fest_file_path(fest_file_path=None):
-    if 'fest_file_path' not in __get_fest_file_path.__dict__:
-        __get_fest_file_path.fest_file_path = ''
+    def set_fest_file(self, fest_file):
+        self.fest_file = Path(fest_file).resolve()
 
-    if __get_fest_file_path.fest_file_path == '':
-        if fest_file_path == None:
-            return Path("")
+    def get_fest_file(self):
+        return str(self.fest_file)
+
+    def make_path_abs(self, path, anchor=None):
+        path, anchor = self._prepare_paths(path, anchor)
+        return str(Path(os.path.join(str(anchor), str(path))).resolve())
+
+    def make_path_rel(self, path, anchor=None):
+        path, anchor = self._prepare_paths(path, anchor)
+
+        if self._can_make_rel(path, anchor):
+            # Path().relative_to() have differ semantic with os.path.relpath()
+            return str(os.path.relpath(str(path.resolve()), str(anchor)))
         else:
-            __get_fest_file_path.fest_file_path = fest_file_path
-    else:
-        if fest_file_path != __get_fest_file_path.fest_file_path and fest_file_path != None:
-            __get_fest_file_path.fest_file_path = fest_file_path
-    return Path(__get_fest_file_path.fest_file_path)
+            return str(path.resolve())
 
+    def _prepare_paths(self, path, anchor):
+        if os.name == 'posix' and '\\' in str(path):
+            path = Path(PureWindowsPath(path).as_posix())
 
-def __tool_get_work_dir():
-    if getattr(sys, 'frozen', False):
-        work_dir = sys._MEIPASS
-    else:
-        work_dir = Path(__file__).resolve().parent
-    return  Path(work_dir)
-
-
-def __tool_make_canon_path(path, anchor_path = None):
-    # If path was created on windows it may contain \ character. On linux os it make some problems
-    if os.name == 'posix' and '\\' in str(path):
-        path = Path(PureWindowsPath(path).as_posix())
-    if os.name == 'posix' and anchor_path != None and '\\' in str(anchor_path):
-        anchor_path = Path(PureWindowsPath(anchor_path).as_posix())
-
-    internal_path = Path(path)
-    try:
-        if anchor_path == None:
-            anchor_path = Path('.').resolve()
+        if anchor is None:
+            anchor = self.work_dir
         else:
-            if anchor_path.is_file():
-                anchor_path = anchor_path.parent
-            anchor_path = Path(anchor_path).resolve()
-    except FileNotFoundError:
-        print('Fail to make canon path %d because anchor path %s is not found' % (path, anchor_path))
-        return internal_path
+            anchor = Path(anchor).resolve()
+            if anchor.is_file():
+                anchor = anchor.parent
 
-    try:
-        if internal_path.is_absolute():
-            p = internal_path.resolve()
-        else:
-            p = Path(os.path.join(str(anchor_path), str(internal_path))).resolve()
-    except FileNotFoundError:
-        print('Fail to make canon path %s because is not found' % (internal_path))
-        return internal_path
-    return p
-
-
-def __tool_make_rel_path(path, anchor_path=None):
-    # If path was created on windows it may contain \ character. On linux os it make some problems
-    if os.name == 'posix' and '\\' in str(path):
-        path = Path(PureWindowsPath(path).as_posix())
-    else:
         path = Path(path)
-    if anchor_path != None:
-        anchor_path = __tool_make_canon_path(anchor_path)
+        return (path, anchor)
 
-    try:
-        file_state = os.lstat(path.resolve().as_posix())
-    except FileNotFoundError:
-        # Target path not found
-        print('Fail to make rel path %s because is not found' % (path))
-        return path
+    def _can_make_rel(self, path, anchor):
+        if not path.exists() or not anchor.exists():
+            return False
 
-    if anchor_path is None:
-        work_dir = __tool_get_work_dir()
-        path_from_location = os.lstat(work_dir)
-    else:
-        if anchor_path.is_file():
-            anchor_path = anchor_path.parent
-        try:
-            path_from_location = os.lstat(str(anchor_path))
-        except FileNotFoundError:
-            anchor_path = __get_work_dir()
-            path_from_location = os.lstat(str(anchor_path))
+        if os.lstat(path.resolve().as_posix()).st_dev != os.lstat(anchor.resolve().as_posix()).st_dev:
+            return False;
 
-    if file_state.st_dev != path_from_location.st_dev:
-        return path.resolve()
-    else:
-        # Path().relative_to() have differ semantic with os.path.relpath()
-        return Path(os.path.relpath(str(path.resolve()), str(anchor_path)))
+        return True
 
-
-def tool_path_from_fest_file(path, fest_file_path=None):
-    if path == "": return path
-    fest_file = __get_fest_file_path(fest_file_path)
-    return str(__tool_make_rel_path(path, fest_file))
-
-
-def tool_path_from_workdir(path):
-    if path == "": return path
-    work_dir = __get_work_dir()
-    return str(__tool_make_rel_path(path, work_dir))
-
-
-def tool_abs_path_from_fest_file(path, fest_file_path=None):
-    if path == "": return path
-    fest_file = __get_fest_file_path(fest_file_path)
-    return str(__tool_make_canon_path(path, fest_file))
-
-
-def tool_abs_path_from_workdir(path):
-    if path == "" : return path
-    work_dir = __get_work_dir()
-    return str(__tool_make_canon_path(path, work_dir))
-
-
-def tool_fest_file_set(fest_file_path):
-    __get_fest_file_path(fest_file_path)
-
-
-#If fest file is not set Path('.') will be returned
-def tool_fest_file_path_get():
-    return __get_fest_file_path()
-
-
-def tool_work_dir_path_get():
-    return __get_work_dir()
+path_tool = PathTools()

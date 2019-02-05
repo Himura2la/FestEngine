@@ -25,7 +25,7 @@ from settings import SettingsDialog
 from logger import Logger
 from file_replacer import FileReplacer
 from text_window import TextWindow
-from os_tools import tool_fest_file_set, tool_abs_path_from_workdir, tool_abs_path_from_fest_file
+from os_tools import path_tool
 
 locale_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'locale')
 if os.path.isfile(os.path.join(locale_dir, 'ru', 'LC_MESSAGES', 'main.mo')):
@@ -78,7 +78,7 @@ class MainWindow(wx.Frame):
                     print("Fail to read last session file.")
                     self.session_file_path = ''
 
-            self.session_file_path = tool_abs_path_from_workdir(self.session_file_path)
+            self.session_file_path = path_tool.make_path_abs(self.session_file_path)
 
             if os.path.isfile(self.session_file_path):
                 try:
@@ -97,7 +97,7 @@ class MainWindow(wx.Frame):
                 self.logger.log("Session path %s is not file" % (self.session_file_path))
                 self.session_file_path = ''
 
-        tool_fest_file_set(self.session_file_path)
+        path_tool.set_fest_file(self.session_file_path)
 
         if not self.config_ok:
             self.config = base_config
@@ -122,7 +122,7 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.on_background_timer, self.bg_player_timer)
 
         self.bg_tracks_dir = None
-        self.files_dirs = [tool_abs_path_from_fest_file(d) for d in self.config[Config.FILES_DIRS]]
+        self.files_dirs = [path_tool.make_path_abs(d, path_tool.get_fest_file()) for d in self.config[Config.FILES_DIRS]]
 
         # ------------------ Menu ------------------
         menu_bar = wx.MenuBar()
@@ -523,8 +523,8 @@ class MainWindow(wx.Frame):
         with SettingsDialog(self.session_file_path, self.config, self) as settings_dialog:
             action = settings_dialog.ShowModal()
 
-            self.session_file_path = tool_abs_path_from_workdir(settings_dialog.session_file_path)  # To be sure.
-            tool_fest_file_set(self.session_file_path)
+            self.session_file_path = path_tool.make_path_abs(settings_dialog.session_file_path)  # To be sure.
+            path_tool.set_fest_file(self.session_file_path)
             self.config = settings_dialog.config                        # Maybe redundant
             self.config_ok = action in {wx.ID_SAVE, wx.ID_OPEN}
 
@@ -633,7 +633,8 @@ class MainWindow(wx.Frame):
             return
         self.proj_win.switch_to_images()
         if self.config[Config.BG_ZAD_PATH] and not no_show:
-            self.proj_win.load_zad(tool_abs_path_from_fest_file(self.config[Config.BG_ZAD_PATH]), True)
+            self.proj_win.load_zad(path_tool.make_path_abs(self.config[Config.BG_ZAD_PATH],
+                                                           path_tool.get_fest_file()), True)
             self.image_status("Background")
         else:
             self.proj_win.no_show()
@@ -1138,7 +1139,7 @@ class MainWindow(wx.Frame):
     # -------------------------------------------- Background Music Player --------------------------------------------
 
     def on_bg_load_files(self, e=None):
-        self.bg_tracks_dir = tool_abs_path_from_fest_file(self.config[Config.BG_TRACKS_DIR])
+        self.bg_tracks_dir = path_tool.make_path_abs(self.config[Config.BG_TRACKS_DIR], path_tool.get_fest_file())
         if not self.config[Config.BG_TRACKS_DIR] or not os.path.isdir(self.bg_tracks_dir):
             msg = _("Background MP3 path is invalid. Please specify a\n"
                     "valid path with your background tracks in settings.\n\n"
@@ -1256,7 +1257,7 @@ class MainWindow(wx.Frame):
             if Config.C2_DATABASE_PATH not in self.config or not self.config[Config.C2_DATABASE_PATH]:
                 self.status(_("No Cosplay2 database in config"))
                 return
-            db_path = tool_abs_path_from_fest_file(self.config[Config.C2_DATABASE_PATH])
+            db_path = path_tool.make_path_abs(self.config[Config.C2_DATABASE_PATH], path_tool.get_fest_file())
             if not os.path.isfile(db_path):
                 self.status(_("Cosplay2 database not found"))
                 return

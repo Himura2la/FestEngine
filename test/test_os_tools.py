@@ -4,7 +4,7 @@ import unittest
 import sys, os
 sys.path.insert(0, os.path.abspath('../..'))
 
-from src import os_tools as t
+from src.os_tools import path_tool as t
 import pathlib as path
 
 
@@ -37,22 +37,20 @@ class OsToolsTests(unittest.TestCase):
         self.fest2_path.touch()
 
 
-    def test_default_values(self):
-        self.assertEqual(t.tool_fest_file_path_get(), path.Path('.'))
-        #TODO check t.tool_work_dir_path_get() (need stable workdir path)
+    #TODO check default values (need stable workdir path)
 
     def test_fest_file_set(self):
-        t.tool_fest_file_set(self.fest1_path)
-        print(t.tool_fest_file_path_get())
-        self.assertEqual(t.tool_fest_file_path_get(), self.fest1_path)
+        t.set_fest_file(self.fest1_path)
+        print(t.get_fest_file())
+        self.assertEqual(t.get_fest_file(), str(self.fest1_path.resolve()))
 
     def test_relative_path(self):
         #Downstream relative path
-        t.tool_fest_file_set(self.fest1_path)
-        self.assertEqual(t.tool_path_from_fest_file(self.fest2_path), "sub_dir\\test2.fest")
+        t.set_fest_file(self.fest1_path)
+        self.assertEqual(t.make_path_rel(self.fest2_path, t.get_fest_file()), "sub_dir\\test2.fest")
         #Upstream relative path
-        t.tool_fest_file_set(self.fest2_path)
-        self.assertEqual(t.tool_path_from_fest_file(self.fest1_path), "..\\test1.fest")
+        t.set_fest_file(self.fest2_path)
+        self.assertEqual(t.make_path_rel(self.fest1_path, t.get_fest_file()), "..\\test1.fest")
         #TODO test workdir relative path (need stable workdir path)
 
     #TODO test abs paths (need stable enviroment)

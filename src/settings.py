@@ -5,7 +5,7 @@ import shutil
 import json
 import wx
 from constants import Config, FileTypes
-from os_tools import tool_abs_path_from_fest_file, tool_fest_file_set, tool_path_from_workdir, tool_path_from_fest_file
+from os_tools import path_tool
 
 def path_make_abs(path, session_file_path):
     if not path or os.path.isabs(path):
@@ -95,13 +95,13 @@ class SettingsDialog(wx.Dialog):
 
         # Background Tracks
         self.bg_tracks = wx.DirPickerCtrl(self.panel)
-        self.bg_tracks.SetPath(tool_abs_path_from_fest_file(self.config[Config.BG_TRACKS_DIR]))
+        self.bg_tracks.SetPath(path_tool.make_path_abs(self.config[Config.BG_TRACKS_DIR], path_tool.get_fest_file()))
         self.configs_grid.Add(wx.StaticText(self.panel, label=_("Background Tracks Dir")), 0, wx.ALIGN_CENTER_VERTICAL)
         self.configs_grid.Add(self.bg_tracks, 1, wx.EXPAND)
 
         img_wc = "Images ({0})|{0}".format(";".join(["*.%s" % x for x in FileTypes.img_extensions]))
         self.bg_zad = wx.FilePickerCtrl(self.panel, wildcard=img_wc)
-        self.bg_zad.SetPath(tool_abs_path_from_fest_file(self.config[Config.BG_ZAD_PATH]))
+        self.bg_zad.SetPath(path_tool.make_path_abs(self.config[Config.BG_ZAD_PATH], path_tool.get_fest_file()))
         self.configs_grid.Add(wx.StaticText(self.panel, label=_("Background ZAD Path")), 0, wx.ALIGN_CENTER_VERTICAL)
         self.configs_grid.Add(self.bg_zad, 1, wx.EXPAND)
 
@@ -188,8 +188,8 @@ class SettingsDialog(wx.Dialog):
     def on_fest_selected(self, e=None, first_run=False):
         fest_file_exists = os.path.isfile(e.Path) if e else False
         if fest_file_exists:
-            self.session_file_path = tool_abs_path_from_fest_file(e.Path)
-            tool_fest_file_set(self.session_file_path)
+            self.session_file_path = path_tool.make_path_abs(e.Path)
+            path_tool.set_fest_file(self.session_file_path)
             try:
                 self.config = json.load(open(e.Path, 'r', encoding='utf-8-sig'))
             except json.decoder.JSONDecodeError as e:
@@ -211,12 +211,12 @@ class SettingsDialog(wx.Dialog):
 
     def config_to_ui(self):
         self.screens_combobox.SetSelection(self.config[Config.PROJECTOR_SCREEN])
-        self.db_path.SetPath(tool_abs_path_from_fest_file(self.config[Config.C2_DATABASE_PATH]))
+        self.db_path.SetPath(path_tool.make_path_abs(self.config[Config.C2_DATABASE_PATH], path_tool.get_fest_file()))
         self.filename_re.SetValue(self.config[Config.FILENAME_RE])
-        self.bg_tracks.SetPath(tool_abs_path_from_fest_file(self.config[Config.BG_TRACKS_DIR]))
-        self.bg_zad.SetPath(tool_abs_path_from_fest_file(self.config[Config.BG_ZAD_PATH]))
+        self.bg_tracks.SetPath(path_tool.make_path_abs(self.config[Config.BG_TRACKS_DIR], path_tool.get_fest_file()))
+        self.bg_zad.SetPath(path_tool.make_path_abs(self.config[Config.BG_ZAD_PATH], path_tool.get_fest_file()))
         [self.rm_dir() for i in range(len(self.dir_pickers))]
-        [self.add_dir(tool_abs_path_from_fest_file(path)) for path in self.config[Config.FILES_DIRS]]
+        [self.add_dir(path_tool.make_path_abs(path, path_tool.get_fest_file())) for path in self.config[Config.FILES_DIRS]]
         self.panel.SetSizerAndFit(self.top_sizer)
         self.top_sizer.Fit(self)
         self.SetClientSize((self.GetClientSize()[0] + 300, self.GetClientSize()[1]))
@@ -231,7 +231,7 @@ class SettingsDialog(wx.Dialog):
             return ""
 
     def path_try_relative(self, path):
-        return tool_path_from_fest_file(path)
+        return path_tool.make_path_rel(path, path_tool.get_fest_file())
 
     def ui_to_config(self):
         """ Saves selected values from UI to JSON config """
@@ -286,9 +286,9 @@ class SettingsDialog(wx.Dialog):
             json.dump(self.config, open(self.session_file_path, 'w', encoding='utf-8'),
                       ensure_ascii=False, indent=4)
 
-        tool_fest_file_set(self.session_file_path)
+        path_tool.set_fest_file(self.session_file_path)
         with open(Config.LAST_SESSION_PATH, 'w', encoding='utf-8-sig') as f:
-            f.write(tool_path_from_workdir(self.session_file_path))
+            f.write(path_tool.make_path_rel(self.session_file_path))
 
         self.EndModal(e.Id)
 
