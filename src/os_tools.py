@@ -1,35 +1,39 @@
-# This file contains function for work witch OS (paths, strings, locale, etc)
+# This file contains functions used for to work with OS (paths, strings, locale, etc)
 
-# By default in app using absolute path with posix notation. All translations making in entry points (change settings,
-# read config, etc)
+# By default, the app uses the absolute paths with posix notation.
+# All path translations are performed on start (change settings, read config, etc)
 
 
 import os
 import sys
 from pathlib import Path, PureWindowsPath
 
-class PathTools:
+
+class PathTools(object):
     def __init__(self):
         if getattr(sys, 'frozen', False):
-            self.work_dir = Path(sys._MEIPASS)
+            self._work_dir = Path(sys._MEIPASS)
         else:
-            self.work_dir = Path(__file__).resolve().parent
-        self.fest_file = None
+            self._work_dir = Path(__file__).resolve().parent
+        self._fest_file = None
 
-    def get_work_dir(self):
-        return str(self.work_dir)
+    @property
+    def work_dir(self):
+        return str(self._work_dir)
 
-    def set_fest_file(self, fest_file):
-        self.fest_file = Path(fest_file).resolve()
+    @property
+    def fest_file(self):
+        return str(self._fest_file)
 
-    def get_fest_file(self):
-        return str(self.fest_file)
+    @fest_file.setter
+    def fest_file(self, fest_file):
+        self._fest_file = Path(fest_file).resolve()
 
-    def make_path_abs(self, path, anchor=None):
+    def make_abs(self, path, anchor=None):
         path, anchor = self._prepare_paths(path, anchor)
         return str(Path(os.path.join(str(anchor), str(path))).resolve())
 
-    def make_path_rel(self, path, anchor=None):
+    def make_rel(self, path, anchor=None):
         path, anchor = self._prepare_paths(path, anchor)
 
         if self._can_make_rel(path, anchor):
@@ -43,23 +47,20 @@ class PathTools:
             path = Path(PureWindowsPath(path).as_posix())
         else:
             path = Path(path)
-
         if anchor is None:
-            anchor = self.work_dir
+            anchor = self._work_dir
         else:
             anchor = Path(anchor).resolve()
             if anchor.is_file():
                 anchor = anchor.parent
+        return path, anchor
 
-        return (path, anchor)
-
-    def _can_make_rel(self, path, anchor):
+    @staticmethod
+    def _can_make_rel(path, anchor):
         if not path.exists() or not anchor.exists():
             return False
-
         if os.lstat(path.resolve().as_posix()).st_dev != os.lstat(anchor.resolve().as_posix()).st_dev:
-            return False;
-
+            return False
         return True
 
-path_tool = PathTools()
+path = PathTools()
