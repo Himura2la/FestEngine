@@ -4,6 +4,7 @@ import time
 from pywinauto.application import Application
 import os
 import glob
+import locale
 
 sample_fest_path = r"..\..\test\data\sample.fest"
 items_number = 3
@@ -23,17 +24,25 @@ class FreshStartTests(unittest.TestCase):
 
     def test_load_session(self):
         app = Application().start("FestEngine.exe")
+        time.sleep(1)
 
         app['Welcome to Fest Engine'].OK.click()
+        time.sleep(0.5)
 
         settings = app.Settings
         settings['Current Fest:Edit'].set_text(os.path.abspath(sample_fest_path))
         time.sleep(0.5)
+
         settings.Load.click()
+        time.sleep(1)
 
-        app['Restart Required'].NoButton.click()
+        if locale.getdefaultlocale()[0] == 'ru_RU':
+            app['Restart Required'].НетButton.click()
+        else:
+            app['Restart Required'].NoButton.click()
+        time.sleep(0.5)
+
         app.wxWindowNR.menu_select("Main -> Exit")
-
         app.wait_for_process_exit(1)
 
         app = Application().start("FestEngine.exe")
@@ -43,7 +52,7 @@ class FreshStartTests(unittest.TestCase):
         self.assertTrue('Loaded %d items' % items_number in main_window.StatusBar.texts())
 
         main_window.menu_select("Main -> Show Log")
-        time.sleep(0.5)
+        time.sleep(1)
         log_text = app["FestEngine Log"].Edit.text_block()
         self.assertTrue(log_text.strip() == "Init", "Errors in log:")
 
