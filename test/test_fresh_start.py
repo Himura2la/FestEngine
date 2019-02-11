@@ -4,7 +4,6 @@ import time
 from pywinauto.application import Application
 import os
 import glob
-import locale
 
 sample_fest_path = r"..\..\test\data\sample.fest"
 items_number = 3
@@ -36,10 +35,7 @@ class FreshStartTests(unittest.TestCase):
         settings.Load.click()
         time.sleep(1)
 
-        if locale.getdefaultlocale()[0] == 'ru_RU':
-            app['Restart Required'].НетButton.click()
-        else:
-            app['Restart Required'].NoButton.click()
+        app['Restart Required'].Button2.click()
         time.sleep(0.5)
 
         app.wxWindowNR.menu_select("Main -> Exit")
