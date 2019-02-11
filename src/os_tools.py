@@ -48,7 +48,7 @@ class PathTools(object):
         else:
             path = Path(path)
         if anchor is None:
-            anchor = self._work_dir
+            anchor = Path(self._work_dir)
         else:
             anchor = Path(anchor).resolve()
             if anchor.is_file():
