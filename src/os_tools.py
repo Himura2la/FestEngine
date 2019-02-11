@@ -12,22 +12,22 @@ from pathlib import Path, PureWindowsPath
 class PathTools(object):
     def __init__(self):
         if getattr(sys, 'frozen', False):
-            self._work_dir = Path(sys._MEIPASS)
+            self._work_dir = str(Path(sys._MEIPASS))
         else:
-            self._work_dir = Path(__file__).resolve().parent
+            self._work_dir = str(Path(__file__).resolve().parent)
         self._fest_file = None
 
     @property
     def work_dir(self):
-        return str(self._work_dir)
+        return self._work_dir
 
     @property
     def fest_file(self):
-        return str(self._fest_file)
+        return self._fest_file
 
     @fest_file.setter
     def fest_file(self, fest_file):
-        self._fest_file = Path(fest_file).resolve()
+        self._fest_file = str(Path(fest_file).resolve())
 
     def make_abs(self, path, anchor=None):
         path, anchor = self._prepare_paths(path, anchor)
