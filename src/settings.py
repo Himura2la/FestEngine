@@ -5,39 +5,19 @@ import shutil
 import json
 import wx
 from constants import Config, FileTypes
-
-
-def path_make_abs(path, session_file_path):
-    if not path or os.path.isabs(path):
-        return path
-    else:  # this is relative, so we calculate a path relative to a directory where the .fest file resides
-        session_file_dir = os.path.dirname(session_file_path)
-        return os.path.normpath(os.path.join(session_file_dir, path))
-
-
-def path_session_try_to_relative(path):
-    session_file_stat = os.lstat(path)
-    if getattr(sys, 'frozen', False):
-        work_dir = sys._MEIPASS
-    else:
-        work_dir = os.path.dirname(os.path.abspath(__file__))
-    fest_engine_run_location = os.lstat(work_dir)
-    if session_file_stat.st_dev != fest_engine_run_location.st_dev:
-        return os.path.abspath(path)
-    else:
-        return os.path.relpath(path, os.path.abspath(__file__))
+from os_tools import path
 
 
 class SettingsDialog(wx.Dialog):
-    def __init__(self, session_file_path, config, parent):
+    def __init__(self, fest_file_path, config, parent):
         wx.Dialog.__init__(self,
                            parent,
                            title=_("Settings"),
                            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
-        self.session_file_path = session_file_path
+        self.fest_file_path = fest_file_path
         self.config = config
 
-        if not session_file_path:
+        if not self.fest_file_path:
             wx.MessageBox(_("Hi ^_^ Please select a new or existing *.fest file in the 'Current Fest' field.\n"
                             "It will load automatically on each start unless you change it. The configuration\n"
                             "may seem confusing, if you find it so, open the 'File | About' menu item.\n"
@@ -53,7 +33,7 @@ class SettingsDialog(wx.Dialog):
                                                 style=wx.FLP_SAVE | wx.FLP_USE_TEXTCTRL,
                                                 wildcard="Fest Engine sessions (*.fest)|*.fest;*.fest_bkp")
         self.Bind(wx.EVT_FILEPICKER_CHANGED, self.on_fest_selected, self.session_picker)
-        self.session_picker.SetPath(self.session_file_path)
+        self.session_picker.SetPath(self.fest_file_path)
         session_sizer.Add(self.session_picker, 1, wx.EXPAND | wx.ALL, 5)
         session_sizer.Add(wx.StaticLine(self.panel, style=wx.LI_VERTICAL), 0,
                           wx.EXPAND | wx.TOP | wx.BOTTOM | wx.RIGHT, 5)
@@ -88,20 +68,20 @@ class SettingsDialog(wx.Dialog):
 
         # Database File
         self.db_path = wx.FilePickerCtrl(self.panel, wildcard="SQLite Databases|*.sqlite;*.db;*.data")
-        self.db_path.SetInitialDirectory(self.session_file_path)
-        self.db_path.SetPath(path_make_abs(self.config[Config.C2_DATABASE_PATH], self.session_file_path))
+        self.db_path.SetInitialDirectory(self.fest_file_path)
+        self.db_path.SetPath(path.make_abs(self.config[Config.C2_DATABASE_PATH], self.fest_file_path))
         self.configs_grid.Add(wx.StaticText(self.panel, label=_("Cosplay2 Database Path")), 0, wx.ALIGN_CENTER_VERTICAL)
         self.configs_grid.Add(self.db_path, 1, wx.EXPAND)
 
         # Background Tracks
         self.bg_tracks = wx.DirPickerCtrl(self.panel)
-        self.bg_tracks.SetPath(path_make_abs(self.config[Config.BG_TRACKS_DIR], self.session_file_path))
+        self.bg_tracks.SetPath(path.make_abs(self.config[Config.BG_TRACKS_DIR], path.fest_file))
         self.configs_grid.Add(wx.StaticText(self.panel, label=_("Background Tracks Dir")), 0, wx.ALIGN_CENTER_VERTICAL)
         self.configs_grid.Add(self.bg_tracks, 1, wx.EXPAND)
 
         img_wc = "Images ({0})|{0}".format(";".join(["*.%s" % x for x in FileTypes.img_extensions]))
         self.bg_zad = wx.FilePickerCtrl(self.panel, wildcard=img_wc)
-        self.bg_zad.SetPath(path_make_abs(self.config[Config.BG_ZAD_PATH], self.session_file_path))
+        self.bg_zad.SetPath(path.make_abs(self.config[Config.BG_ZAD_PATH], path.fest_file))
         self.configs_grid.Add(wx.StaticText(self.panel, label=_("Background ZAD Path")), 0, wx.ALIGN_CENTER_VERTICAL)
         self.configs_grid.Add(self.bg_zad, 1, wx.EXPAND)
 
@@ -150,7 +130,7 @@ class SettingsDialog(wx.Dialog):
         buttons_sizer.Add(button_cancel, 1)
 
         self.top_sizer.Add(buttons_sizer, 0, wx.EXPAND | wx.ALL, 5)
-        self.on_fest_selected(first_run=not self.session_file_path)
+        self.on_fest_selected(first_run=not self.fest_file_path)
 
     def add_dir(self, path=None):
         dir_picker = wx.DirPickerCtrl(self.panel)
@@ -188,7 +168,8 @@ class SettingsDialog(wx.Dialog):
     def on_fest_selected(self, e=None, first_run=False):
         fest_file_exists = os.path.isfile(e.Path) if e else False
         if fest_file_exists:
-            self.session_file_path = os.path.normpath(e.Path)
+            self.fest_file_path = path.make_abs(e.Path)
+            path.fest_file = self.fest_file_path
             try:
                 self.config = json.load(open(e.Path, 'r', encoding='utf-8-sig'))
             except json.decoder.JSONDecodeError as e:
@@ -206,16 +187,16 @@ class SettingsDialog(wx.Dialog):
             self.enable_settings(not fest_file_exists)
             self.button_save.Enable(not fest_file_exists)
             self.button_load.Enable(fest_file_exists)
-            self.session_file_edit_btn.Enable(os.path.exists(self.session_file_path))
+            self.session_file_edit_btn.Enable(os.path.exists(self.fest_file_path))
 
     def config_to_ui(self):
         self.screens_combobox.SetSelection(self.config[Config.PROJECTOR_SCREEN])
-        self.db_path.SetPath(path_make_abs(self.config[Config.C2_DATABASE_PATH], self.session_file_path))
+        self.db_path.SetPath(path.make_abs(self.config[Config.C2_DATABASE_PATH], path.fest_file))
         self.filename_re.SetValue(self.config[Config.FILENAME_RE])
-        self.bg_tracks.SetPath(path_make_abs(self.config[Config.BG_TRACKS_DIR], self.session_file_path))
-        self.bg_zad.SetPath(path_make_abs(self.config[Config.BG_ZAD_PATH], self.session_file_path))
+        self.bg_tracks.SetPath(path.make_abs(self.config[Config.BG_TRACKS_DIR], path.fest_file))
+        self.bg_zad.SetPath(path.make_abs(self.config[Config.BG_ZAD_PATH], path.fest_file))
         [self.rm_dir() for i in range(len(self.dir_pickers))]
-        [self.add_dir(path_make_abs(path, self.session_file_path)) for path in self.config[Config.FILES_DIRS]]
+        [self.add_dir(path.make_abs(d, path.fest_file)) for d in self.config[Config.FILES_DIRS]]
         self.panel.SetSizerAndFit(self.top_sizer)
         self.top_sizer.Fit(self)
         self.SetClientSize((self.GetClientSize()[0] + 300, self.GetClientSize()[1]))
@@ -229,14 +210,12 @@ class SettingsDialog(wx.Dialog):
             widget.SetPath("")
             return ""
 
-    def path_try_relative(self, path):
-        session_file_dir = os.path.dirname(self.session_file_path) + os.sep
-        if os.path.normpath(path).startswith(session_file_dir):
-            return './' + os.path.relpath(path, session_file_dir).replace(os.sep, '/')
-        return path
+    def path_try_relative(self, p):
+        return path.make_rel(p, path.fest_file)
 
     def ui_to_config(self):
         """ Saves selected values from UI to JSON config """
+        # FIXME: prevent .fest file from saving if path validation failed
 
         self.config[Config.PROJECTOR_SCREEN] = self.screens_combobox.GetSelection()
         self.config[Config.FILENAME_RE] = self.filename_re.GetValue()
@@ -269,22 +248,27 @@ class SettingsDialog(wx.Dialog):
         )
 
     def on_ok(self, e):
-        path = self.session_picker.GetPath()
+        fest_file_path = self.session_picker.GetPath()
         ext = '.bkp.fest'
-        if path.find(ext) == len(path) - len(ext):
-            self.session_file_path = path[:-4]
-            shutil.copy(path, self.session_file_path)
+        if fest_file_path.find(ext) == len(fest_file_path) - len(ext):
+            self.fest_file_path = fest_file_path[:-4]
+            shutil.copy(fest_file_path, self.fest_file_path)
         else:
             ext = '.fest'
-            self.session_file_path = path if path.endswith(ext) else path + ext
+            self.fest_file_path = fest_file_path if fest_file_path.endswith(ext) else fest_file_path + ext
 
         if e.Id == wx.ID_SAVE:
+            # For normal path translation .fest file must exist
+            f = open(self.fest_file_path, 'w', encoding='utf-8')
+            f.close()
+
             self.ui_to_config()
-            json.dump(self.config, open(self.session_file_path, 'w', encoding='utf-8'),
+            json.dump(self.config, open(self.fest_file_path, 'w', encoding='utf-8'),
                       ensure_ascii=False, indent=4)
 
+        path.fest_file = self.fest_file_path
         with open(Config.LAST_SESSION_PATH, 'w', encoding='utf-8-sig') as f:
-            f.write(path_session_try_to_relative(self.session_file_path))
+            f.write(path.make_rel(self.fest_file_path))
 
         self.EndModal(e.Id)
 
