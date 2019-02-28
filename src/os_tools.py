@@ -1,6 +1,5 @@
-# This file contains functions used for to work with OS (paths, strings, locale, etc)
-
-# By default, the app uses the absolute paths with posix notation.
+# This file contains OS-level stuff (paths, strings, locale, etc)
+# By default, the app uses absolute paths with POSIX notation.
 # All path translations are performed on start (change settings, read config, etc)
 
 
@@ -43,10 +42,7 @@ class PathTools(object):
             return str(path.resolve())
 
     def _prepare_paths(self, path, anchor):
-        if os.name == 'posix' and '\\' in str(path):
-            path = Path(PureWindowsPath(path).as_posix())
-        else:
-            path = Path(path)
+        path = Path(PureWindowsPath(path).as_posix()) if os.name == 'posix' and '\\' in str(path) else Path(path)
         if anchor is None:
             anchor = Path(self._work_dir)
         else:

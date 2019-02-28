@@ -97,7 +97,7 @@ class MainWindow(wx.Frame):
                 self.logger.log("Session path %s is not file" % self.fest_file_path)
                 self.fest_file_path = ''
 
-        path.fest_file = self.fest_file_path
+        path.fest_file = self.fest_file_path  # TODO: Remove self.fest_file_path
 
         if not self.config_ok:
             self.config = base_config
