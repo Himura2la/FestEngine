@@ -15,3 +15,4 @@
 | [Mira Kamen Convention 2018](https://vk.com/mkfest) | Калуга | 17 ноября 2018г. | [Toki-chan](https://vk.com/toki__chan) |
 | [Tatakae! 3+1](https://vk.com/tata4old) | Старый Оскол | 12 января 2019г. | [@Himura2la](https://github.com/Himura2la) |
 | [Yuki no Odori 8](https://vk.com/tulaanimefest) | Тула | 2 февраля 2019г. | [@Himura2la](https://github.com/Himura2la) |
+| [Neko Challenge! Anime Party](https://vk.com/remagiroparty) | Липецк | 13 апреля 2019г. | [littledrunkflower](https://vk.com/littledrunkflower) |
