@@ -53,6 +53,9 @@ class OsToolsTests(unittest.TestCase):
         self.assertEqual(t.make_rel(self.fest1_path, t.fest_file), "..\\test1.fest")
         # TODO test workdir relative path (need stable workdir path)
 
+        # Test empty path
+        self.assertEqual(t.make_rel(""), "")
+
     # TODO test abs paths (need stable enviroment)
 
     def tearDown(self):

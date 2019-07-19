@@ -29,12 +29,15 @@ class PathTools(object):
         self._fest_file = str(Path(fest_file).resolve())
 
     def make_abs(self, path, anchor=None):
+        if not path:
+            return path
         path, anchor = self._prepare_paths(path, anchor)
         return str(Path(os.path.join(str(anchor), str(path))).resolve())
 
     def make_rel(self, path, anchor=None):
+        if not path:
+            return path
         path, anchor = self._prepare_paths(path, anchor)
-
         if self._can_make_rel(path, anchor):
             # Path().relative_to() have differ semantic with os.path.relpath()
             return str(os.path.relpath(str(path.resolve()), str(anchor)))
