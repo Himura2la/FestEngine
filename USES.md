@@ -17,3 +17,4 @@
 | [Yuki no Odori 8](https://vk.com/tulaanimefest) | Тула | 2 февраля 2019г. | [@Himura2la](https://github.com/Himura2la) |
 | [Neko Challenge! Anime Party](https://vk.com/remagiroparty) | Липецк | 13 апреля 2019г. | [littledrunkflower](https://vk.com/littledrunkflower) |
 | [CROSSxOVER 2019](https://vk.com/crossxover42) | Кемерово | 15 июня 2019г. | [@oreolek](https://github.com/oreolek) |
+| [ANI-SHINAI 2019](https://anishinai.cosplay2.ru/) | Калуга | 20 июля 2019г. | [@Himura2la](https://github.com/Himura2la) |
