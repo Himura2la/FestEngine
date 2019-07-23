@@ -1119,6 +1119,7 @@ class MainWindow(wx.Frame):
         else:  # Not playing
             self.time_bar.SetValue(0)
             self.time_label.SetLabel('Stop')
+            self.player_status = self.player_state_parse(self.player.get_state())
             self.switch_to_zad()
 
             if self.grid.GetCellBackgroundColour(self.current_playing_row, 0) != Colors.ROW_SKIPPED:
