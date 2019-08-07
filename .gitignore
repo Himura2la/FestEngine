@@ -62,7 +62,7 @@ target/
 bin/FestEngine*
 out/
 
-src/last_fest\.txt
+**/last_fest\.txt
 
 *.fest
 
