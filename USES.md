@@ -19,3 +19,4 @@
 | [AtomCosCon 2019](https://vk.com/cosfest) | Дубна (МО) | 15 июня 2019г. | [Airslasher](https://vk.com/courier_from_vegas) |
 | [CROSSxOVER 2019](https://vk.com/crossxover42) | Кемерово | 15 июня 2019г. | [@oreolek](https://github.com/oreolek) |
 | [ANI-SHINAI 2019](https://anishinai.cosplay2.ru/) | Калуга | 20 июля 2019г. | [@Himura2la](https://github.com/Himura2la) |
+| [Косплей-дефиле на UnityCon 2019](http://unitycon.ru) | Москва | 10 августа 2019 г. | [@Himura2la](https://github.com/Himura2la) |
