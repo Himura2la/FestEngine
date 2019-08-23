@@ -166,7 +166,6 @@ class MainWindow(wx.Frame):
         self.end_show_on_bg.Check(False)
 
         self.auto_zad = menu_file.Append(wx.ID_ANY, _("Auto Show &ZAD with Sound"), kind=wx.ITEM_CHECK)
-        self.auto_zad.Check(True)
 
         menu_file.AppendSeparator()
 
