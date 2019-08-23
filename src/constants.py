@@ -45,6 +45,6 @@ class Colors:
 
 
 class FileTypes:
-    video_extensions = {'avi', 'mp4', 'mov', 'wmv', 'mkv', 'm3u'}
+    video_extensions = {'avi', 'mp4', 'm4v', 'mov', 'wmv', 'mkv', 'm3u'}
     audio_extensions = {'mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac'}
     img_extensions = {'jpeg', 'png', 'jpg'}
