@@ -695,7 +695,8 @@ class MainWindow(wx.Frame):
         all_files = [item for sublist in all_files for item in sublist]  # Flatten
 
         for file_path in all_files:
-            # FIXME: check that file_path is file. Otherwise there will be a crash.
+            if not os.path.isfile(file_path):
+                continue
             name, ext = os.path.basename(file_path).rsplit('.', 1)
             ext = ext.lower()  # Never forget doing this!
             match = re.search(self.filename_re, name)
