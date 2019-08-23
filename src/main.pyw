@@ -607,18 +607,31 @@ class MainWindow(wx.Frame):
         self.proj_win.switch_to_images()
 
     def show_zad(self, e=None):
+        self.ensure_proj_win()
         if self.get_num(self.grid.GetGridCursorRow()) == 'countdown':
             self.play_async()
             return
 
         def delayed_run():
-            self.switch_to_zad()
             num = self.get_num(self.grid.GetGridCursorRow())
             try:
                 file_path = [f[1] for f in self.data[num]['files'].items() if f[0] in FileTypes.img_extensions][0]
-                self.proj_win.load_zad(file_path, True)
+                if any([file_path.endswith(e) for e in FileTypes.video_extensions]):
+                    self.switch_to_vid()
+                    self.player.set_media(self.vlc_instance.media_new(file_path))
+                    while not self.set_vlc_video_panel():
+                        pass
+                    self.player.audio_set_mute(False)
+                    self.player.audio_set_volume(self.vol_control.GetValue())
+                    if self.player.play() != 0:  # [Play] button is pushed here!
+                        wx.CallAfter(lambda: self.image_status(u"Video ZAD FAILED №%s" % num))
+                        return
+                else:
+                    self.switch_to_zad()
+                    self.proj_win.load_zad(file_path, True)
                 self.image_status(u"Showing №%s" % num)
                 self.status("ZAD Fired!")
+                wx.CallAfter(lambda: self.proj_win.Layout())
             except IndexError:
                 self.clear_zad(status=u"No ZAD for №%s" % num)
 
@@ -697,7 +710,10 @@ class MainWindow(wx.Frame):
         for file_path in all_files:
             # FIXME: check that file_path is file. Otherwise there will be a crash.
             name, ext = os.path.basename(file_path).rsplit('.', 1)
-            ext = ext.lower()  # Never forget doing this!
+            ext = ext.lower()
+            if name.endswith(".zad"):
+                ext = "zad." + ext
+                name = name[:-4]
             match = re.search(self.filename_re, name)
             if not match:
                 self.logger.log(_("[WARNING] File %s does not match filename_re") % file_path)
