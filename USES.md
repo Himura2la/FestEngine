@@ -24,3 +24,4 @@
 | [ГРЕЧА-фест 2019](https://vk.com/grechafest2019) | Брянск | 10 августа 2019г. | [@Ocakypo](https://github.com/Ocakypo) |
 | [Hokori Tori 2019](https://vk.com/hokori_tori) | Орёл | 17 августа 2019 г. | [@Himura2la](https://github.com/Himura2la) |
 | [Gakko XI](http://gakko-fest.ru/) ([VK](https://vk.com/gakko_official)) | Белгород | 24 августа 2019 г. | [@Himura2la](https://github.com/Himura2la) |
+| [REMAGIRO](https://remagiro.cosplay2.ru/) ([VK](https://vk.com/remagiro)) | Липецк | 31 августа 2019 г. | [littledrunkflower](https://vk.com/littledrunkflower) |
