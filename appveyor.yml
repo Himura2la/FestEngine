@@ -86,22 +86,18 @@ after_test:
 artifacts:
     - name: FestEngine $(appveyor_repo_tag_name) Windows $(arch)bit VLC $(vlc_version) Debug
       path: bin\festengine-$(appveyor_repo_tag_name)-win$(arch)-VLCv$(vlc_version)-debug.zip
-      type: zip
     - name: FestEngine $(appveyor_repo_tag_name) Windows $(arch)bit VLC $(vlc_version) Full
       path: bin\festengine-$(appveyor_repo_tag_name)-win$(arch)-VLCv$(vlc_version)-full.zip
-      type: zip
     - name: FestEngine $(appveyor_repo_tag_name) Windows $(arch)bit Minimal
       path: bin\festengine-$(appveyor_repo_tag_name)-win$(arch)-minimal.zip
-      type: zip
 
 deploy:
-    description: 'Auto-created Release'
-    provider: GitHub
-    auth_token:
-        secure: tpurZq/nyMadA/DqWepPmvcxhxfUL25cfvmFEDOUPUvOfNdUP4SpBH1QJm1yt06T
-    artifact: bin\festengine-win$(arch)-minimal.zip,bin\festengine-win$(arch)-VLCv$(vlc_version)-full.zip
-    draft: true
-    prerelease: true
-    on:
-        appveyor_repo_tag: true
+    - provider: GitHub
+      description: 'Auto-created Release'
+      auth_token:
+          secure: tpurZq/nyMadA/DqWepPmvcxhxfUL25cfvmFEDOUPUvOfNdUP4SpBH1QJm1yt06T
+      draft: true
+      prerelease: true
+      on:
+          appveyor_repo_tag: true
 
