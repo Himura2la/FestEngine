@@ -1,6 +1,6 @@
 skip_non_tags: true
 clone_depth: 1
-image: Visual Studio 2017
+image: Visual Studio 2019
 environment:
     APPVEYOR_RDP_PASSWORD:
         secure: MPAYz75AKBf954hdYvzz2VoCxy5RJLBdg0fajQ1SQUU=
@@ -68,30 +68,30 @@ after_test:
         md ".\locale\ru\LC_MESSAGES" &&
         python %PYTHON_PATH%\Tools\i18n\msgfmt.py -o ".\locale\ru\LC_MESSAGES\main.mo" "%APPVEYOR_BUILD_FOLDER%\src\locale\ru\LC_MESSAGES\main.po" &&
         echo --- Packing a Debug version --- &&
-        7z a ..\festengine-win%ARCH%-VLCv%VLC_VERSION%-debug.zip *)
+        7z a ..\festengine-%APPVEYOR_REPO_TAG_NAME%-win%ARCH%-VLCv%VLC_VERSION%-debug.zip *)
     - cmd: |
         echo --- Preparing a Full version ---
         cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine"
         md ".\locale\ru\LC_MESSAGES"
         python %PYTHON_PATH%\Tools\i18n\msgfmt.py -o ".\locale\ru\LC_MESSAGES\main.mo" "%APPVEYOR_BUILD_FOLDER%\src\locale\ru\LC_MESSAGES\main.po"
         echo --- Packing a Full version ---
-        7z a ..\festengine-win%ARCH%-VLCv%VLC_VERSION%-full.zip *
+        7z a ..\festengine-%APPVEYOR_REPO_TAG_NAME%-win%ARCH%-VLCv%VLC_VERSION%-full.zip *
     - if [%VLC%]==[latest] (
         echo --- Minimalizing a Full version --- &&
         cd "%APPVEYOR_BUILD_FOLDER%\bin\" &&
         .\minimalize.bat &&
         echo --- Packing a Minimal version --- &&
-        7z a .\festengine-win%ARCH%-minimal.zip .\FestEngine\*)
+        7z a .\festengine-%APPVEYOR_REPO_TAG_NAME%-win%ARCH%-minimal.zip .\FestEngine\*)
 
 artifacts:
-    - name: FestEngine Windows $(arch)bit VLC $(vlc_version) Debug
-      path: bin\festengine-win$(arch)-VLCv$(vlc_version)-debug.zip
+    - name: FestEngine $(appveyor_repo_tag_name) Windows $(arch)bit VLC $(vlc_version) Debug
+      path: bin\festengine-$(appveyor_repo_tag_name)-win$(arch)-VLCv$(vlc_version)-debug.zip
       type: zip
-    - name: FestEngine Windows $(arch)bit VLC $(vlc_version) Full
-      path: bin\festengine-win$(arch)-VLCv$(vlc_version)-full.zip
+    - name: FestEngine $(appveyor_repo_tag_name) Windows $(arch)bit VLC $(vlc_version) Full
+      path: bin\festengine-$(appveyor_repo_tag_name)-win$(arch)-VLCv$(vlc_version)-full.zip
       type: zip
-    - name: FestEngine Windows $(arch)bit Minimal
-      path: bin\festengine-win$(arch)-minimal.zip
+    - name: FestEngine $(appveyor_repo_tag_name) Windows $(arch)bit Minimal
+      path: bin\festengine-$(appveyor_repo_tag_name)-win$(arch)-minimal.zip
       type: zip
 
 deploy:
