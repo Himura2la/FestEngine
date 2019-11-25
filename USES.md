@@ -25,3 +25,4 @@
 | [Hokori Tori 2019](https://vk.com/hokori_tori) | Орёл | 17 августа 2019 г. | [@Himura2la](https://github.com/Himura2la) |
 | [Gakko XI](http://gakko-fest.ru/) ([VK](https://vk.com/gakko_official)) | Белгород | 24 августа 2019 г. | [@Himura2la](https://github.com/Himura2la) |
 | [REMAGIRO](https://remagiro.cosplay2.ru/) ([VK](https://vk.com/remagiro)) | Липецк | 31 августа 2019 г. | [littledrunkflower](https://vk.com/littledrunkflower) |
+| [Kyoto anifest](https://vk.com/kyotoanifest2019) | Курск | 16 ноября 2019 г. | [Михо](https://vk.com/mihomihovna) |
