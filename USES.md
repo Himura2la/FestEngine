@@ -27,3 +27,4 @@
 | [REMAGIRO](https://remagiro.cosplay2.ru/) ([VK](https://vk.com/remagiro)) | Липецк | 31 августа 2019 г. | [littledrunkflower](https://vk.com/littledrunkflower) |
 | [Kyoto anifest](https://vk.com/kyotoanifest2019) | Курск | 16 ноября 2019 г. | [Михо](https://vk.com/mihomihovna) |
 | [Tatakae! Дай 5!](https://vk.com/tata5old) | Старый Оскол | 30.11, 1.12.2019 | [@Himura2la](https://github.com/Himura2la) |
+| [AnyFest 2019](https://vk.com/anyfest) | Брянск | 7 декабря 2019г. | [@Ocakypo](https://github.com/Ocakypo) |
