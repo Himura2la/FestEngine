@@ -25,6 +25,7 @@
 
 Ближайшие аналоги:
 
+* [QLab](https://qlab.app/)
 * [Show Cue System](https://www.showcuesystems.com/cms/)
 * [Resolume Arena](https://resolume.com/)
 
