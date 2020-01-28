@@ -952,10 +952,10 @@ class MainWindow(wx.Frame):
     # -------------------------------------------------- Player --------------------------------------------------
 
     def play_async(self, e=None):
-        if self.is_playing:
+        num = self.get_num(self.grid.GetGridCursorRow())
+        if self.is_playing and self.num_in_player == num:
             self.status(_("ALREADY PLAYING! Hit Esc to restart!"))
             return
-        num = self.get_num(self.grid.GetGridCursorRow())
         if num == 'countdown':
             notes = self.grid.GetCellValue(self.grid.GetGridCursorRow(), self.grid_cols.index(Columns.NOTES))
             self.ensure_proj_win()
