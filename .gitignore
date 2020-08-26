@@ -57,6 +57,9 @@ docs/_build/
 # PyBuilder
 target/
 
+# Python virtual environment
+.venv
+
 \.idea/
 
 bin/FestEngine*

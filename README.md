@@ -119,6 +119,17 @@ cd FestEngine/src/locale && ./msgfmt.sh && cd ..
 python3 main.pyw
 ```
 
+## CentOS 8
+
+```
+python3 -m venv .venv
+. .venv/bin/activate
+pip3 install --upgrade pip setuptools
+pip3 install python-vlc
+pip3 install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/centos-8/wxPython-4.1.0-cp36-cp36m-linux_x86_64.whl wxPython
+sudo dnf install SDL
+```
+
 # Кто это использует?
 
 [С помощью Fest Engine проводились следующие мероприятия](USES.md)
