@@ -29,3 +29,5 @@
 | [Tatakae! Дай 5!](https://vk.com/tata5old) | Старый Оскол | 30.11, 1.12.2019 | [@Himura2la](https://github.com/Himura2la) |
 | [AnyFest 2019](https://vk.com/anyfest) | Брянск | 7 декабря 2019г. | [@Ocakypo](https://github.com/Ocakypo) |
 | [Yuki no Odori 9](https://vk.com/tulaanimefest) | Тула | 1 февраля 2020г. | [@Himura2la](https://github.com/Himura2la) |
+| [Главная сцена на DatFest 2020](http://datfest.ru) ([VK](https://vk.com/datfest)) | Москва | 14 марта 2020г. | [@Himura2la](https://github.com/Himura2la) |
+| [GAKKO 12](https://vk.com/gakko_official) | Белгород | 29 августа 2020г. | [@Himura2la](https://github.com/Himura2la) |
