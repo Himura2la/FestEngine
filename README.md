@@ -28,6 +28,7 @@
 * [QLab](https://qlab.app/)
 * [Show Cue System](https://www.showcuesystems.com/cms/)
 * [Resolume Arena](https://resolume.com/)
+* [Linux Show Player](https://github.com/FrancescoCeruti/linux-show-player) (только аудио)
 
 
 # Как это теперь:
