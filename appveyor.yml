@@ -1,38 +1,62 @@
-skip_non_tags: true
 clone_depth: 1
-image: Visual Studio 2019
+skip_branch_with_pr: true
+image:
+    - Ubuntu
+    - Visual Studio 2019
 environment:
-    APPVEYOR_RDP_PASSWORD:
-        secure: MPAYz75AKBf954hdYvzz2VoCxy5RJLBdg0fajQ1SQUU=
-    matrix:
-        - ARCH: '64'
-          VLC: 'latest'
-        - ARCH: '32'
-          VLC: '2.2.8'
+  APPVEYOR_RDP_PASSWORD:
+    secure: MPAYz75AKBf954hdYvzz2VoCxy5RJLBdg0fajQ1SQUU=
+  matrix:
+    - ARCH: '64'
+      VLC: 'latest'
+    - ARCH: '32'
+      VLC: '2.2.8'
 
-#init:
-#    - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+for:
+-
+  matrix:
+    only:
+      - image: Ubuntu
+        ARCH: '64'
 
-#on_finish:
+  install:
+    - sudo apt-get update
+    - sudo apt-get install -y python3-pip
+    - sudo -H pip3 install -U docker-compose
+  build_script:
+    - ./bin/build.sh
+  artifacts:
+    - name: FestEngine Linux 64bit Minimal
+      path: bin\fest_engine-linux-x64-minimal.tar.gz
+
+
+-
+  matrix:
+    only:
+      - image: Visual Studio 2019
+
+# init:
+#  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+# on_finish:
 #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
-install:
+  install:
     - ps: |
         if ($env:ARCH -eq "32") {
-            $env:VLC_INSTALL_FLAGS = "--x86"; $env:PYTHON_PATH = "C:\Python36"} else {$env:PYTHON_PATH = "C:\Python36-x64"
+          $env:VLC_INSTALL_FLAGS = "--x86"; $env:PYTHON_PATH = "C:\Python36"} else {$env:PYTHON_PATH = "C:\Python36-x64"
         }
         if ($env:VLC -eq "latest") {
-            $env:VLC_VERSION = ((choco list vlc | Select-String -Pattern "^vlc [\d\.]* \[Approved\]") -split " ")[1]
+          $env:VLC_VERSION = ((choco list vlc | Select-String -Pattern "^vlc [\d\.]* \[Approved\]") -split " ")[1]
         } else {
-            $env:VLC_VERSION = $env:VLC
-            $env:VLC_INSTALL_FLAGS += " --version $env:VLC_VERSION"
+          $env:VLC_VERSION = $env:VLC
+          $env:VLC_INSTALL_FLAGS += " --version $env:VLC_VERSION"
         }
     - cmd: |
         set PATH=%PYTHON_PATH%;%PYTHON_PATH%\Scripts;%PATH%
         pip install pyinstaller python-vlc wxpython pywinauto
         choco install -y --no-progress %VLC_INSTALL_FLAGS% vlc
 
-build_script:
+  build_script:
     - cmd: |
         echo --- build_script ---
         cd "%APPVEYOR_BUILD_FOLDER%\bin"
@@ -41,7 +65,7 @@ build_script:
         echo --- Building a Debug version ---
         python build.py -d
 
-after_build:
+  after_build:
     - cmd: |
         echo --- after_build (Cleaning MS DLLs) ---
         cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine-debug"
@@ -49,18 +73,18 @@ after_build:
         cd "..\FestEngine"
         del MSVCP140.dll VCRUNTIME140.dll api-ms-*  # GPL does not allow...
 
-before_test:
+  before_test:
     - cmd: |
-        echo "--- before_test (Downloading test data) ---"
+        echo --- before_test (Downloading test data) ---
         cd "%APPVEYOR_BUILD_FOLDER%\test\data"
         git submodule update --init
 
-test_script:
+  test_script:
     - cmd: python -m unittest discover "%APPVEYOR_BUILD_FOLDER%\test"
 
-after_test:
+  after_test:
     - cmd: echo --- after_test (Building Localization and Packing) ---
-    - if [%ARCH%]==[64] (
+    - if "%ARCH%"=="64" (
         echo --- Preparing a Debug version --- &&
         cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine-debug" &&
         md ".\locale\ru\LC_MESSAGES" &&
@@ -74,14 +98,14 @@ after_test:
         python %PYTHON_PATH%\Tools\i18n\msgfmt.py -o ".\locale\ru\LC_MESSAGES\main.mo" "%APPVEYOR_BUILD_FOLDER%\src\locale\ru\LC_MESSAGES\main.po"
         echo --- Packing a Full version ---
         7z a ..\festengine-%APPVEYOR_REPO_TAG_NAME%-win%ARCH%-VLCv%VLC_VERSION%-full.zip *
-    - if [%VLC%]==[latest] (
+    - if "%VLC%"=="latest" (
         echo --- Minimalizing a Full version --- &&
         cd "%APPVEYOR_BUILD_FOLDER%\bin\" &&
         .\minimalize.bat &&
         echo --- Packing a Minimal version --- &&
         7z a .\festengine-%APPVEYOR_REPO_TAG_NAME%-win%ARCH%-minimal.zip .\FestEngine\*)
 
-artifacts:
+  artifacts:
     - name: FestEngine $(appveyor_repo_tag_name) Windows $(arch)bit VLC $(vlc_version) Debug
       path: bin\festengine-$(appveyor_repo_tag_name)-win$(arch)-VLCv$(vlc_version)-debug.zip
     - name: FestEngine $(appveyor_repo_tag_name) Windows $(arch)bit VLC $(vlc_version) Full
@@ -89,12 +113,16 @@ artifacts:
     - name: FestEngine $(appveyor_repo_tag_name) Windows $(arch)bit Minimal
       path: bin\festengine-$(appveyor_repo_tag_name)-win$(arch)-minimal.zip
 
-deploy:
-    - provider: GitHub
-      description: 'Auto-created Release'
-      auth_token:
+-
+  matrix:
+    only:
+      - APPVEYOR_REPO_TAG: true
+  deploy:
+      - provider: GitHub
+        description: 'Auto-created Release'
+        auth_token:
           secure: tpurZq/nyMadA/DqWepPmvcxhxfUL25cfvmFEDOUPUvOfNdUP4SpBH1QJm1yt06T
-      draft: true
-      prerelease: true
-      on:
+        draft: true
+        prerelease: true
+        on:
           appveyor_repo_tag: true
