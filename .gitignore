@@ -60,13 +60,11 @@ target/
 # Python virtual environment
 .venv
 
-\.idea/
-
+.idea/
 bin/FestEngine*
 out/
 
-**/last_fest\.txt
-
-*.fest
-
-*.fest_bkp
+**/last_fest.txt
+**.fest
+**.fest_bkp
+**/*.tar.gz

@@ -1,9 +1,6 @@
 *
 !./src/
-!./bin/
-./bin/build.sh
-
+!./bin/build.py
+!./bin/install.sh
 **/*.bat
 **/*.tar.gz
-**/Dockerfile
-**/docker-compose.yml
