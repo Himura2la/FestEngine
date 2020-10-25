@@ -22,9 +22,13 @@ for:
   install:
     - sudo apt-get update
     - sudo apt-get install -y python3-pip
-    - sudo pip3 install -U docker-compose
+    - sudo -H pip3 install -U docker-compose
   build_script:
     - ./bin/build.sh
+  artifacts:
+    - name: FestEngine Linux 64bit Minimal
+      path: bin\fest_engine-linux-x64-minimal.tar.gz
+
 
 -
   matrix:
