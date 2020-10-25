@@ -1,0 +1,7 @@
+version: '3.4'
+services:
+  fest-engine:
+    container_name: fest-engine
+    build:
+      context: ../
+      dockerfile: ./bin/Dockerfile

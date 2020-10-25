@@ -88,6 +88,7 @@ if p.poll() == 0 and sys.platform.startswith('linux'):
     import urllib.request
     exclude_libs = urllib.request.urlopen(appimage_excludelist_url).read()
     exclude_libs = [e.rsplit('.so', 1)[0] for e in exclude_libs.decode().split('\n') if e and e[0] != '#']
+    exclude_libs += ['libvlc', 'libvlccore']
     exclude_libs.append('libharfbuzz')  # https://github.com/AppImage/AppImageKit/issues/454
     os.chdir(os.path.join(bin_path, name))
     all_files = os.listdir()

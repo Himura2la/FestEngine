@@ -1,0 +1,6 @@
+*
+!./src/
+!./bin/build.py
+!./bin/install.sh
+**/*.bat
+**/*.tar.gz
