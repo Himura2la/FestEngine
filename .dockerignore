@@ -1,0 +1,9 @@
+*
+!./src/
+!./bin/
+./bin/build.sh
+
+**/*.bat
+**/*.tar.gz
+**/Dockerfile
+**/docker-compose.yml
