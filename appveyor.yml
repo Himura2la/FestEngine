@@ -7,8 +7,6 @@ environment:
     matrix:
         - ARCH: '64'
           VLC: 'latest'
-        - ARCH: '64'
-          VLC: '2.2.8'
         - ARCH: '32'
           VLC: '2.2.8'
 
@@ -100,4 +98,3 @@ deploy:
       prerelease: true
       on:
           appveyor_repo_tag: true
-

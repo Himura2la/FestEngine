@@ -344,7 +344,7 @@ class MainWindow(wx.Frame):
         self.grid.HideRowLabels()
         self.grid.DisableDragRowSize()
         self.grid.SetColLabelSize(20)
-        self.grid.SetSelectionMode(wx.grid.Grid.wxGridSelectRows)
+        self.grid.SetSelectionMode(wx.grid.Grid.GridSelectRows)
 
         def select_row(e):
             if not e.Selecting() or hasattr(e, 'TopRow') and e.TopRow == e.BottomRow:

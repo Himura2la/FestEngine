@@ -234,7 +234,7 @@ class BackgroundMusicWindow(wx.Frame):
         self.grid.HideColLabels()
         self.grid.DisableDragRowSize()
         self.grid.SetRowLabelSize(20)
-        self.grid.SetSelectionMode(wx.grid.Grid.wxGridSelectRows)
+        self.grid.SetSelectionMode(wx.grid.Grid.GridSelectRows)
 
         def select_row(e):
             row = e.Row if hasattr(e, 'Row') else e.TopRow
