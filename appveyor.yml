@@ -85,7 +85,7 @@ for:
   after_test:
     - ps: |
         echo '--- after_test (Building Localization and Packing) ---'
-        if ($APPVEYOR_REPO_TAG_NAME) { $env:VER = $APPVEYOR_REPO_TAG_NAME } else { $env:VER = $APPVEYOR_REPO_COMMIT }
+        if ($env:APPVEYOR_REPO_TAG_NAME) { $env:VER = $env:APPVEYOR_REPO_TAG_NAME } else { $env:VER = $env:APPVEYOR_REPO_COMMIT.substring(0,7) }
     - if "%ARCH%"=="64" (
         echo --- Preparing a Debug version --- &&
         cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine-debug" &&
