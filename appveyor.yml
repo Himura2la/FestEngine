@@ -28,17 +28,13 @@ for:
         Import-Module -Force "$env:APPVEYOR_BUILD_FOLDER/bin/ci.psm1"
         FestEngineGetDeps
 
-
   build_script:
     - ps: FestEngineBuild
-
-  after_build:
-    - ps: FestEngineCleanProprietaryLibs
 
   before_test:
     - ps: |
         echo '--- Downloading test data ---'
-        git submodule update --init
+        git submodule update --init 2>&1
 
   test_script:
     - ps: '& "$env:PYTHON_PATH/python.exe" -m unittest discover "./test"'

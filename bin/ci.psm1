@@ -28,25 +28,8 @@ function FestEngineGetDeps {
 
 function FestEngineBuild {
     pushd './bin'
-
-    echo '--- Building a Full version ---'
-    & "$env:PYTHON_PATH\python.exe" build.py
-
-    echo '--- Building a Debug version ---'
-    & "$env:PYTHON_PATH\python.exe" build.py -d
-
-    popd
-}
-
-function FestEngineCleanProprietaryLibs {
-    echo '--- Cleaning MS DLLs ---'
-
-    pushd './bin/FestEngine-debug'
-    Remove-Item MSVCP140.dll, VCRUNTIME140.dll, api-ms-*
-
-    cd '../FestEngine'
-    Remove-Item MSVCP140.dll, VCRUNTIME140.dll, api-ms-*
-
+    & "$env:PYTHON_PATH\python.exe" build.py 2>&1
+    & "$env:PYTHON_PATH\python.exe" build.py -d 2>&1
     popd
 }
 
