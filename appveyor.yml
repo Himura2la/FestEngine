@@ -12,6 +12,7 @@ environment:
     - ARCH: '32'
       VLC: '2.2.8'
 
+
 for:
 -
   matrix:
@@ -52,26 +53,12 @@ for:
     - name: FestEngine $(ver) Windows $(arch)bit Minimal
       path: bin/festengine-$(ver)-win$(arch)-minimal.zip
 
--
-  matrix:
-    only:
-      - APPVEYOR_REPO_TAG: true
-  deploy:
-      - provider: GitHub
-        description: 'Auto-created Release'
-        auth_token:
-          secure: tpurZq/nyMadA/DqWepPmvcxhxfUL25cfvmFEDOUPUvOfNdUP4SpBH1QJm1yt06T
-        draft: true
-        prerelease: true
-        on:
-          appveyor_repo_tag: true
 
 -
   matrix:
     only:
       - image: Ubuntu
         ARCH: '64'
-        APPVEYOR_REPO_TAG: true
 
   install:
     - sudo apt-get update
@@ -82,3 +69,14 @@ for:
   artifacts:
     - name: FestEngine Linux 64bit Minimal
       path: bin/fest_engine-linux-x64-minimal.tar.gz
+
+
+deploy:
+    - provider: GitHub
+      description: 'Auto-created Release'
+      auth_token:
+        secure: tpurZq/nyMadA/DqWepPmvcxhxfUL25cfvmFEDOUPUvOfNdUP4SpBH1QJm1yt06T
+      draft: true
+      prerelease: true
+      on:
+        APPVEYOR_REPO_TAG: true
