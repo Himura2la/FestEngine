@@ -21,7 +21,7 @@ function FestEngineGetDeps {
     }
 
     $env:Path += ";$env:PYTHON_PATH;$env:PYTHON_PATH\Scripts"
-    pip install pyinstaller python-vlc wxpython pywinauto
+    pip3 install pyinstaller python-vlc wxpython pywinauto
 }
 
 
@@ -29,10 +29,10 @@ function FestEngineBuild {
     pushd '.\bin'
 
     echo '--- Building a Full version ---'
-    python build.py
+    python3 build.py
 
     echo '--- Building a Debug version ---'
-    python build.py -d
+    python3 build.py -d
 
     popd
 }
@@ -77,7 +77,7 @@ function FestEnginePackage {
 
 function BuildLocalization {
     New-Item -Path '.\locale\ru\LC_MESSAGES' -ItemType Directory
-    python $env:PYTHON_PATH\Tools\i18n\msgfmt.py -o '.\locale\ru\LC_MESSAGES\main.mo' '.\src\locale\ru\LC_MESSAGES\main.po'
+    python3 "$env:PYTHON_PATH\Tools\i18n\msgfmt.py" -o '.\locale\ru\LC_MESSAGES\main.mo' '.\src\locale\ru\LC_MESSAGES\main.po'
 }
 
 Export-ModuleMember -Function FestEngine*
