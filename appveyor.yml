@@ -1,8 +1,8 @@
 clone_depth: 1
 skip_branch_with_pr: true
 image:
-    - Ubuntu
     - Visual Studio 2019
+    - Ubuntu
 environment:
   APPVEYOR_RDP_PASSWORD:
     secure: MPAYz75AKBf954hdYvzz2VoCxy5RJLBdg0fajQ1SQUU=
@@ -16,23 +16,6 @@ for:
 -
   matrix:
     only:
-      - image: Ubuntu
-        ARCH: '64'
-
-  install:
-    - sudo apt-get update
-    - sudo apt-get install -y python3-pip
-    - sudo -H pip3 install -U docker-compose
-  build_script:
-    - ./bin/build.sh
-  artifacts:
-    - name: FestEngine Linux 64bit Minimal
-      path: bin\fest_engine-linux-x64-minimal.tar.gz
-
-
--
-  matrix:
-    only:
       - image: Visual Studio 2019
 
 # init:
@@ -42,76 +25,32 @@ for:
 
   install:
     - ps: |
-        if ($env:ARCH -eq "32") {
-          $env:VLC_INSTALL_FLAGS = "--x86"; $env:PYTHON_PATH = "C:\Python36"} else {$env:PYTHON_PATH = "C:\Python36-x64"
-        }
-        if ($env:VLC -eq "latest") {
-          $env:VLC_VERSION = ((choco list vlc | Select-String -Pattern "^vlc [\d\.]* \[Approved\]") -split " ")[1]
-        } else {
-          $env:VLC_VERSION = $env:VLC
-          $env:VLC_INSTALL_FLAGS += " --version $env:VLC_VERSION"
-        }
-    - cmd: |
-        set PATH=%PYTHON_PATH%;%PYTHON_PATH%\Scripts;%PATH%
-        pip install pyinstaller python-vlc wxpython pywinauto
-        choco install -y --no-progress %VLC_INSTALL_FLAGS% vlc
+        Import-Module -Force "$env:APPVEYOR_BUILD_FOLDER/bin/ci.psm1"
+        FestEngineGetDeps
 
   build_script:
-    - cmd: |
-        echo --- build_script ---
-        cd "%APPVEYOR_BUILD_FOLDER%\bin"
-        echo --- Building a Full version ---
-        python build.py
-        echo --- Building a Debug version ---
-        python build.py -d
-
-  after_build:
-    - cmd: |
-        echo --- after_build (Cleaning MS DLLs) ---
-        cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine-debug"
-        del MSVCP140.dll VCRUNTIME140.dll api-ms-*
-        cd "..\FestEngine"
-        del MSVCP140.dll VCRUNTIME140.dll api-ms-*  # GPL does not allow...
+    - ps: FestEngineBuild
 
   before_test:
     - cmd: |
-        echo --- before_test (Downloading test data) ---
-        cd "%APPVEYOR_BUILD_FOLDER%\test\data"
+        echo --- Downloading test data ---
         git submodule update --init
 
   test_script:
-    - cmd: python -m unittest discover "%APPVEYOR_BUILD_FOLDER%\test"
+    - cmd: |
+        echo --- Running tests ---
+        "%PYTHON_PATH%/python.exe" -m unittest discover "./test"
 
   after_test:
-    - cmd: echo --- after_test (Building Localization and Packing) ---
-    - if "%ARCH%"=="64" (
-        echo --- Preparing a Debug version --- &&
-        cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine-debug" &&
-        md ".\locale\ru\LC_MESSAGES" &&
-        python %PYTHON_PATH%\Tools\i18n\msgfmt.py -o ".\locale\ru\LC_MESSAGES\main.mo" "%APPVEYOR_BUILD_FOLDER%\src\locale\ru\LC_MESSAGES\main.po" &&
-        echo --- Packing a Debug version --- &&
-        7z a ..\festengine-%APPVEYOR_REPO_TAG_NAME%-win%ARCH%-VLCv%VLC_VERSION%-debug.zip *)
-    - cmd: |
-        echo --- Preparing a Full version ---
-        cd "%APPVEYOR_BUILD_FOLDER%\bin\FestEngine"
-        md ".\locale\ru\LC_MESSAGES"
-        python %PYTHON_PATH%\Tools\i18n\msgfmt.py -o ".\locale\ru\LC_MESSAGES\main.mo" "%APPVEYOR_BUILD_FOLDER%\src\locale\ru\LC_MESSAGES\main.po"
-        echo --- Packing a Full version ---
-        7z a ..\festengine-%APPVEYOR_REPO_TAG_NAME%-win%ARCH%-VLCv%VLC_VERSION%-full.zip *
-    - if "%VLC%"=="latest" (
-        echo --- Minimalizing a Full version --- &&
-        cd "%APPVEYOR_BUILD_FOLDER%\bin\" &&
-        .\minimalize.bat &&
-        echo --- Packing a Minimal version --- &&
-        7z a .\festengine-%APPVEYOR_REPO_TAG_NAME%-win%ARCH%-minimal.zip .\FestEngine\*)
+    - ps: FestEnginePackage
 
   artifacts:
-    - name: FestEngine $(appveyor_repo_tag_name) Windows $(arch)bit VLC $(vlc_version) Debug
-      path: bin\festengine-$(appveyor_repo_tag_name)-win$(arch)-VLCv$(vlc_version)-debug.zip
-    - name: FestEngine $(appveyor_repo_tag_name) Windows $(arch)bit VLC $(vlc_version) Full
-      path: bin\festengine-$(appveyor_repo_tag_name)-win$(arch)-VLCv$(vlc_version)-full.zip
-    - name: FestEngine $(appveyor_repo_tag_name) Windows $(arch)bit Minimal
-      path: bin\festengine-$(appveyor_repo_tag_name)-win$(arch)-minimal.zip
+    - name: FestEngine $(ver) Windows $(arch)bit VLC $(vlc_version) Debug
+      path: bin/festengine-$(ver)-win$(arch)-VLCv$(vlc_version)-debug.zip
+    - name: FestEngine $(ver) Windows $(arch)bit VLC $(vlc_version) Full
+      path: bin/festengine-$(ver)-win$(arch)-VLCv$(vlc_version)-full.zip
+    - name: FestEngine $(ver) Windows $(arch)bit Minimal
+      path: bin/festengine-$(ver)-win$(arch)-minimal.zip
 
 -
   matrix:
@@ -126,3 +65,20 @@ for:
         prerelease: true
         on:
           appveyor_repo_tag: true
+
+-
+  matrix:
+    only:
+      - image: Ubuntu
+        ARCH: '64'
+        APPVEYOR_REPO_TAG: true
+
+  install:
+    - sudo apt-get update
+    - sudo apt-get install -y python3-pip
+    - sudo -H pip3 install -U docker-compose
+  build_script:
+    - ./bin/build.sh
+  artifacts:
+    - name: FestEngine Linux 64bit Minimal
+      path: bin/fest_engine-linux-x64-minimal.tar.gz

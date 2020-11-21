@@ -23,9 +23,7 @@ if args.debug:
 else:
     pyinst_flags.insert(1, '--windowed')
 
-
-self_name = os.path.basename(sys.argv[0])
-print("--------------- %s started! ---------------" % self_name)
+print("---------------Building %s ---------------" % name)
 
 vlc_binaries = []
 vlc_path = None
@@ -72,27 +70,32 @@ pyinst_cmd = ['pyinstaller', '-n', name, '--distpath', dist_path] + vlc_binaries
 
 print("Running:", " ".join(pyinst_cmd))
 
-p = subprocess.Popen(pyinst_cmd)
+p = subprocess.Popen(pyinst_cmd, stderr=subprocess.STDOUT)
 
 t = 0
 while p.poll() is None:
     time.sleep(1)
     t += 1
-    if t % 20 == 0:
+    if t % 10 == 0:
         print("--- Still building... %ds passed." % t)
 
 print("--------------- Built in %ds with exitcode %d! ---------------" % (t, p.poll()))
 
-if p.poll() == 0 and sys.platform.startswith('linux'):
-    print("--- Cleaning extra libs according to the AppImage excludelibs list...")
-    import urllib.request
-    exclude_libs = urllib.request.urlopen(appimage_excludelist_url).read()
-    exclude_libs = [e.rsplit('.so', 1)[0] for e in exclude_libs.decode().split('\n') if e and e[0] != '#']
-    exclude_libs += ['libvlc', 'libvlccore']
-    exclude_libs.append('libharfbuzz')  # https://github.com/AppImage/AppImageKit/issues/454
+if p.poll() == 0:
     os.chdir(os.path.join(bin_path, name))
-    all_files = os.listdir()
-    libs_to_exclude = list(filter(lambda f: any([f.startswith(l) for l in exclude_libs]), all_files))
+    if sys.platform.startswith('linux'):
+        print("--- Cleaning extra libs according to the AppImage excludelibs list...")
+        import urllib.request
+        exclude_libs = urllib.request.urlopen(appimage_excludelist_url).read()
+        exclude_libs = [e.rsplit('.so', 1)[0] for e in exclude_libs.decode().split('\n') if e and e[0] != '#']
+        exclude_libs += ['libvlc', 'libvlccore']
+        exclude_libs.append('libharfbuzz')  # https://github.com/AppImage/AppImageKit/issues/454
+        all_files = os.listdir()
+        libs_to_exclude = list(filter(lambda f: any([f.startswith(l) for l in exclude_libs]), all_files))
+    if sys.platform == "win32":
+        print("--- Cleaning Proprietary DLLs...")
+        from glob import glob
+        libs_to_exclude = ['MSVCP140.dll', 'VCRUNTIME140.dll'] + glob('api-ms-*')
     print("--- Removing:", libs_to_exclude)
     [os.remove(lib) for lib in libs_to_exclude]
 
@@ -100,4 +103,4 @@ plugins_cache = os.path.join(bin_path, name, 'plugins', 'plugins.dat')
 if os.path.isfile(plugins_cache):
     os.remove(plugins_cache)
 
-print("--------------- Ready! ---------------")
+print("--------------- Done! ---------------")
