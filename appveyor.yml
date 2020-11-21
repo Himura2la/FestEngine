@@ -41,7 +41,7 @@ for:
         git submodule update --init
 
   test_script:
-    - ps: python3 -m unittest discover './test'
+    - ps: '& "$env:PYTHON_PATH/python.exe" -m unittest discover "./test"'
 
   after_test:
     - ps: FestEnginePackage

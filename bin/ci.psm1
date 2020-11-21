@@ -20,8 +20,8 @@ function FestEngineGetDeps {
         choco install -y --no-progress --version $env:VLC_VERSION $env:VLC_ARCH_FLAG vlc
     }
 
-    $env:Path += ";$env:PYTHON_PATH;$env:PYTHON_PATH\Scripts"
-    pip3 install pyinstaller python-vlc wxpython pywinauto
+    & "$env:PYTHON_PATH/python.exe" -m pip install --upgrade pip
+    & "$env:PYTHON_PATH/python.exe" -m pip install pyinstaller python-vlc wxpython pywinauto
 }
 
 
@@ -29,10 +29,10 @@ function FestEngineBuild {
     pushd '.\bin'
 
     echo '--- Building a Full version ---'
-    python3 build.py
+    & "$env:PYTHON_PATH/python.exe" build.py
 
     echo '--- Building a Debug version ---'
-    python3 build.py -d
+    & "$env:PYTHON_PATH/python.exe" build.py -d
 
     popd
 }
@@ -77,7 +77,7 @@ function FestEnginePackage {
 
 function BuildLocalization {
     New-Item -Path '.\locale\ru\LC_MESSAGES' -ItemType Directory
-    python3 "$env:PYTHON_PATH\Tools\i18n\msgfmt.py" -o '.\locale\ru\LC_MESSAGES\main.mo' '.\src\locale\ru\LC_MESSAGES\main.po'
+    & "$env:PYTHON_PATH/python.exe" "$env:PYTHON_PATH\Tools\i18n\msgfmt.py" -o '.\locale\ru\LC_MESSAGES\main.mo' '.\src\locale\ru\LC_MESSAGES\main.po'
 }
 
 Export-ModuleMember -Function FestEngine*
