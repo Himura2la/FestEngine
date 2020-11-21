@@ -28,8 +28,8 @@ function FestEngineGetDeps {
 
 function FestEngineBuild {
     pushd './bin'
-    & "$env:PYTHON_PATH\python.exe" build.py 2>&1
-    & "$env:PYTHON_PATH\python.exe" build.py -d 2>&1
+    & "$env:PYTHON_PATH\python.exe" build.py
+    & "$env:PYTHON_PATH\python.exe" build.py -d
     popd
 }
 

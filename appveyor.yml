@@ -24,29 +24,25 @@ for:
 #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
   install:
-    - pwsh: |
+    - ps: |
         Import-Module -Force "$env:APPVEYOR_BUILD_FOLDER/bin/ci.psm1"
         FestEngineGetDeps
 
   build_script:
-    - pwsh: |
-        Import-Module -Force "$env:APPVEYOR_BUILD_FOLDER/bin/ci.psm1"
-        FestEngineBuild
+    - ps: FestEngineBuild
 
   before_test:
-    - pwsh: |
+    - ps: |
         echo '--- Downloading test data ---'
-        git submodule update --init 2>&1
+        git submodule update --init *>&1
 
   test_script:
-    - pwsh: |
+    - ps: |
         echo '--- Running tests ---'
         & "$env:PYTHON_PATH/python.exe" -m unittest discover "./test"
 
   after_test:
-    - pwsh: |
-        Import-Module -Force "$env:APPVEYOR_BUILD_FOLDER/bin/ci.psm1"
-        FestEnginePackage
+    - ps: FestEnginePackage
 
   artifacts:
     - name: FestEngine $(ver) Windows $(arch)bit VLC $(vlc_version) Debug
