@@ -28,7 +28,7 @@ for:
     - ./bin/build.sh
   artifacts:
     - name: FestEngine Linux 64bit Minimal
-      path: bin\fest_engine-linux-x64-minimal.tar.gz
+      path: bin/fest_engine-linux-x64-minimal.tar.gz
 
 
 -
@@ -43,7 +43,7 @@ for:
 
   install:
     - ps: |
-        Import-Module -Force .\ci.psm1
+        Import-Module -Force "$env:APPVEYOR_BUILD_FOLDER/bin/ci.psm1"
         FestEngineGetDeps
 
 
@@ -59,18 +59,18 @@ for:
         git submodule update --init
 
   test_script:
-    - ps: python -m unittest discover '.\test'
+    - ps: python -m unittest discover './test'
 
   after_test:
     - ps: FestEnginePackage
 
   artifacts:
     - name: FestEngine $(ver) Windows $(arch)bit VLC $(vlc_version) Debug
-      path: bin\festengine-$(ver)-win$(arch)-VLCv$(vlc_version)-debug.zip
+      path: bin/festengine-$(ver)-win$(arch)-VLCv$(vlc_version)-debug.zip
     - name: FestEngine $(ver) Windows $(arch)bit VLC $(vlc_version) Full
-      path: bin\festengine-$(ver)-win$(arch)-VLCv$(vlc_version)-full.zip
+      path: bin/festengine-$(ver)-win$(arch)-VLCv$(vlc_version)-full.zip
     - name: FestEngine $(ver) Windows $(arch)bit Minimal
-      path: bin\festengine-$(ver)-win$(arch)-minimal.zip
+      path: bin/festengine-$(ver)-win$(arch)-minimal.zip
 
 -
   matrix:
