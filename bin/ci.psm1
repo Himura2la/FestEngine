@@ -38,20 +38,20 @@ function FestEnginePackage {
         echo '--- Building Localization for Debug version ---'
         BuildLocalization './bin/FestEngine-debug'
         echo '--- Packing a Debug version ---'
-        7z a "./bin/festengine-$env:VER-win$env:ARCH-VLCv$env:VLC_VERSION-debug.zip" './bin/FestEngine/*'
+        7z a "./bin/fest_engine-$env:VER-win$env:ARCH-VLCv$env:VLC_VERSION-debug.zip" './bin/FestEngine/*'
     }
 
     echo '--- Building Localization for a Full version ---'
     BuildLocalization './bin/FestEngine'
     echo '--- Packing a Full version ---'
-    7z a "./bin/festengine-$env:VER-win$env:ARCH-VLCv$env:VLC_VERSION-full.zip" './bin/FestEngine/*'
+    7z a "./bin/fest_engine-$env:VER-win$env:ARCH-VLCv$env:VLC_VERSION-full.zip" './bin/FestEngine/*'
     
     if ($env:VLC -eq 'latest') {
         echo '--- Minimalizing a Full version ---'
         pushd './bin'
         ./minimalize.bat
         echo '--- Packing a Minimal version ---'
-        7z a "./festengine-$env:VER-win$env:ARCH-minimal.zip" './FestEngine/*'
+        7z a "./fest_engine-$env:VER-win$env:ARCH-minimal.zip" './FestEngine/*'
         popd
     }
 }

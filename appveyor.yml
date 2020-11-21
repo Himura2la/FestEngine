@@ -47,11 +47,11 @@ for:
 
   artifacts:
     - name: FestEngine $(ver) Windows $(arch)bit VLC $(vlc_version) Debug
-      path: bin/festengine-$(ver)-win$(arch)-VLCv$(vlc_version)-debug.zip
+      path: bin/fest_engine-$(ver)-win$(arch)-VLCv$(vlc_version)-debug.zip
     - name: FestEngine $(ver) Windows $(arch)bit VLC $(vlc_version) Full
-      path: bin/festengine-$(ver)-win$(arch)-VLCv$(vlc_version)-full.zip
+      path: bin/fest_engine-$(ver)-win$(arch)-VLCv$(vlc_version)-full.zip
     - name: FestEngine $(ver) Windows $(arch)bit Minimal
-      path: bin/festengine-$(ver)-win$(arch)-minimal.zip
+      path: bin/fest_engine-$(ver)-win$(arch)-minimal.zip
 
 
 -
