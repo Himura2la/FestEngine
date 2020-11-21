@@ -20,19 +20,20 @@ function FestEngineGetDeps {
         choco install -y --no-progress --version $env:VLC_VERSION $env:VLC_ARCH_FLAG vlc
     }
 
-    & "$env:PYTHON_PATH/python.exe" -m pip install --upgrade pip
-    & "$env:PYTHON_PATH/python.exe" -m pip install pyinstaller python-vlc wxpython pywinauto
+    $env:Path += ";$env:PYTHON_PATH\Scripts"
+    & "$env:PYTHON_PATH\python.exe" -m pip install --upgrade pip
+    & "$env:PYTHON_PATH\python.exe" -m pip install pyinstaller python-vlc wxpython pywinauto
 }
 
 
 function FestEngineBuild {
-    pushd '.\bin'
+    pushd './bin'
 
     echo '--- Building a Full version ---'
-    & "$env:PYTHON_PATH/python.exe" build.py
+    & "$env:PYTHON_PATH\python.exe" build.py
 
     echo '--- Building a Debug version ---'
-    & "$env:PYTHON_PATH/python.exe" build.py -d
+    & "$env:PYTHON_PATH\python.exe" build.py -d
 
     popd
 }
@@ -40,10 +41,10 @@ function FestEngineBuild {
 function FestEngineCleanProprietaryLibs {
     echo '--- Cleaning MS DLLs ---'
 
-    pushd '.\bin\FestEngine-debug'
+    pushd './bin/FestEngine-debug'
     Remove-Item MSVCP140.dll, VCRUNTIME140.dll, api-ms-*
 
-    cd '..\FestEngine'
+    cd '../FestEngine'
     Remove-Item MSVCP140.dll, VCRUNTIME140.dll, api-ms-*
 
     popd
@@ -54,30 +55,30 @@ function FestEnginePackage {
 
     if ($env:ARCH -eq '64') {
         echo '--- Preparing a Debug version ---'
-        cd '.\bin\FestEngine-debug'
+        cd './bin/FestEngine-debug'
         BuildLocalization
         echo '--- Packing a Debug version ---'
-        7z a "..\festengine-$env:VER-win$env:ARCH-VLCv$env:VLC_VERSION-debug.zip" *
+        7z a "../festengine-$env:VER-win$env:ARCH-VLCv$env:VLC_VERSION-debug.zip" *
     }
 
     echo '--- Preparing a Full version ---'
-    cd '.\bin\FestEngine'
+    cd './bin/FestEngine'
     BuildLocalization
     echo '--- Packing a Full version ---'
-    7z a "..\festengine-$env:VER-win$env:ARCH-VLCv$env:VLC_VERSION-full.zip" *
+    7z a "../festengine-$env:VER-win$env:ARCH-VLCv$env:VLC_VERSION-full.zip" *
     
     if ($env:VLC -eq 'latest') {
         echo '--- Minimalizing a Full version ---'
-        cd '.\bin\'
-        .\minimalize.bat
+        cd './bin'
+        ./minimalize.bat
         echo '--- Packing a Minimal version ---'
-        7z a '.\festengine-$env:VER-win$env:ARCH-minimal.zip' '.\FestEngine\*'
+        7z a './festengine-$env:VER-win$env:ARCH-minimal.zip' './FestEngine/*'
     }
 }
 
 function BuildLocalization {
-    New-Item -Path '.\locale\ru\LC_MESSAGES' -ItemType Directory
-    & "$env:PYTHON_PATH/python.exe" "$env:PYTHON_PATH\Tools\i18n\msgfmt.py" -o '.\locale\ru\LC_MESSAGES\main.mo' '.\src\locale\ru\LC_MESSAGES\main.po'
+    New-Item -Path './locale/ru/LC_MESSAGES' -ItemType Directory
+    & "$env:PYTHON_PATH\python.exe" "$env:PYTHON_PATH\Tools\i18n\msgfmt.py" -o '.\locale\ru\LC_MESSAGES\main.mo' '.\src\locale\ru\LC_MESSAGES\main.po'
 }
 
 Export-ModuleMember -Function FestEngine*
