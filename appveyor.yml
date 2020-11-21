@@ -37,9 +37,9 @@ for:
         git submodule update --init
 
   test_script:
-    - ps: |
-        echo '--- Running tests ---'
-        & "$env:PYTHON_PATH/python.exe" -m unittest discover "./test"
+    - cmd: |
+        echo --- Running tests ---
+        "%PYTHON_PATH%/python.exe" -m unittest discover "./test"
 
   after_test:
     - ps: FestEnginePackage
