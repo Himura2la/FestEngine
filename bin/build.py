@@ -23,7 +23,7 @@ if args.debug:
 else:
     pyinst_flags.insert(1, '--windowed')
 
-print("---------------Building %s! ---------------" % name)
+print("---------------Building %s ---------------" % name)
 
 vlc_binaries = []
 vlc_path = None
@@ -93,7 +93,7 @@ if p.poll() == 0:
         all_files = os.listdir()
         libs_to_exclude = list(filter(lambda f: any([f.startswith(l) for l in exclude_libs]), all_files))
     if sys.platform == "win32":
-        print("--- Cleaning non-GPL Microsoft DLLs...")
+        print("--- Cleaning Proprietary DLLs...")
         from glob import glob
         libs_to_exclude = ['MSVCP140.dll', 'VCRUNTIME140.dll'] + glob('api-ms-*')
     print("--- Removing:", libs_to_exclude)
@@ -103,4 +103,4 @@ plugins_cache = os.path.join(bin_path, name, 'plugins', 'plugins.dat')
 if os.path.isfile(plugins_cache):
     os.remove(plugins_cache)
 
-print("--------------- Ready! ---------------")
+print("--------------- Done! ---------------")

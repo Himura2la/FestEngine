@@ -34,7 +34,7 @@ for:
   before_test:
     - ps: |
         echo '--- Downloading test data ---'
-        git submodule update --init *>&1
+        git submodule -q update --init
 
   test_script:
     - ps: |
