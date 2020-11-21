@@ -70,7 +70,7 @@ pyinst_cmd = ['pyinstaller', '-n', name, '--distpath', dist_path] + vlc_binaries
 
 print("Running:", " ".join(pyinst_cmd))
 
-p = subprocess.Popen(pyinst_cmd)
+p = subprocess.Popen(pyinst_cmd, stderr=subprocess.STDOUT)
 
 t = 0
 while p.poll() is None:

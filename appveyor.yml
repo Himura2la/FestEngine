@@ -32,9 +32,9 @@ for:
     - ps: FestEngineBuild
 
   before_test:
-    - ps: |
-        echo '--- Downloading test data ---'
-        git submodule -q update --init
+    - cmd: |
+        echo --- Downloading test data ---
+        git submodule update --init
 
   test_script:
     - ps: |
