@@ -58,10 +58,10 @@ function FestEnginePackage {
 
 function BuildLocalization {
     param (
-        [string] $path
+        [string] $outDir
     )
-    New-Item -Path (Join-Path $path 'locale\ru\LC_MESSAGES') -ItemType Directory
-    & "$env:PYTHON_PATH\python.exe" "$env:PYTHON_PATH\Tools\i18n\msgfmt.py" -o (Join-Path $path 'locale\ru\LC_MESSAGES\main.mo') (Join-Path $path 'src\locale\ru\LC_MESSAGES\main.po')
+    New-Item -Path (Join-Path $outDir 'locale\ru\LC_MESSAGES') -ItemType Directory
+    & "$env:PYTHON_PATH\python.exe" "$env:PYTHON_PATH\Tools\i18n\msgfmt.py" -o (Join-Path $outDir 'locale\ru\LC_MESSAGES\main.mo') '.\src\locale\ru\LC_MESSAGES\main.po'
 }
 
 Export-ModuleMember -Function FestEngine*
