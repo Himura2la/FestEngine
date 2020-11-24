@@ -26,7 +26,7 @@
 | [Gakko XI](http://gakko-fest.ru/) ([VK](https://vk.com/gakko_official)) | Белгород | 24 августа 2019 г. | [@Himura2la](https://github.com/Himura2la) |
 | [REMAGIRO](https://remagiro.cosplay2.ru/) ([VK](https://vk.com/remagiro)) | Липецк | 31 августа 2019 г. | [littledrunkflower](https://vk.com/littledrunkflower) |
 | [Kyoto anifest](https://vk.com/kyotoanifest2019) | Курск | 16 ноября 2019 г. | [Михо](https://vk.com/mihomihovna) |
-| [Tatakae! Дай 5!](https://vk.com/tata5old) | Старый Оскол | 30.11, 1.12.2019 | [@Himura2la](https://github.com/Himura2la) |
+| [Tatakae! Дай 5!](https://vk.com/tatakaefest) | Старый Оскол | 30.11, 1.12.2019 | [@Himura2la](https://github.com/Himura2la) |
 | [AnyFest 2019](https://vk.com/anyfest) | Брянск | 7 декабря 2019г. | [@Ocakypo](https://github.com/Ocakypo) |
 | [Yuki no Odori 9](https://vk.com/tulaanimefest) | Тула | 1 февраля 2020г. | [@Himura2la](https://github.com/Himura2la) |
 | [Главная сцена на DatFest 2020](https://vk.com/datfest) | Москва | 14 марта 2020г. | [@Himura2la](https://github.com/Himura2la) |
