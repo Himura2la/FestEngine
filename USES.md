@@ -7,11 +7,11 @@
 | [Косплей-дефиле на UnityCon 2018](http://unitycon.ru) | Москва | 11 марта 2018 г. | [@Himura2la](https://github.com/Himura2la) |
 | [AtomCosCon 2018](https://vk.com/cosfest) | Дубна (МО) | 5 мая 2018г. | [destinyx](https://vk.com/destinxxx) |
 | [СROSSxOVER 2018](https://vk.com/crossover_42) | Кемерово | 30 июня 2018 г. | [@Oreolek](https://github.com/Oreolek) |
-| [ANI-SHINAI 2018](http://ani-shinai.ru/) | Калуга | 14 июля 2018г. | [@Himura2la](https://github.com/Himura2la) |
+| [ANI-SHINAI 2018](https://vk.com/anishinai2018) | Калуга | 14 июля 2018г. | [@Himura2la](https://github.com/Himura2la) |
 | [GAC-fest 2018](https://vk.com/gacfest2018) | Тула | 21 июля 2018г. | [@Himura2la](https://github.com/Himura2la) |
 | [ГРЕЧА-фест 2018](https://vk.com/grechafest2018) | Брянск | 18 августа 2018г. | [@Himura2la](https://github.com/Himura2la) |
 | [Gakko 10](https://vk.com/club85877017) | Белгород | 26 августа 2018г. | [@Himura2la](https://github.com/Himura2la) |
-| [Главная сцена на DatFest 2018](http://datfest.ru) | Москва | 2 сентября 2018г. | [@Himura2la](https://github.com/Himura2la) |
+| [Главная сцена на DatFest 2018](https://vk.com/datfest) | Москва | 2 сентября 2018г. | [@Himura2la](https://github.com/Himura2la) |
 | [Mira Kamen Convention 2018](https://vk.com/mkfest) | Калуга | 17 ноября 2018г. | [Toki-chan](https://vk.com/toki__chan) |
 | [Tatakae! 3+1](https://vk.com/tata4old) | Старый Оскол | 12 января 2019г. | [@Himura2la](https://github.com/Himura2la) |
 | [Yuki no Odori 8](https://vk.com/tulaanimefest) | Тула | 2 февраля 2019г. | [@Himura2la](https://github.com/Himura2la) |
@@ -29,5 +29,5 @@
 | [Tatakae! Дай 5!](https://vk.com/tata5old) | Старый Оскол | 30.11, 1.12.2019 | [@Himura2la](https://github.com/Himura2la) |
 | [AnyFest 2019](https://vk.com/anyfest) | Брянск | 7 декабря 2019г. | [@Ocakypo](https://github.com/Ocakypo) |
 | [Yuki no Odori 9](https://vk.com/tulaanimefest) | Тула | 1 февраля 2020г. | [@Himura2la](https://github.com/Himura2la) |
-| [Главная сцена на DatFest 2020](http://datfest.ru) ([VK](https://vk.com/datfest)) | Москва | 14 марта 2020г. | [@Himura2la](https://github.com/Himura2la) |
+| [Главная сцена на DatFest 2020](https://vk.com/datfest) | Москва | 14 марта 2020г. | [@Himura2la](https://github.com/Himura2la) |
 | [GAKKO 12](https://vk.com/gakko_official) | Белгород | 29 августа 2020г. | [@Himura2la](https://github.com/Himura2la) |
