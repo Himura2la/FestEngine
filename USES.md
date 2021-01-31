@@ -31,3 +31,4 @@
 | [Yuki no Odori 9](https://vk.com/tulaanimefest) | Тула | 1 февраля 2020г. | [@Himura2la](https://github.com/Himura2la) |
 | [Главная сцена на DatFest 2020](https://vk.com/datfest) | Москва | 14 марта 2020г. | [@Himura2la](https://github.com/Himura2la) |
 | [GAKKO 12](https://vk.com/gakko_official) | Белгород | 29 августа 2020г. | [@Himura2la](https://github.com/Himura2la) |
+| [Yuki no Odori 10](https://vk.com/tulaanimefest) | Тула | 30 января 2021г. | [@Himura2la](https://github.com/Himura2la) |
