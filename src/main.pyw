@@ -17,6 +17,7 @@ import copy
 import vlc
 import wx
 import wx.grid
+from wx.adv import Animation
 
 from background_music_player import BackgroundMusicPlayer
 from constants import Config, Colors, Columns, FileTypes, Strings
@@ -204,6 +205,11 @@ class MainWindow(wx.Frame):
         self.destroy_proj_win_item.Enable(False)
         self.Bind(wx.EVT_MENU, self.destroy_proj_win, self.destroy_proj_win_item)
         menu_bar.Append(proj_win_menu, _("&Projector Window"))
+
+        self.countdown_gif = Animation(r'C:\Users\glago\Desktop\giphy2.gif')  # TODO: config
+        if self.countdown_gif.GetFrameCount() < 1:
+            self.logger.log(_("[ERROR] Countdown GIF is broken!"))
+            self.countdown_gif = None
 
         # --- Text Window ---
         text_win_menu = wx.Menu()
@@ -555,8 +561,7 @@ class MainWindow(wx.Frame):
     def ensure_proj_win(self, e=None):
         no_window = not self.proj_win
         if no_window:
-            self.proj_win = ProjectorWindow(self, self.config[Config.PROJECTOR_SCREEN])
-
+            self.proj_win = ProjectorWindow(self, self.config[Config.PROJECTOR_SCREEN], self.countdown_gif)
             self.vid_btn.Bind(wx.EVT_TOGGLEBUTTON, self.switch_to_vid)
             self.zad_btn.Bind(wx.EVT_TOGGLEBUTTON, self.switch_to_zad)
             self.switch_to_zad()

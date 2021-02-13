@@ -1,10 +1,11 @@
 import wx
 from datetime import *
 from constants import Config, Colors
+from wx.adv import AnimationCtrl
 
 
 class ProjectorWindow(wx.Frame):
-    def __init__(self, parent, screen=None):
+    def __init__(self, parent, screen=None, countdown_gif=None):
         self.main_window = parent
 
         run_windowed = wx.Display.GetCount() <= screen or wx.Display.GetCount() < 2
@@ -71,11 +72,18 @@ class ProjectorWindow(wx.Frame):
                 self.countdown_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL)
                 self.time_text = wx.StaticText(self, style=wx.ALIGN_CENTER_HORIZONTAL)
 
+                self.countdown_gif_ctrl = None
+                if countdown_gif:
+                    self.countdown_gif_ctrl = AnimationCtrl(self, anim=countdown_gif)
+
                 self.countdown_text.SetForegroundColour(Colors.COUNTDOWN_TEXT_COLOR)
                 self.info_text.SetForegroundColour(Colors.COUNTDOWN_TEXT_COLOR)
                 self.time_text.SetForegroundColour(Colors.COUNTDOWN_TEXT_COLOR)
 
                 sizer = wx.BoxSizer(wx.VERTICAL)
+
+                if self.countdown_gif_ctrl:
+                    sizer.Add(self.countdown_gif_ctrl, 0, wx.CENTER)  # TODO: Layout
 
                 sizer.AddStretchSpacer()
                 sizer.Add(self.info_text, 0, wx.CENTER)
@@ -162,23 +170,28 @@ class ProjectorWindow(wx.Frame):
         self.images_panel.Refresh()
 
     def switch_to_video(self, e=None):
-        if self.countdown_panel.IsShown():
-            self.countdown_panel.timer.Stop()
-            self.countdown_panel.Hide()
+        self.stop_timer()
         self.video_panel.Show()
         self.images_panel.Hide()
 
     def switch_to_images(self, e=None):
+        self.stop_timer()
+        self.video_panel.Hide()
+        self.images_panel.Show()
+
+    def stop_timer(self):
         if self.countdown_panel.IsShown():
             self.countdown_panel.timer.Stop()
             self.countdown_panel.Hide()
-        self.video_panel.Hide()
-        self.images_panel.Show()
+            if self.countdown_panel.countdown_gif_ctrl:
+                self.countdown_panel.countdown_gif_ctrl.Stop()
 
     def launch_timer(self, time, text):
         self.video_panel.Hide()
         self.images_panel.Hide()
         self.countdown_panel.Show()
+        if self.countdown_panel.countdown_gif_ctrl:
+            self.countdown_panel.countdown_gif_ctrl.Play()
         self.Layout()
 
         if time[-1] == 'm':  # Assuming duration
