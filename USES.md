@@ -32,3 +32,8 @@
 | [Главная сцена на DatFest 2020](https://vk.com/datfest) | Москва | 14 марта 2020г. | [@Himura2la](https://github.com/Himura2la) |
 | [GAKKO 12](https://vk.com/gakko_official) | Белгород | 29 августа 2020г. | [@Himura2la](https://github.com/Himura2la) |
 | [Yuki no Odori 10](https://vk.com/tulaanimefest) | Тула | 30 января 2021г. | [@Himura2la](https://github.com/Himura2la) |
+| [Первый воркшоп-косплей фестиваль "Моя сцена"](https://vk.com/itsmystage) | Рязань | 10 апреля 2021г. | [@Himura2la](https://github.com/Himura2la) |
+| [Главная сцена на AnyWay Fest](https://vk.com/anywayfest) | Москва | 17 апреля 2021г. | [@Himura2la](https://github.com/Himura2la) |
+| [NewBronyCon](https://vk.com/newbronycon) | Москва | 8 мая 2021г. | [@Himura2la](https://github.com/Himura2la) |
+
+
