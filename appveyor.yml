@@ -61,8 +61,7 @@ for:
         ARCH: '64'
 
   install:
-    - sudo apt-get update
-    - sudo apt-get install -y python3-pip
+    - sudo -H python3 -m ensurepip --upgrade
     - sudo -H pip3 install -U docker-compose
   build_script:
     - ./bin/build.sh
