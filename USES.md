@@ -30,10 +30,13 @@
 | [AnyFest 2019](https://vk.com/anyfest) | Брянск | 7 декабря 2019г. | [@Ocakypo](https://github.com/Ocakypo) |
 | [Yuki no Odori 9](https://vk.com/tulaanimefest) | Тула | 1 февраля 2020г. | [@Himura2la](https://github.com/Himura2la) |
 | [Главная сцена на DatFest 2020](https://vk.com/datfest) | Москва | 14 марта 2020г. | [@Himura2la](https://github.com/Himura2la) |
-| [GAKKO 12](https://vk.com/gakko_official) | Белгород | 29 августа 2020г. | [@Himura2la](https://github.com/Himura2la) |
+| [GAKKO 12 (Camp)](https://vk.com/gakko_official) | Белгород | 29 августа 2020г. | [@Himura2la](https://github.com/Himura2la) |
 | [Yuki no Odori 10](https://vk.com/tulaanimefest) | Тула | 30 января 2021г. | [@Himura2la](https://github.com/Himura2la) |
 | [Первый воркшоп-косплей фестиваль "Моя сцена"](https://vk.com/itsmystage) | Рязань | 10 апреля 2021г. | [@Himura2la](https://github.com/Himura2la) |
 | [Главная сцена на AnyWay Fest](https://vk.com/anywayfest) | Москва | 17 апреля 2021г. | [@Himura2la](https://github.com/Himura2la) |
 | [NewBronyCon](https://vk.com/newbronycon) | Москва | 8 мая 2021г. | [@Himura2la](https://github.com/Himura2la) |
+| [ANI-SHINAI 2021](https://anishinai.cosplay2.ru/) ([VK](https://vk.com/anishinai))| Калуга | 17 июля 2021г. | [Sapro](https://vk.com/sapro_0w0) |
+| [Главная сцена на AnyWay Fest Mk II](https://vk.com/anywayfest) | Москва | 18 сентября 2021г. |  |
+
 
 
