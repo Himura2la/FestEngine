@@ -122,9 +122,9 @@ python3 main.pyw
 ```
 python3 -m venv .venv
 . .venv/bin/activate
-pip3 install --upgrade pip setuptools
-pip3 install python-vlc
-pip3 install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/centos-8/wxPython-4.1.0-cp36-cp36m-linux_x86_64.whl wxPython
+.venv/bin/python3 -m pip install --upgrade pip setuptools
+.venv/bin/python3 -m pip install python-vlc
+.venv/bin/python3 -m pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/centos-8 wxPython
 sudo dnf install SDL
 ```
 

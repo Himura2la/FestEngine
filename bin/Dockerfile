@@ -1,7 +1,7 @@
 FROM debian:10
 RUN apt-get update \
  && apt-get upgrade -y \
- && apt-get install -y gettext python3 python3-pip vlc \
+ && apt-get install -y gettext python3 python3-pip vlc zlib1g-dev \
  && pip3 install -U \
     -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/debian-10 \
     wxPython \
