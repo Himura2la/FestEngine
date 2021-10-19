@@ -37,6 +37,7 @@
 | [NewBronyCon](https://vk.com/newbronycon) | Москва | 8 мая 2021г. | [@Himura2la](https://github.com/Himura2la) |
 | [ANI-SHINAI 2021](https://anishinai.cosplay2.ru/) ([VK](https://vk.com/anishinai))| Калуга | 17 июля 2021г. | [Sapro](https://vk.com/sapro_0w0) |
 | [Главная сцена на AnyWay Fest Mk II](https://vk.com/anywayfest) | Москва | 18 сентября 2021г. |  |
+| [Korean Dream](https://vk.com/koreandream_fest) | Тула | 3 октября 2021г. | [@Himura2la](https://github.com/Himura2la) |
 
 
 
