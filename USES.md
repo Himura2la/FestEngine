@@ -35,6 +35,7 @@
 | [Первый воркшоп-косплей фестиваль "Моя сцена"](https://vk.com/itsmystage) | Рязань | 10 апреля 2021г. | [@Himura2la](https://github.com/Himura2la) |
 | [Главная сцена на AnyWay Fest](https://vk.com/anywayfest) | Москва | 17 апреля 2021г. | [@Himura2la](https://github.com/Himura2la) |
 | [NewBronyCon](https://vk.com/newbronycon) | Москва | 8 мая 2021г. | [@Himura2la](https://github.com/Himura2la) |
+| [СROSSxOVER 2021](https://vk.com/crossover42) | Кемерово | 3 июля 2021 г. | [@Oreolek](https://github.com/Oreolek) |
 | [ANI-SHINAI 2021](https://anishinai.cosplay2.ru/) ([VK](https://vk.com/anishinai))| Калуга | 17 июля 2021г. | [Sapro](https://vk.com/sapro_0w0) |
 | [Главная сцена на AnyWay Fest Mk II](https://vk.com/anywayfest) | Москва | 18 сентября 2021г. |  |
 
