@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2021-11-28 00:05+0300\n"
-"PO-Revision-Date: 2021-11-28 00:08+0300\n"
+"POT-Creation-Date: 2021-11-28 00:13+0300\n"
+"PO-Revision-Date: 2021-11-28 00:15+0300\n"
 "Last-Translator: Himura\n"
 "Language-Team: FestEngine Team\n"
 "Language: ru\n"
@@ -112,20 +112,20 @@ msgid "&Projector Window"
 msgstr "Окно &проектора"
 
 #: ..\main.pyw:212
-msgid "&Show Info Window"
-msgstr "&Открыть окно информации"
+msgid "Show &Info Window"
+msgstr "Открыть окно &информации"
 
 #: ..\main.pyw:214
 msgid "&Full Info"
-msgstr "&Показывать все данные"
+msgstr "Показывать все &данные"
 
 #: ..\main.pyw:216
-msgid "&Show Timecode Window"
-msgstr "Окно &таймкода"
+msgid "Show &Timecode Window"
+msgstr "Открыть окно &таймкода"
 
 #: ..\main.pyw:224
 msgid "&Text Windows"
-msgstr "&Текстовые окна"
+msgstr "Текстовые &окна"
 
 #: ..\main.pyw:230
 msgid "&Load Files"
