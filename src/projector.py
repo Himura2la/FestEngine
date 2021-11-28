@@ -154,7 +154,7 @@ class ProjectorWindow(wx.Frame):
 
     def load_zad(self, file_path, fit=True):
         img = wx.Image(file_path, wx.BITMAP_TYPE_ANY)
-        if fit: 
+        if fit:
             w, h = img.GetWidth(), img.GetHeight()
             max_w, max_h = self.images_panel.GetSize()
             target_ratio = min(max_w / float(w), max_h / float(h))
