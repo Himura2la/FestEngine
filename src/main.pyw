@@ -141,7 +141,7 @@ class MainWindow(wx.Frame):
                       menu_file.Append(wx.ID_ANY, _("Open &Folder with '%s'") % session_file))
 
         for folder in self.files_dirs:
-            self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(os.path.abspath(folder)),
+            self.Bind(wx.EVT_MENU, lambda e, f=folder: webbrowser.open(os.path.abspath(f)),
                       menu_file.Append(wx.ID_ANY, _("Open '%s' Folder") % os.path.basename(folder)))
 
         self.Bind(wx.EVT_MENU, lambda e: webbrowser.open(self.bg_tracks_dir),
