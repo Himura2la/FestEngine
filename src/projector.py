@@ -1,6 +1,6 @@
 import wx
 from datetime import *
-from constants import Config, Colors
+from constants import Config, Colors, wxWidgetsConstants
 
 
 class ProjectorWindow(wx.Frame):
@@ -27,6 +27,8 @@ class ProjectorWindow(wx.Frame):
             def __init__(self, parent):
                 wx.Panel.__init__(self, parent)
                 self.proj_window = parent
+
+                wx.Image.SetDefaultLoadFlags(wx.Image.GetDefaultLoadFlags() & ~wxWidgetsConstants.wxImageLoad_Verbose)
 
                 self.SetBackgroundColour(wx.BLACK)
                 self.drawable_bitmap = wx.Bitmap(wx.Image(self.proj_window.w, self.proj_window.h))
