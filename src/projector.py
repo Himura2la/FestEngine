@@ -29,7 +29,9 @@ class ProjectorWindow(wx.Frame):
                 self.proj_window = parent
 
                 self.SetBackgroundColour(wx.BLACK)
-                self.drawable_bitmap = wx.Bitmap(wx.Image(self.proj_window.w, self.proj_window.h))
+                wxImage = wx.Image(self.proj_window.w, self.proj_window.h)
+                wxImage.SetDefaultLoadFlags(wxImage.GetDefaultLoadFlags() & ~wx.Image.Load_Verbose)
+                self.drawable_bitmap = wx.Bitmap(wxImage)
                 self.SetBackgroundStyle(wx.BG_STYLE_ERASE)
 
                 self.Bind(wx.EVT_SIZE, self.on_size)
