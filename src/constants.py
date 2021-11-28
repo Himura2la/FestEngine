@@ -48,3 +48,8 @@ class FileTypes:
     video_extensions = {'avi', 'mp4', 'm4v', 'mov', 'wmv', 'mkv', 'm3u'}
     audio_extensions = {'mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac', 'wma'}
     img_extensions = {'jpeg', 'png', 'jpg', 'zad.mp4'}
+
+
+class wxWidgetsConstants:
+    # https://github.com/wxWidgets/wxWidgets/blob/master/include/wx/image.h#L463
+    wxImageLoad_Verbose = 1

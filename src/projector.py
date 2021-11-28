@@ -1,6 +1,6 @@
 import wx
 from datetime import *
-from constants import Config, Colors
+from constants import Config, Colors, wxWidgetsConstants
 
 
 class ProjectorWindow(wx.Frame):
@@ -28,10 +28,10 @@ class ProjectorWindow(wx.Frame):
                 wx.Panel.__init__(self, parent)
                 self.proj_window = parent
 
+                wx.Image.SetDefaultLoadFlags(wx.Image.GetDefaultLoadFlags() & ~wxWidgetsConstants.wxImageLoad_Verbose)
+
                 self.SetBackgroundColour(wx.BLACK)
-                wxImage = wx.Image(self.proj_window.w, self.proj_window.h)
-                wxImage.SetDefaultLoadFlags(wxImage.GetDefaultLoadFlags() & ~wx.Image.Load_Verbose)
-                self.drawable_bitmap = wx.Bitmap(wxImage)
+                self.drawable_bitmap = wx.Bitmap(wx.Image(self.proj_window.w, self.proj_window.h))
                 self.SetBackgroundStyle(wx.BG_STYLE_ERASE)
 
                 self.Bind(wx.EVT_SIZE, self.on_size)
@@ -154,7 +154,7 @@ class ProjectorWindow(wx.Frame):
 
     def load_zad(self, file_path, fit=True):
         img = wx.Image(file_path, wx.BITMAP_TYPE_ANY)
-        if fit:
+        if fit: 
             w, h = img.GetWidth(), img.GetHeight()
             max_w, max_h = self.images_panel.GetSize()
             target_ratio = min(max_w / float(w), max_h / float(h))
