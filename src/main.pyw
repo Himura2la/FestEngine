@@ -333,10 +333,13 @@ class MainWindow(wx.Frame):
 
         self.vid_btn = wx.ToggleButton(self, label='VID', size=(35 if win else 50, toolbar_base_height + 2))
         self.zad_btn = wx.ToggleButton(self, label='ZAD', size=(35 if win else 50, toolbar_base_height + 2))
+        self.blk_btn = wx.ToggleButton(self, label='BLK', size=(35 if win else 50, toolbar_base_height + 2))
         self.vid_btn.Enable(False)
         self.zad_btn.Enable(False)
+        self.blk_btn.Enable(False)
         self.toolbar.Add(self.vid_btn, 0)
         self.toolbar.Add(self.zad_btn, 0)
+        self.toolbar.Add(self.blk_btn, 0)
 
         # --- Grid ---
         self.grid = wx.grid.Grid(self)
@@ -558,11 +561,13 @@ class MainWindow(wx.Frame):
             self.proj_win = ProjectorWindow(self, self.config[Config.PROJECTOR_SCREEN])
 
             self.vid_btn.Bind(wx.EVT_TOGGLEBUTTON, self.switch_to_vid)
-            self.zad_btn.Bind(wx.EVT_TOGGLEBUTTON, self.switch_to_zad)
+            self.zad_btn.Bind(wx.EVT_TOGGLEBUTTON, self.show_zad)
+            self.blk_btn.Bind(wx.EVT_TOGGLEBUTTON, lambda e: self.clear_zad(e, True))
             self.switch_to_zad()
             self.image_status("Projector Window Created")
         self.vid_btn.Enable(True)
         self.zad_btn.Enable(True)
+        self.blk_btn.Enable(True)
         self.proj_win.Show()
         self.destroy_proj_win_item.Enable(True)
         wx.CallAfter(self.Raise)
@@ -576,15 +581,29 @@ class MainWindow(wx.Frame):
         self.vid_btn.Enable(False)
         self.zad_btn.SetValue(False)
         self.zad_btn.Enable(False)
+        self.blk_btn.SetValue(False)
+        self.blk_btn.Enable(False)
         self.destroy_proj_win_item.Enable(False)
+        self.proj_win = None
         self.image_status("Projector Window Destroyed")
 
+    def switch_to_blackout(self, e=None):
+        """ use self.clear_zad(e, True)  """
+        if not self.proj_win:
+            return
+        self.vid_btn.SetValue(False)
+        self.zad_btn.SetValue(False)
+        self.blk_btn.SetValue(True)
+        self.proj_win.switch_to_images()
+        self.proj_win.no_show()
+        
     def switch_to_vid(self, e=None):
         """ Call set_vlc_video_panel() until it returns True after this"""
         if not self.proj_win:
             return
         self.vid_btn.SetValue(True)
         self.zad_btn.SetValue(False)
+        self.blk_btn.SetValue(False)
         self.proj_win.switch_to_video()
 
     def set_vlc_video_panel(self):
@@ -604,6 +623,7 @@ class MainWindow(wx.Frame):
             return
         self.vid_btn.SetValue(False)
         self.zad_btn.SetValue(True)
+        self.blk_btn.SetValue(False)
         self.proj_win.switch_to_images()
 
     def show_zad(self, e=None):
@@ -643,13 +663,13 @@ class MainWindow(wx.Frame):
     def clear_zad(self, e=None, no_show=False, status=u"ZAD Cleared"):
         if not self.proj_win:
             return
-        self.proj_win.switch_to_images()
         if self.config[Config.BG_ZAD_PATH] and not no_show:
+            self.switch_to_zad()
             self.proj_win.load_zad(path.make_abs(self.config[Config.BG_ZAD_PATH],
                                                  path.fest_file), True)
             self.image_status("Background")
         else:
-            self.proj_win.no_show()
+            self.switch_to_blackout()
             self.image_status("No show")
         self.status(status)
 
@@ -959,11 +979,7 @@ class MainWindow(wx.Frame):
         if num == 'countdown':
             notes = self.grid.GetCellValue(self.grid.GetGridCursorRow(), self.grid_cols.index(Columns.NOTES))
             self.ensure_proj_win()
-
-            self.vid_btn.SetValue(False)
-            self.zad_btn.SetValue(False)
-            self.vid_btn.Enable(False)
-            self.zad_btn.Enable(False)
+            self.switch_to_zad()
 
             if not self.proj_win.launch_timer(notes, self.grid.GetCellValue(self.grid.GetGridCursorRow(),
                                                                             self.grid_cols.index(Columns.NAME))):
