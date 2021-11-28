@@ -26,6 +26,7 @@ from logger import Logger
 from file_replacer import FileReplacer
 from text_window import TextWindow
 from os_tools import path
+from timecode_window import TimecodeWindow
 
 locale_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'locale')
 if os.path.isfile(os.path.join(locale_dir, 'ru', 'LC_MESSAGES', 'main.mo')):
@@ -104,6 +105,7 @@ class MainWindow(wx.Frame):
 
         self.proj_win = None
         self.text_win = None
+        self.timecode_win = None
         self.req_id_field_number = None
         self.filename_re = None
         self.grid_cols = None
@@ -205,19 +207,21 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_MENU, self.destroy_proj_win, self.destroy_proj_win_item)
         menu_bar.Append(proj_win_menu, _("&Projector Window"))
 
-        # --- Text Window ---
+        # --- Text Windows ---
         text_win_menu = wx.Menu()
-        self.text_win_show_item = text_win_menu.Append(wx.ID_ANY, _("&Show"), kind=wx.ITEM_CHECK)
+        self.text_win_show_item = text_win_menu.Append(wx.ID_ANY, _("Show &Info Window"), kind=wx.ITEM_CHECK)
         self.Bind(wx.EVT_MENU, self.text_win_show, self.text_win_show_item)
         self.text_win_full_info = text_win_menu.Append(wx.ID_ANY, _("&Full Info"), kind=wx.ITEM_CHECK)
         self.text_win_full_info.Enable(False)
+        self.timecode_win_show_item = text_win_menu.Append(wx.ID_ANY, _("Show &Timecode Window"), kind=wx.ITEM_CHECK)
+        self.Bind(wx.EVT_MENU, self.timecode_win_show, self.timecode_win_show_item)
 
         def on_full_info_switch(e):
             if self.text_win:
                 self.text_win.show_full_info = bool(e.Selection)
         self.Bind(wx.EVT_MENU, on_full_info_switch, self.text_win_full_info)
 
-        menu_bar.Append(text_win_menu, _("&Text Window"))
+        menu_bar.Append(text_win_menu, _("&Text Windows"))
 
         # --- Background Music ---
         menu_bg_music = wx.Menu()
@@ -377,6 +381,9 @@ class MainWindow(wx.Frame):
             if self.text_win:
                 text_win_load()
 
+            if not self.is_playing:
+                self.set_timecode('№ %s ■' % self.get_num(row))
+
         # Binded after loading data to prevent self.row_type() calls for incomplete grid
 
         def play_if_track(e):
@@ -510,6 +517,7 @@ class MainWindow(wx.Frame):
     def on_close(self, e=None):
         self.destroy_proj_win()
         self.on_text_win_close()
+        self.on_timecode_win_close()
         self.player.stop()
         self.vlc_instance.release()
         if e:
@@ -1066,9 +1074,11 @@ class MainWindow(wx.Frame):
                              args=(self.fade_out_btn.GetLabel(),)).start()
         else:
             self.player.stop()
+            self.time_bar.SetRange(1)
             self.time_bar.SetValue(0)
             self.player_status = self.player_state_parse(self.player.get_state())
             self.time_label.SetLabel('Stopped')
+            self.set_timecode('stop')
 
     def fade_out_stop_sync(self, fade_out_btn_label):
         for i in range(self.player.audio_get_volume(), 0, -1):
@@ -1086,9 +1096,11 @@ class MainWindow(wx.Frame):
 
         def ui_upd():
             self.fade_out_btn.SetLabel(fade_out_btn_label)
+            self.time_bar.SetRange(1)
             self.time_bar.SetValue(0)
             self.player_status = self.player_state_parse(self.player.get_state())
             self.time_label.SetLabel('Stopped')
+            self.set_timecode('stop')
 
         wx.CallAfter(ui_upd)
 
@@ -1130,14 +1142,17 @@ class MainWindow(wx.Frame):
             time_elapsed = '%02d:%02d' % divmod(track_time / 1000, 60)
             time_remaining = '-%02d:%02d' % divmod(track_length / 1000 - track_time / 1000, 60)
             self.time_label.SetLabel(time_elapsed)
+            self.set_timecode('№ %s ▶ ' % self.num_in_player, time_elapsed)
 
             status = u'%s №%s V:%d T:%s' % (self.player_state_parse(self.player.get_state()), self.num_in_player,
                                             self.player.audio_get_volume(), time_remaining)
             if 'Fading' not in self.player_status:
                 self.player_status = status
         else:  # Not playing
+            self.time_bar.SetRange(1)
             self.time_bar.SetValue(0)
             self.time_label.SetLabel('Stop')
+            self.set_timecode('stop')
             self.player_status = self.player_state_parse(self.player.get_state())
             self.switch_to_zad()
 
@@ -1281,27 +1296,26 @@ class MainWindow(wx.Frame):
             if not os.path.isfile(db_path):
                 self.status(_("Cosplay2 database not found"))
                 return
-            self.text_win = TextWindow(self, _('Text Data'), self.config[Config.TEXT_WIN_FIELDS])
+            self.text_win = TextWindow(self, _('Text Data'), self.config[Config.TEXT_WIN_FIELDS], self.on_text_win_close)
             self.req_id_field_number = self.text_win.LIST_FIELDS.index('requests.number')  # The № value in Cosplay2
             self.text_win.Show()
             self.text_win.load_db(db_path)
             self.status("Text Window Created")
             self.text_win_full_info.Enable(True)
-        elif self.text_win:
-            self.on_text_win_close()
         else:
-            self.status("Text Window ERROR !!!")
+            self.on_text_win_close()
 
     def on_text_win_close(self, e=None):
-        if not self.text_win:
-            return
-        if self.text_win.db:
-            self.text_win.db.close()
-        self.text_win.Destroy()
-        self.text_win = None
-        self.status("Text Window Destroyed")
-        self.text_win_show_item.Check(False)
-        self.text_win_full_info.Enable(False)
+        if self.text_win:
+            if self.text_win.db:
+                self.text_win.db.close()
+            self.text_win.Destroy()
+            self.text_win = None
+            self.status("Text Window Destroyed")
+            self.text_win_show_item.Check(False)
+            self.text_win_full_info.Enable(False)
+        else:
+            self.status("WARNING: Text Window Not Found")
 
     def text_win_load(self, req_id):
         item = next((x for x in self.text_win.list if str(x[self.req_id_field_number]) == req_id), None)
@@ -1311,6 +1325,30 @@ class MainWindow(wx.Frame):
             self.logger.log("[Text Window] Item '%s' not found in row %d of 'self.text_win.list'." % (req_id, self.req_id_field_number))
             self.logger.log("\tself.text_win.list:\n%s" % str(self.text_win.list))
             self.text_win.clear(_("Item not found in the database. Watch the log."))
+
+    # -------------------------------------------------- Timecode Window --------------------------------------------------
+
+    def timecode_win_show(self, e):
+        if e.Selection:
+            self.timecode_win = TimecodeWindow(self, _('Timecode'), self.on_timecode_win_close)
+            self.timecode_win.Show()
+            self.status("Timecode Window Created")
+            self.timecode_win.set_text("timecode")
+        else:
+            self.on_timecode_win_close()
+
+    def on_timecode_win_close(self, e=None):
+        if self.timecode_win:
+            self.timecode_win.Destroy()
+            self.timecode_win = None
+            self.status("Timecode Window Destroyed")
+        else:
+            self.status("WARNING: Timecode Window Not Found")
+        self.timecode_win_show_item.Check(False)
+
+    def set_timecode(self, plain_text='', bold_text=''):
+        if self.timecode_win:
+            self.timecode_win.set_text(plain_text, bold_text)
 
 
 if __name__ == "__main__":

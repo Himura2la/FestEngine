@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2019-10-16 22:07+0300\n"
-"PO-Revision-Date: 2019-10-16 22:10+0300\n"
+"POT-Creation-Date: 2021-11-28 00:13+0300\n"
+"PO-Revision-Date: 2021-11-28 00:15+0300\n"
 "Last-Translator: Himura\n"
 "Language-Team: FestEngine Team\n"
 "Language: ru\n"
@@ -14,11 +14,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5 (допиленный для юникода)\n"
-"X-Generator: Poedit 2.0.5\n"
+"X-Generator: Poedit 3.0\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: ..\main.pyw:92 ..\settings.py:176 ..\settings.py:298
+#: ..\main.pyw:93 ..\settings.py:176 ..\settings.py:298
 msgid ""
 "Unfortunately, you broke the JSON format...\n"
 "Please fix the configuration file%s ASAP.\n"
@@ -31,183 +31,187 @@ msgstr ""
 "\n"
 "Подробности ошибки: %s"
 
-#: ..\main.pyw:133
+#: ..\main.pyw:135
 msgid "&Load ZAD and MP3"
 msgstr "&Загрузить треки и задники"
 
-#: ..\main.pyw:141
+#: ..\main.pyw:143
 msgid "Open &Folder with '%s'"
 msgstr "Открыть &папку с '%s'"
 
-#: ..\main.pyw:145
+#: ..\main.pyw:147
 msgid "Open '%s' Folder"
 msgstr "Открыть папку '%s'"
 
-#: ..\main.pyw:148
+#: ..\main.pyw:150
 msgid "Open &Background Music Folder"
 msgstr "Открыть папку &фоновых треков"
 
-#: ..\main.pyw:152
+#: ..\main.pyw:154
 msgid "&Settings"
 msgstr "&Настройки"
 
-#: ..\main.pyw:154
+#: ..\main.pyw:156
 msgid "&Show Log"
 msgstr "Открыть окно &лога"
 
-#: ..\main.pyw:162
+#: ..\main.pyw:164
 msgid "&Prefer No Video (fallback)"
 msgstr "Не включать &видео когда есть звук"
 
-#: ..\main.pyw:165
+#: ..\main.pyw:167
 msgid "&End show on BG Music Start"
 msgstr "&Прерывать номер при запуске подложки"
 
-#: ..\main.pyw:168
+#: ..\main.pyw:170
 msgid "Auto Show &ZAD with Sound"
 msgstr "Ставить &задник при запуске трека"
 
-#: ..\main.pyw:173
+#: ..\main.pyw:175
 msgid "&About"
 msgstr "&О программе"
 
-#: ..\main.pyw:175
+#: ..\main.pyw:177
 msgid "E&xit"
 msgstr "Вы&ход"
 
-#: ..\main.pyw:176
+#: ..\main.pyw:178
 msgid "&Main"
 msgstr "&Глагнэ"
 
-#: ..\main.pyw:181
+#: ..\main.pyw:183
 msgid "&Replace File"
 msgstr "&Заменить файл"
 
-#: ..\main.pyw:185
+#: ..\main.pyw:187
 msgid "&Delete item"
 msgstr "&Удалить строку"
 
-#: ..\main.pyw:193
+#: ..\main.pyw:195
 msgid "&Add intermission (countdown) above"
 msgstr "Вставить перерыв сверху"
 
-#: ..\main.pyw:196
+#: ..\main.pyw:198
 msgid "&Add intermission (countdown) below"
 msgstr "Вставить &перерыв снизу"
 
-#: ..\main.pyw:198
+#: ..\main.pyw:200
 msgid "&Item"
 msgstr "С&трока"
 
-#: ..\main.pyw:202
+#: ..\main.pyw:204
 msgid "&Create"
 msgstr "&Создать"
 
-#: ..\main.pyw:203
+#: ..\main.pyw:205
 msgid "&Destroy"
 msgstr "&Убрать"
 
-#: ..\main.pyw:206
+#: ..\main.pyw:208
 msgid "&Projector Window"
 msgstr "Окно &проектора"
 
-#: ..\main.pyw:210
-msgid "&Show"
-msgstr "&Создать"
-
 #: ..\main.pyw:212
+msgid "Show &Info Window"
+msgstr "Открыть окно &информации"
+
+#: ..\main.pyw:214
 msgid "&Full Info"
-msgstr "&Показывать все данные"
+msgstr "Показывать все &данные"
 
-#: ..\main.pyw:220
-msgid "&Text Window"
-msgstr "&Текстовое окно"
+#: ..\main.pyw:216
+msgid "Show &Timecode Window"
+msgstr "Открыть окно &таймкода"
 
-#: ..\main.pyw:226
+#: ..\main.pyw:224
+msgid "&Text Windows"
+msgstr "Текстовые &окна"
+
+#: ..\main.pyw:230
 msgid "&Load Files"
 msgstr "Загрузить &файлы"
 
-#: ..\main.pyw:228
+#: ..\main.pyw:232
 msgid "&Open Window"
 msgstr "&Открыть окно"
 
-#: ..\main.pyw:232
+#: ..\main.pyw:236
 msgid "&Fade In/Out Enabled"
 msgstr "&Плавный переход звука"
 
-#: ..\main.pyw:236
+#: ..\main.pyw:240
 msgid "&Play Selected Item\tF4"
 msgstr "&Включить выделенный трек\tF4"
 
-#: ..\main.pyw:240
+#: ..\main.pyw:244
 msgid "&Pause\tF3"
 msgstr "&Пауза\tF3"
 
-#: ..\main.pyw:244
+#: ..\main.pyw:248
 msgid "&Background Music"
 msgstr "&Фоновая музыка"
 
-#: ..\main.pyw:248
+#: ..\main.pyw:252
 msgid "&Emergency Stop All\tShift+Esc"
 msgstr "&Экстренная остановка всего\tShift+Esc"
 
-#: ..\main.pyw:249
+#: ..\main.pyw:253
 msgid "Show &ZAD\tF1"
 msgstr "Показать &задник\tF1"
 
-#: ..\main.pyw:250
+#: ..\main.pyw:254
 msgid "&Clear ZAD\tShift+F1"
 msgstr "&Снять задник\tShift+F1"
 
-#: ..\main.pyw:251
+#: ..\main.pyw:255
 msgid "&Play Sound/Video\tF2"
 msgstr "&Запустить звук/видео\tF2"
 
-#: ..\main.pyw:252
+#: ..\main.pyw:256
 msgid "&Fade Out\tShift+F2"
 msgstr "&Остановить звук/видео\tShift+F2"
 
-#: ..\main.pyw:253
+#: ..\main.pyw:257
 msgid "&End Show (Clear ZAD + Fade Out)\tEsc"
 msgstr "&Прервать номер (снять задник + останвоить трек)\tEsc"
 
-#: ..\main.pyw:254
+#: ..\main.pyw:258
 msgid "&Black Screen\tAlt+F1"
 msgstr "&Черный экран\tAlt+F1"
 
-#: ..\main.pyw:256
+#: ..\main.pyw:260
 msgid "Play/Pause &Background (+ End Show)\tF3"
 msgstr "Play/Pause &фоновой музыки (+ прервать номер)\tF3"
 
-#: ..\main.pyw:258
+#: ..\main.pyw:262
 msgid "Play &Next BG Track\tShift+F4"
 msgstr "Включить &следующий фоновый трек\tShift+F4"
 
-#: ..\main.pyw:286
+#: ..\main.pyw:290
 msgid "&Fire"
 msgstr "&Запуск"
 
-#: ..\main.pyw:308
+#: ..\main.pyw:312
 msgid "Fade out"
 msgstr "Прервать"
 
-#: ..\main.pyw:318 ..\main.pyw:871 ..\main.pyw:907 ..\main.pyw:933
+#: ..\main.pyw:322 ..\main.pyw:879 ..\main.pyw:915 ..\main.pyw:941
 msgid "Find"
 msgstr "Поиск"
 
-#: ..\main.pyw:331
+#: ..\main.pyw:335
 msgid "Right-click to quit search"
 msgstr "Кликните правой кнопкой, чтобы выйти из поиска"
 
-#: ..\main.pyw:538
+#: ..\main.pyw:546
 msgid "You may want to restart FestEngine. Do it?"
 msgstr "Можно перезапустить Fest Engine?"
 
-#: ..\main.pyw:539
+#: ..\main.pyw:547
 msgid "Restart Required"
 msgstr "Требуется перезапуск"
 
-#: ..\main.pyw:676
+#: ..\main.pyw:684
 msgid ""
 "No filename regular expression or ZAD path is invalid or MP3 path is "
 "invalid.\n"
@@ -224,11 +228,11 @@ msgstr ""
 "Папки с треками: %s\n"
 "Регулярное выражение: %s"
 
-#: ..\main.pyw:681 ..\settings.py:209
+#: ..\main.pyw:689 ..\settings.py:209
 msgid "Path Error"
 msgstr "Кривой путь"
 
-#: ..\main.pyw:689
+#: ..\main.pyw:697
 msgid ""
 "No 'num' group in filename RegEx. We recommend using a unique sorting-"
 "friendly three-digit\n"
@@ -249,7 +253,7 @@ msgstr ""
 "\n"
 "Ваше регулярное выражение: %s"
 
-#: ..\main.pyw:697
+#: ..\main.pyw:705
 msgid ""
 "No '%s' group in filename RegEx. It is required to set the countdown "
 "description.\n"
@@ -265,13 +269,13 @@ msgstr ""
 "\n"
 "Ваше регулярное выражение: %s"
 
-#: ..\main.pyw:720
+#: ..\main.pyw:728
 msgid "[WARNING] File %s does not match filename_re"
 msgstr ""
 "[ВНИМАНИЕ] Файл %s не соответствует регулярному выражению и был "
 "проигнорирован"
 
-#: ..\main.pyw:731
+#: ..\main.pyw:739
 msgid ""
 "[WARNING] Inconsistent value '%s': changing '%s' to '%s'.\n"
 "\t\tItem: %s"
@@ -279,7 +283,7 @@ msgstr ""
 "[ВНИМАНИЕ] Неоднозначное значение '%s': меняем '%s' на '%s'.\n"
 "\t\tНомер: %s"
 
-#: ..\main.pyw:741
+#: ..\main.pyw:749
 msgid ""
 "Duplicate files found:\n"
 "%s\n"
@@ -289,7 +293,7 @@ msgstr ""
 "%s\n"
 "конфликтует с: %s"
 
-#: ..\main.pyw:864
+#: ..\main.pyw:872
 msgid ""
 "Original file backed up as\n"
 "'%s';\n"
@@ -309,23 +313,23 @@ msgstr ""
 "скопирован на место\n"
 "'%s'"
 
-#: ..\main.pyw:956
+#: ..\main.pyw:965
 msgid "ALREADY PLAYING! Hit Esc to restart!"
 msgstr "ПОВТОРНОЕ ВКЛЮЧЕНИЕ ПРЕДОТВРАЩЕНО!!!"
 
-#: ..\main.pyw:970
+#: ..\main.pyw:978
 msgid "Invalid countdown row"
 msgstr "Неверная строка обратного отсчета"
 
-#: ..\main.pyw:986
+#: ..\main.pyw:994
 msgid "Nothing to play for %s%s"
 msgstr "Нечего включить для %s%s"
 
-#: ..\main.pyw:1015
+#: ..\main.pyw:1023
 msgid "Playback FAILED !!!"
 msgstr "НЕ УДАЛОСЬ запустить !!!"
 
-#: ..\main.pyw:1164
+#: ..\main.pyw:1179
 msgid ""
 "Background MP3 path is invalid. Please specify a\n"
 "valid path with your background tracks in settings.\n"
@@ -337,21 +341,25 @@ msgstr ""
 "\n"
 "Сейчас там это: %s"
 
-#: ..\main.pyw:1278
+#: ..\main.pyw:1293
 msgid "No Cosplay2 database in config"
 msgstr "Не указан путь к базе данных Cosplay2"
 
-#: ..\main.pyw:1282 ..\settings.py:231
+#: ..\main.pyw:1297 ..\settings.py:231
 msgid "Cosplay2 database not found"
 msgstr "База данных Cosplay2 не найдена"
 
-#: ..\main.pyw:1284
+#: ..\main.pyw:1299
 msgid "Text Data"
 msgstr "Информация о номере"
 
-#: ..\main.pyw:1313
+#: ..\main.pyw:1327
 msgid "Item not found in the database. Watch the log."
 msgstr "Номер не найден в БД. Детали в логе."
+
+#: ..\main.pyw:1333
+msgid "Timecode"
+msgstr "Таймкод"
 
 #: ..\settings.py:15
 msgid "Settings"
@@ -450,6 +458,9 @@ msgstr ""
 #: ..\settings.py:291
 msgid "Manual Configuration"
 msgstr "Ручная настройка"
+
+#~ msgid "&Show"
+#~ msgstr "&Создать"
 
 #~ msgid "&Play Next"
 #~ msgstr "&Включить следующий трек"

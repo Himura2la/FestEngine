@@ -10,7 +10,7 @@ class TextWindow(wx.Frame):
     LIST_FIELDS = ['requests.id', 'requests.number', 'list.title', 'list.card_code', 'voting_number', 'voting_title']
     DETAILS_FIELDS = ['request_section_id', 'section_title', 'title', 'value']
 
-    def __init__(self, parent, title, main_fields):
+    def __init__(self, parent, title, main_fields, close_callback):
         self.main_window = parent
         self.base_title = title
         self.main_fields = main_fields
@@ -26,6 +26,7 @@ class TextWindow(wx.Frame):
 
         self.rtc = wx.richtext.RichTextCtrl(self, style=wx.VSCROLL | wx.NO_BORDER)
         self.rtc.BeginSuppressUndo()
+        self.rtc.SetEditable(False)
 
         main_sizer.Add(self.rtc, 1, wx.EXPAND | wx.TOP, border=1)
 
@@ -38,7 +39,7 @@ class TextWindow(wx.Frame):
         self.db = None
         self.c = None
 
-        self.Bind(wx.EVT_CLOSE, self.main_window.on_text_win_close)
+        self.Bind(wx.EVT_CLOSE, close_callback)
 
     def load_db(self, db_path):
         self.db = sqlite3.connect(db_path, isolation_level=None)
