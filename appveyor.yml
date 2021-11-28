@@ -76,7 +76,7 @@ deploy:
     - provider: GitHub
       description: 'Auto-created Release'
       auth_token:
-        secure: tpurZq/nyMadA/DqWepPmvcxhxfUL25cfvmFEDOUPUvOfNdUP4SpBH1QJm1yt06T
+        secure: Ma3h2V4njIQJClEXXBbsTHnRBdtsyXKpCszdcItYhGdx8MHkKupcSZH5QMDENx1K
       draft: true
       prerelease: true
       on:
