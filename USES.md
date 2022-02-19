@@ -40,6 +40,6 @@
 | [Главная сцена на AnyWay Fest Mk II](https://vk.com/anywayfest) | Москва | 18 сентября 2021г. |  |
 | [Korean Dream](https://vk.com/koreandream_fest) | Тула | 3 октября 2021г. | [@Himura2la](https://github.com/Himura2la) |
 | [AtomCosCon 2021](https://vk.com/cosfest) | Дубна (МО) | 23 октября 2021г. | [@Himura2la](https://github.com/Himura2la) |
-
+| [Yuki no Odori 11](https://vk.com/tulaanimefest) | Тула | 12 февраля 2022г. | [Sapro](https://vk.com/sapro_0w0) |
 
 
