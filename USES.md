@@ -41,6 +41,6 @@
 | [Korean Dream](https://vk.com/koreandream_fest) | Тула | 3 октября 2021г. | [@Himura2la](https://github.com/Himura2la) |
 | [AtomCosCon 2021](https://vk.com/cosfest) | Дубна (МО) | 23 октября 2021г. | [@Himura2la](https://github.com/Himura2la) |
 | [Yuki no Odori 11](https://vk.com/tulaanimefest) | Тула | 12 февраля 2022г. | [Sapro](https://vk.com/sapro_0w0) |
-| [AtomCosCon 2022](https://vk.com/cosfest) | Дубна (МО) | 22 мая 2022г. | [Илья](https://vk.com/maxtremalitylow) |
+| [AtomCosCon 2022](https://vk.com/cosfest) | Дубна (МО) | 21 мая 2022г. | [Илья](https://vk.com/maxtremalitylow) |
 | [Imagiro](https://vk.com/imagiro22) | Липецк | 14 августа 2022г. | [Sapro](https://vk.com/sapro_0w0) |
 
