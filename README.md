@@ -108,10 +108,10 @@
 **Внимание!** `wxPython` при установке из `pip` обожает начинать компилироваться из исходников. Это безнадежное занятие, ему надо явно указать `.whl` наиболее подходящий для вашей системы (желательно, конечно, совсем подходящий, но вроде бы билды для чужих систем иногда работает). [Официальная инструкция](https://wxpython.org/pages/downloads/index.html), вам нужен раздел -- **Yes, we have Linux Wheels. Sort of.**
 
 ```sh
-sudo apt install git python3 vlc -y
-sudo -H pip3 install --upgrade setuptools pip
-sudo -H pip3 install python-vlc
-sudo -H pip3 install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-16.04 wxPython
+sudo apt install git python3 python3-pip vlc -y
+pip install --upgrade setuptools pip
+pip install python-vlc
+pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-22.04 wxPython
 git clone https://github.com/Himura2la/FestEngine.git
 cd FestEngine/src/locale && ./msgfmt.sh && cd ..
 python3 main.pyw
