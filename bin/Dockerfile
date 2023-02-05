@@ -2,10 +2,10 @@ FROM debian:10
 RUN apt-get update \
  && apt-get upgrade -y \
  && apt-get install -y gettext python3 python3-pip vlc libjpeg-dev zlib1g-dev \
- && pip install -U \
+ && python3 -m pip install -U \
     -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/debian-10 \
     wxPython \
- && pip install -U pyinstaller python-vlc
+ && python3 -m pip install -U pyinstaller python-vlc
 WORKDIR /app
 COPY . .
 WORKDIR /app/bin
