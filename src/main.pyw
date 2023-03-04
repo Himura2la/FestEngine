@@ -471,7 +471,7 @@ class MainWindow(wx.Frame):
         row = self.grid.GetGridCursorRow()
         cell_origin = self.grid.CellToRect(row, 0).y / self.grid.GetScrollPixelsPerUnit()[1]
         full_page = self.grid.GetScrollPageSize(wx.VERTICAL)
-        scroll_target = cell_origin - full_page / 6
+        scroll_target = int(cell_origin - full_page / 6)
         self.grid.Scroll((0, scroll_target))
 
     def grid_autosize_notes_col(self, e=None):
