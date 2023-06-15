@@ -46,3 +46,4 @@
 | [UnityCon 2022](http://unitycon.ru) ([VK](https://vk.com/unitycon)) | Москва | 10-11 сентября 2022 г. | |
 | [AnyFair vol.4](https://vk.com/anyfair) | Москва | 21 января 2023 г. | [Millis](https://vk.com/l_millis_l) |
 | [Yuki no Odori 12](https://vk.com/tulaanimefest) | Тула | 28 января 2023 г. | [Sapro](https://vk.com/sapro_0w0) |
+| [AtomCosCon 2023](https://vk.com/cosfest) | Дубна (МО) | 10 июня 2023г. | [Илья](https://vk.com/maxtremalitylow) |
