@@ -54,7 +54,7 @@ class MainWindow(wx.Frame):
         self.fade_out_delays_ms = 10
         self.logger = Logger(self)
         base_config = {Config.PROJECTOR_SCREEN: wx.Display.GetCount() - 1,  # The last one
-                       Config.VLC_ARGUMENTS: "--file-caching=1000 --no-drop-late-frames --no-skip-frames",
+                       Config.VLC_ARGUMENTS: "",
                        Config.FILENAME_RE: r"^(?P<num>\d{1,3}[a-z]?)[\W_]{1,3}(?P<name>.*)$",
                        Config.BG_TRACKS_DIR: "",
                        Config.BG_ZAD_PATH: "",
