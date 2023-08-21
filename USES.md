@@ -42,8 +42,18 @@
 | [AtomCosCon 2021](https://vk.com/cosfest) | Дубна (МО) | 23 октября 2021г. | [@Himura2la](https://github.com/Himura2la) |
 | [Yuki no Odori 11](https://vk.com/tulaanimefest) | Тула | 12 февраля 2022г. | [Sapro](https://vk.com/sapro_0w0) |
 | [AtomCosCon 2022](https://vk.com/cosfest) | Дубна (МО) | 21 мая 2022г. | [Илья](https://vk.com/maxtremalitylow) |
+| [AnyFurry Fest I](https://vk.com/anyfurryfest) | Москва | 10 июля 2022 г. | [Millis](https://vk.com/l_millis_l) |
 | [Imagiro](https://vk.com/imagiro22) | Липецк | 14 августа 2022г. | [Sapro](https://vk.com/sapro_0w0) |
 | [UnityCon 2022](http://unitycon.ru) ([VK](https://vk.com/unitycon)) | Москва | 10-11 сентября 2022 г. | |
+| [AnyFurry Fest II](https://vk.com/anyfurryfest) | Москва | 26 ноября 2022 г. | [Millis](https://vk.com/l_millis_l) |
 | [AnyFair vol.4](https://vk.com/anyfair) | Москва | 21 января 2023 г. | [Millis](https://vk.com/l_millis_l) |
 | [Yuki no Odori 12](https://vk.com/tulaanimefest) | Тула | 28 января 2023 г. | [Sapro](https://vk.com/sapro_0w0) |
+| [AnyPony Fest III](https://vk.com/anyponyfest) | Москва | 11 февраля 2023 г. | [Millis](https://vk.com/l_millis_l) |
+| [Never Party ver. 5.0.](https://vk.com/neverparty) | Москва | 4 марта 2023 г. | [Millis](https://vk.com/l_millis_l) |
+| [AnyFair vol.5](https://vk.com/anyfair) | Москва | 15 апреля 2023 г. | [Millis](https://vk.com/l_millis_l) |
+| [AnyFurry Fest III](https://vk.com/anyfurryfest) | Москва | 29 апреля 2023 г. | [Millis](https://vk.com/l_millis_l) |
 | [AtomCosCon 2023](https://vk.com/cosfest) | Дубна (МО) | 10 июня 2023г. | [Илья](https://vk.com/maxtremalitylow) |
+| [HaoFest](https://vk.com/haofest) | Москва | 08 июля 2023 г. | [Millis](https://vk.com/l_millis_l) |
+| [UnityCon 2023](https://uc23.cosplay2.ru/) | Москва | 19 августа 2023г. | [Millis](https://vk.com/l_millis_l) |
+| [ToFu Fest](https://www.instagram.com/tofu_fest/) | Ереван | 20 августа 2023г. | [@Himura2la](https://github.com/Himura2la) |
+
