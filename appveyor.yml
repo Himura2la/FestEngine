@@ -9,8 +9,9 @@ environment:
   matrix:
     - ARCH: '64'
       VLC: 'latest'
-    - ARCH: '32'
-      VLC: '2.2.8'
+#    - ARCH: '32'
+#      VLC: '2.2.8'
+# I used the 32-bit version only once
 
 
 for:
