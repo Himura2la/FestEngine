@@ -21,7 +21,7 @@ function FestEngineGetDeps {
     }
 
     $env:Path += ";$env:PYTHON_PATH\Scripts"
-    & "$env:PYTHON_PATH\python.exe" -m pip install --upgrade setuptools pip wheel
+    & "$env:PYTHON_PATH\python.exe" -m pip install --upgrade setuptools pip wheel cython
     & "$env:PYTHON_PATH\python.exe" -m pip install pyinstaller python-vlc pywinauto
     & "$env:PYTHON_PATH\python.exe" -m pip install wxPython 
 }
