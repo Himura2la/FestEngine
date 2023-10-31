@@ -56,4 +56,6 @@
 | [HaoFest](https://vk.com/haofest) | Москва | 08 июля 2023 г. | [Millis](https://vk.com/l_millis_l) |
 | [UnityCon 2023](https://uc23.cosplay2.ru/) | Москва | 19 августа 2023г. | [Millis](https://vk.com/l_millis_l) |
 | [ToFu Fest](https://www.instagram.com/tofu_fest/) | Ереван | 20 августа 2023г. | [@Himura2la](https://github.com/Himura2la) |
+| [ToFu Market](https://www.instagram.com/tofu_market/) | Ереван | 01 октября 2023г. | [@Himura2la](https://github.com/Himura2la) |
+| [ToFu Fest Helloween](https://www.instagram.com/tofu_fest/) | Ереван | 29 октября 2023г. | [eVa](https://www.instagram.com/cosmea_v_v/) |
 
