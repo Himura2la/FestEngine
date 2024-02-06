@@ -58,4 +58,5 @@
 | [ToFu Fest](https://www.instagram.com/tofu_fest/) | Ереван | 20 августа 2023г. | [@Himura2la](https://github.com/Himura2la) |
 | [ToFu Market](https://www.instagram.com/tofu_market/) | Ереван | 01 октября 2023г. | [@Himura2la](https://github.com/Himura2la) |
 | [ToFu Fest Helloween](https://www.instagram.com/tofu_fest/) | Ереван | 29 октября 2023г. | [eVa](https://www.instagram.com/cosmea_v_v/) |
+| [Yuki no Odori 13](https://vk.com/tulaanimefest) | Тула | 3 февраля 2024 г. | [Sapro](https://vk.com/sapro_0w0) |
 
