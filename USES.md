@@ -57,9 +57,9 @@
 | [UnityCon 2023](https://uc23.cosplay2.ru/) | Москва | 19 августа 2023 | [Millis](https://vk.com/l_millis_l) |
 | [ToFu Fest](https://www.instagram.com/tofu_fest/) | Ереван | 20 августа 2023 | [@Himura2la](https://github.com/Himura2la) |
 | [ToFu Market](https://www.instagram.com/tofu_market/) | Ереван | 01 октября 2023 | [@Himura2la](https://github.com/Himura2la) |
-| [ToFu Fest Helloween](https://www.instagram.com/tofu_fest/) | Ереван | 29 октября 2023 | [eVa](https://www.instagram.com/cosmea_v_v/) |
-| [ToFu Fest New Year](https://www.instagram.com/tofu_fest/) | Ереван | 24 декабря 2023 | [@Himura2la](https://github.com/Himura2la) |
+| [ToFu Fest Helloween 3](https://www.instagram.com/tofu_fest/) | Ереван | 29 октября 2023 | [eVa](https://www.instagram.com/cosmea_v_v/) |
+| [ToFu Fest New Year 4](https://www.instagram.com/tofu_fest/) | Ереван | 24 декабря 2023 | [@Himura2la](https://github.com/Himura2la) |
 | [Yuki no Odori 13](https://vk.com/tulaanimefest) | Тула | 3 февраля 2024 | [Sapro](https://vk.com/sapro_0w0) |
 | [Hao Fest](https://haofest24.cosplay2.ru/) ([VK](https://vk.com/haofest)) | Москва | 10 февраля 2024 | [Millis](https://vk.com/l_millis_l) |
-| [ToFu Market](https://www.instagram.com/tofu_market/) | Ереван | 18 февраля 2024 | [eVa](https://www.instagram.com/cosmea_v_v/) |
-
+| [ToFu Market 5](https://www.instagram.com/tofu_market/) | Ереван | 18 февраля 2024 | [eVa](https://www.instagram.com/cosmea_v_v/) |
+| [ToFu Fest 6](https://www.instagram.com/tofu_fest/) | Ереван | 31 марта 2024 | [eVa](https://www.instagram.com/cosmea_v_v/) |
