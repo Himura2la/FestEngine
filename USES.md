@@ -65,3 +65,4 @@
 | [ToFu Fest 6](https://www.instagram.com/tofu_fest/) | Ереван | 31 марта 2024 | [eVa](https://www.instagram.com/cosmea_v_v/) |
 | [Magic Fest](https://magicfest.cosplay2.ru/) | Москва | 21 апреля 2024 | [Илья](https://vk.com/maxtremalitylow) |
 | [ToFu Market 7](https://tf7.cosplay2.ru/) | Ереван | 19 мая 2024 | [@Himura2la](https://github.com/Himura2la) |
+| [Супергеройская встреча | Hokori Tori](https://vk.com/hokori_tori_superhero) | Орёл | 25 мая 2024 | [Miko](https://vk.com/m1k0l)
