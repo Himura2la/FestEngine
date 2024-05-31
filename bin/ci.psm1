@@ -7,10 +7,10 @@ function FestEngineGetDeps {
         $env:VER = $env:APPVEYOR_REPO_COMMIT.substring(0,7)
     }
     if ($env:ARCH -eq '32') {
-        $env:PYTHON_PATH = 'C:\Python311'
+        $env:PYTHON_PATH = 'C:\Python39'
         $env:VLC_ARCH_FLAG = '--x86'
     } else {
-        $env:PYTHON_PATH = 'C:\Python311-x64'
+        $env:PYTHON_PATH = 'C:\Python39-x64'
     }
     if ($env:VLC -eq 'latest') {
         $env:VLC_VERSION = ((choco list vlc | Select-String -Pattern '^vlc [\d\.]* \[Approved\]') -split ' ')[1]
