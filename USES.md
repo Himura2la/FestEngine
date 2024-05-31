@@ -64,4 +64,5 @@
 | [ToFu Market 5](https://www.instagram.com/tofu_market/) | Ереван | 18 февраля 2024 | [eVa](https://www.instagram.com/cosmea_v_v/) |
 | [ToFu Fest 6](https://www.instagram.com/tofu_fest/) | Ереван | 31 марта 2024 | [eVa](https://www.instagram.com/cosmea_v_v/) |
 | [Magic Fest](https://magicfest.cosplay2.ru/) | Москва | 21 апреля 2024 | [Илья](https://vk.com/maxtremalitylow) |
+| [FAN FAN 2024](https://vk.com/ffest_nn) | Нижний Новгород | 4 мая 2024 | [Dante](https://vk.com/dantebc) |
 | [ToFu Market 7](https://tf7.cosplay2.ru/) | Ереван | 19 мая 2024 | [@Himura2la](https://github.com/Himura2la) |
