@@ -68,3 +68,5 @@
 | [FAN FAN 2024](https://vk.com/ffest_nn) | Нижний Новгород | 4 мая 2024 | [Dante](https://vk.com/dantebc) |
 | [ToFu Market 7](https://tf7.cosplay2.ru/) | Ереван | 19 мая 2024 | [@Himura2la](https://github.com/Himura2la) |
 | [Супергеройская встреча Hokori Tori](https://vk.com/hokori_tori_superhero) | Орёл | 25 мая 2024 | [Miko](https://vk.com/m1k0l)
+| [ToFu Market 8](https://tf8.cosplay2.ru/) | Ереван | 21 июля 2024 | [@Himura2la](https://github.com/Himura2la) |
+| [ALIA FEST](https://vk.com/aliafest) | Ереван | 4 августа 2024 | [Mattia](https://vk.com/amicoyoloswag) |
