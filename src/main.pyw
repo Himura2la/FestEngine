@@ -1009,7 +1009,7 @@ class MainWindow(wx.Frame):
         except IndexError:
             self.player_status = _(u'Nothing to play for %s%s') % ('№', num)
             return
-        self.play_pause_bg(play=False)
+        self.play_pause_bg(play=False)  # self.bg_player.pause_async() affects self.player.play() in sound
         self.player.set_media(self.vlc_instance.media_new(file_path))
 
         if not sound_only:
