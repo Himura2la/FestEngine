@@ -41,7 +41,7 @@
 | [Korean Dream](https://vk.com/koreandream_fest) | Тула | 3 октября 2021 | [@Himura2la](https://github.com/Himura2la) |
 | [AtomCosCon 2021](https://vk.com/cosfest) | Дубна (МО) | 23 октября 2021 | [@Himura2la](https://github.com/Himura2la) |
 | [Yuki no Odori 11](https://vk.com/tulaanimefest) | Тула | 12 февраля 2022 | [Sapro](https://vk.com/sapro_0w0) |
-| [AtomCosCon 2022](https://vk.com/cosfest) | Дубна (МО) | 21 мая 2022 | [Илья](https://vk.com/maxtremalitylow) |
+| [AtomCosCon 2022](https://vk.com/cosfest) | Дубна (МО) | 21 мая 2022 | [Илья](https://github.com/Maxtremality) |
 | [AnyFurry Fest I](https://vk.com/anyfurryfest) | Москва | 10 июля 2022 | [Millis](https://vk.com/l_millis_l) |
 | [Imagiro](https://vk.com/imagiro22) | Липецк | 14 августа 2022 | [Sapro](https://vk.com/sapro_0w0) |
 | [UnityCon 2022](http://unitycon.ru) ([VK](https://vk.com/unitycon)) | Москва | 10-11 сентября 2022 | |
@@ -52,7 +52,7 @@
 | [Never Party ver. 5.0.](https://vk.com/neverparty) | Москва | 4 марта 2023 | [Millis](https://vk.com/l_millis_l) |
 | [AnyFair vol.5](https://vk.com/anyfair) | Москва | 15 апреля 2023 | [Millis](https://vk.com/l_millis_l) |
 | [AnyFurry Fest III](https://vk.com/anyfurryfest) | Москва | 29 апреля 2023 | [Millis](https://vk.com/l_millis_l) |
-| [AtomCosCon 2023](https://vk.com/cosfest) | Дубна (МО) | 10 июня 2023 | [Илья](https://vk.com/maxtremalitylow) |
+| [AtomCosCon 2023](https://vk.com/cosfest) | Дубна (МО) | 10 июня 2023 | [Илья](https://github.com/Maxtremality) |
 | [HaoFest](https://vk.com/haofest) | Москва | 08 июля 2023 | [Millis](https://vk.com/l_millis_l) |
 | [UnityCon 2023](https://uc23.cosplay2.ru/) | Москва | 19 августа 2023 | [Millis](https://vk.com/l_millis_l) |
 | [ToFu Fest](https://www.instagram.com/tofu_fest/) | Ереван | 20 августа 2023 | [@Himura2la](https://github.com/Himura2la) |
@@ -64,10 +64,11 @@
 | [Hao Fest](https://haofest24.cosplay2.ru/) ([VK](https://vk.com/haofest)) | Москва | 10 февраля 2024 | [Millis](https://vk.com/l_millis_l) |
 | [ToFu Market 5](https://www.instagram.com/tofu_market/) | Ереван | 18 февраля 2024 | [eVa](https://www.instagram.com/cosmea_v_v/) |
 | [ToFu Fest 6](https://www.instagram.com/tofu_fest/) | Ереван | 31 марта 2024 | [eVa](https://www.instagram.com/cosmea_v_v/) |
-| [Magic Fest](https://magicfest.cosplay2.ru/) | Москва | 21 апреля 2024 | [Илья](https://vk.com/maxtremalitylow) |
+| [Magic Fest](https://magicfest.cosplay2.ru/) | Москва | 21 апреля 2024 | [Илья](https://github.com/Maxtremality) |
 | [FAN FAN 2024](https://vk.com/ffest_nn) | Нижний Новгород | 4 мая 2024 | [Dante](https://vk.com/dantebc) |
 | [ToFu Market 7](https://tf7.cosplay2.ru/) | Ереван | 19 мая 2024 | [@Himura2la](https://github.com/Himura2la) |
 | [Супергеройская встреча Hokori Tori](https://vk.com/hokori_tori_superhero) | Орёл | 25 мая 2024 | [Miko](https://vk.com/m1k0l)
 | [ToFu Market 8](https://tf8.cosplay2.ru/) | Ереван | 21 июля 2024 | [@Himura2la](https://github.com/Himura2la) |
-| [ALIA FEST](https://vk.com/aliafest) | Ереван | 4 августа 2024 | [Mattia](https://vk.com/amicoyoloswag) |
+| [ALIA FEST](https://vk.com/aliafest) | Москва | 4 августа 2024 | [Mattia](https://vk.com/amicoyoloswag) |
 | [ToFu Fest 9](https://tf9.cosplay2.ru/) | Ереван | 24 августа 2024 | [@Himura2la](https://github.com/Himura2la) |
+| [Игропром](https://igroprom.cosplay2.ru/) | Москва | 23-24 ноября 2024 | [Илья](https://github.com/Maxtremality) |
