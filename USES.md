@@ -72,3 +72,4 @@
 | [ALIA FEST](https://vk.com/aliafest) | Москва | 4 августа 2024 | [Mattia](https://vk.com/amicoyoloswag) |
 | [ToFu Fest 9](https://tf9.cosplay2.ru/) | Ереван | 24 августа 2024 | [@Himura2la](https://github.com/Himura2la) |
 | [Игропром](https://igroprom.cosplay2.ru/) | Москва | 23-24 ноября 2024 | [Илья](https://github.com/Maxtremality) |
+| [FAN FAN 2025](https://vk.com/ffest_nn) | Нижний Новгород | 11 января 2025 | [Dante](https://vk.com/dantebc) |
