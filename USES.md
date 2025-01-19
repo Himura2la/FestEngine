@@ -71,4 +71,7 @@
 | [ToFu Market 8](https://tf8.cosplay2.ru/) | Ереван | 21 июля 2024 | [@Himura2la](https://github.com/Himura2la) |
 | [ALIA FEST](https://vk.com/aliafest) | Москва | 4 августа 2024 | [Mattia](https://vk.com/amicoyoloswag) |
 | [ToFu Fest 9](https://tf9.cosplay2.ru/) | Ереван | 24 августа 2024 | [@Himura2la](https://github.com/Himura2la) |
+| [ToFu Market Halloween](https://www.instagram.com/tofu_fest/) | Ереван | 27 октября 2024 | [eVa](https://www.instagram.com/cosmea_v_v/) |
 | [Игропром](https://igroprom.cosplay2.ru/) | Москва | 23-24 ноября 2024 | [Илья](https://github.com/Maxtremality) |
+| [ToFu Market New Year](https://www.instagram.com/tofu_fest/) | Ереван | 22 декабря 2024 | [eVa](https://www.instagram.com/cosmea_v_v/) |
+| [Yuki no Odori 14](https://vk.com/tulaanimefest) | Тула | 20 февраля 2025 | [Илья](https://github.com/Maxtremality) |
