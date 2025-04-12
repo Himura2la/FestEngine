@@ -44,7 +44,7 @@
 | [AtomCosCon 2022](https://vk.com/cosfest) | Дубна (МО) | 21 мая 2022 | [Илья](https://github.com/Maxtremality) |
 | [AnyFurry Fest I](https://vk.com/anyfurryfest) | Москва | 10 июля 2022 | [Millis](https://vk.com/l_millis_l) |
 | [Imagiro](https://vk.com/imagiro22) | Липецк | 14 августа 2022 | [Sapro](https://vk.com/sapro_0w0) |
-| [UnityCon 2022](http://unitycon.ru) ([VK](https://vk.com/unitycon)) | Москва | 10-11 сентября 2022 | |
+| [UnityCon 2022](http://unitycon.ru) ([VK](https://vk.com/unitycon)) | Москва | 10-11 сентября 2022 | [Илья](https://github.com/Maxtremality) |
 | [AnyFurry Fest II](https://vk.com/anyfurryfest) | Москва | 26 ноября 2022 | [Millis](https://vk.com/l_millis_l) |
 | [AnyFair vol.4](https://vk.com/anyfair) | Москва | 21 января 2023 | [Millis](https://vk.com/l_millis_l) |
 | [Yuki no Odori 12](https://vk.com/tulaanimefest) | Тула | 28 января 2023 | [Sapro](https://vk.com/sapro_0w0) |
