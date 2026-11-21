@@ -583,6 +583,9 @@ class MainWindow(wx.Frame):
         self.blk_btn.Enable(True)
         self.proj_win.Show()
         if no_window:
+            # Mutter (XWayland) drops the fullscreen window on the current monitor if we block
+            # right after mapping (image load, VLC setup); let it process the map first.
+            wx.GetApp().Yield(True)
             self.clear_zad(status="Projector Window Created")
         self.destroy_proj_win_item.Enable(True)
         wx.CallAfter(self.Raise)
