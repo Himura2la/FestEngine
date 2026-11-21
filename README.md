@@ -117,6 +117,20 @@ cd FestEngine/src/locale && ./msgfmt.sh && cd ..
 python3 main.pyw
 ```
 
+## NixOS
+
+Включите в Nix возможности `nix-command` и `flakes`. Из корня репозитория запустите:
+
+```sh
+nix develop
+cd src
+python3 main.pyw
+```
+
+В оболочке уже есть Python с wxPython и python-vlc, VLC и gettext. Создавать `venv` и устанавливать пакеты через `pip` не нужно. Для русской локализации перед запуском выполните `sh locale/msgfmt.sh` из каталога `src`.
+
+Для отладки откройте корень репозитория в VS Code с расширениями **Python** и **Python Debugger**. Выберите **Debug FestEngine (NixOS)** и нажмите **F5**. Перед запуском VS Code сам соберёт интерпретатор из того же flake; открывать редактор из `nix develop` не требуется. Для автодополнения выберите этот же интерпретатор (`.nix-python/bin/python3`) через **Python: Select Interpreter** после первого запуска.
+
 ## CentOS 8
 
 ```

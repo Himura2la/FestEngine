@@ -1,0 +1,13 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Nix Python",
+            "type": "process",
+            "command": "nix",
+            "args": ["build", ".#python", "--out-link", ".nix-python"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "problemMatcher": []
+        }
+    ]
+}
