@@ -14,6 +14,11 @@ import functools
 import gettext
 import copy
 
+if sys.platform.startswith('linux'):
+    # libVLC 3 embeds into an X11 window ID, not a Wayland surface pointer.
+    # Select X11 (XWayland on Wayland desktops) before wx initializes GTK.
+    os.environ['GDK_BACKEND'] = 'x11'
+
 import vlc
 import wx
 import wx.grid
@@ -37,8 +42,8 @@ else:
 
 if sys.platform.startswith('linux'):
     try:
-        import ctypes
-        x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11'))
+        import ctypes.util
+        x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11') or 'libX11.so.6')
         x11.XInitThreads()
     except Exception as x_init_threads_ex:
         print("XInitThreads() call failed:", x_init_threads_ex)
@@ -571,12 +576,12 @@ class MainWindow(wx.Frame):
             self.vid_btn.Bind(wx.EVT_TOGGLEBUTTON, self.switch_to_vid)
             self.zad_btn.Bind(wx.EVT_TOGGLEBUTTON, self.show_zad)
             self.blk_btn.Bind(wx.EVT_TOGGLEBUTTON, lambda e: self.clear_zad(e, True))
-            self.switch_to_zad()
-            self.image_status("Projector Window Created")
         self.vid_btn.Enable(True)
         self.zad_btn.Enable(True)
         self.blk_btn.Enable(True)
         self.proj_win.Show()
+        if no_window:
+            self.clear_zad(status="Projector Window Created")
         self.destroy_proj_win_item.Enable(True)
         wx.CallAfter(self.Raise)
         return no_window
@@ -626,6 +631,14 @@ class MainWindow(wx.Frame):
             self.player.set_nsobject(handle)
         return True
 
+    def projector_media(self, file_path):
+        media = self.vlc_instance.media_new(file_path)
+        # Set this on the input: an instance default can still select VA-API
+        # and render green frames on hybrid GPUs. Respect explicit session overrides.
+        if sys.platform.startswith('linux') and '--avcodec-hw' not in self.config[Config.VLC_ARGUMENTS]:
+            media.add_option(':avcodec-hw=none')
+        return media
+
     def switch_to_zad(self, e=None):
         if not self.proj_win:
             return
@@ -646,7 +659,7 @@ class MainWindow(wx.Frame):
                 file_path = [f[1] for f in self.data[num]['files'].items() if f[0] in FileTypes.img_extensions][0]
                 if any([file_path.endswith(e) for e in FileTypes.video_extensions]):
                     self.switch_to_vid()
-                    self.player.set_media(self.vlc_instance.media_new(file_path))
+                    self.player.set_media(self.projector_media(file_path))
                     while not self.set_vlc_video_panel():
                         pass
                     self.player.audio_set_mute(False)
@@ -656,7 +669,9 @@ class MainWindow(wx.Frame):
                         return
                 else:
                     self.switch_to_zad()
-                    self.proj_win.load_zad(file_path, True)
+                    if not self.proj_win.load_zad(file_path, True):
+                        self.image_status("Cannot load image: %s" % file_path)
+                        return
                 self.image_status(u"Showing №%s" % num)
                 self.status("ZAD Fired!")
                 wx.CallAfter(lambda: self.proj_win.Layout())
@@ -673,9 +688,11 @@ class MainWindow(wx.Frame):
             return
         if self.config[Config.BG_ZAD_PATH] and not no_show:
             self.switch_to_zad()
-            self.proj_win.load_zad(path.make_abs(self.config[Config.BG_ZAD_PATH],
-                                                 path.fest_file), True)
-            self.image_status("Background")
+            file_path = path.make_abs(self.config[Config.BG_ZAD_PATH], path.fest_file)
+            if self.proj_win.load_zad(file_path, True):
+                self.image_status("Background")
+            else:
+                self.image_status("Cannot load background: %s" % file_path)
         else:
             self.switch_to_blackout()
             self.image_status("No show")
@@ -1010,7 +1027,7 @@ class MainWindow(wx.Frame):
             self.player_status = _(u'Nothing to play for %s%s') % ('№', num)
             return
         self.play_pause_bg(play=False)
-        self.player.set_media(self.vlc_instance.media_new(file_path))
+        self.player.set_media(self.vlc_instance.media_new(file_path) if sound_only else self.projector_media(file_path))
 
         if not sound_only:
             self.ensure_proj_win()
