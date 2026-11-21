@@ -24,7 +24,8 @@ import wx
 import wx.grid
 
 from background_music_player import BackgroundMusicPlayer
-from constants import Config, Colors, Columns, FileTypes, Strings
+from constants import Config, Columns, FileTypes, Strings
+from grid_colors import grid_colors_for_theme
 from projector import ProjectorWindow
 from settings import SettingsDialog
 from logger import Logger
@@ -52,6 +53,7 @@ if sys.platform.startswith('linux'):
 class MainWindow(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title, size=(800, 400))
+        self.grid_colors = grid_colors_for_theme()
         self.Bind(wx.EVT_CLOSE, self.on_close, self)
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
 
@@ -845,7 +847,7 @@ class MainWindow(wx.Frame):
 
                 for cell in row.values():
                     self.grid.SetCellValue(new_row, cell['col'], cell['val'])
-                    self.grid.SetCellBackgroundColour(new_row, cell['col'], Colors.DUP_ROW)
+                    self.grid.SetCellBackgroundColour(new_row, cell['col'], self.grid_colors.DUP_ROW)
                     self.set_cell_readonly(new_row, cell['col'], True)
 
         self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
@@ -894,7 +896,7 @@ class MainWindow(wx.Frame):
         self.grid.SetCellValue(row_pos, self.grid_cols.index(Columns.NOTES), "30m")  # Can be 15:35
 
         for col in range(self.grid.GetNumberCols()):
-            self.grid.SetCellBackgroundColour(row_pos, col, Colors.COUNTDOWN_ROW)
+            self.grid.SetCellBackgroundColour(row_pos, col, self.grid_colors.COUNTDOWN_ROW)
             self.set_cell_readonly(row_pos, col)
 
         self.grid.SelectRow(row_pos)
@@ -918,7 +920,7 @@ class MainWindow(wx.Frame):
             self.search_box.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
             self.in_search = True
             self.grid_push()
-            self.grid.SetDefaultCellBackgroundColour(Colors.FILTERED_GRID)
+            self.grid.SetDefaultCellBackgroundColour(self.grid_colors.FILTERED_GRID)
             self.grid.ForceRefresh()  # Updates colors
         if e:
             e.Skip()
@@ -965,7 +967,7 @@ class MainWindow(wx.Frame):
 
     def paint_search_box(self, val):
         if val:
-            self.search_box.SetBackgroundColour((255, 200, 200))
+            self.search_box.SetBackgroundColour(self.grid_colors.ROW_SKIPPED)
         else:
             self.search_box.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
         self.search_box.Refresh()
@@ -1037,7 +1039,7 @@ class MainWindow(wx.Frame):
 
         self.num_in_player = num
         self.current_playing_row = self.grid.GetGridCursorRow()
-        [self.grid.SetCellBackgroundColour(self.current_playing_row, col, Colors.ROW_PLAYING_NOW)
+        [self.grid.SetCellBackgroundColour(self.current_playing_row, col, self.grid_colors.ROW_PLAYING_NOW)
          for col in range(self.grid.GetNumberCols())]
         wx.CallAfter(self.grid.ForceRefresh)
 
@@ -1098,7 +1100,7 @@ class MainWindow(wx.Frame):
         self.fade_out_btn.Enable(False)
 
         if self.current_playing_row is not None:
-            [self.grid.SetCellBackgroundColour(self.current_playing_row, col, Colors.ROW_SKIPPED)
+            [self.grid.SetCellBackgroundColour(self.current_playing_row, col, self.grid_colors.ROW_SKIPPED)
              for col in range(self.grid.GetNumberCols())]
             wx.CallAfter(self.grid.ForceRefresh)
 
@@ -1189,8 +1191,8 @@ class MainWindow(wx.Frame):
             self.player_status = self.player_state_parse(self.player.get_state())
             self.switch_to_zad()
 
-            if self.grid.GetCellBackgroundColour(self.current_playing_row, 0) != Colors.ROW_SKIPPED:
-                [self.grid.SetCellBackgroundColour(self.current_playing_row, col, Colors.ROW_PLAYED_TO_END)
+            if self.grid.GetCellBackgroundColour(self.current_playing_row, 0) != self.grid_colors.ROW_SKIPPED:
+                [self.grid.SetCellBackgroundColour(self.current_playing_row, col, self.grid_colors.ROW_PLAYED_TO_END)
                  for col in range(self.grid.GetNumberCols())]
                 wx.CallAfter(self.grid.ForceRefresh)
 
@@ -1272,7 +1274,7 @@ class MainWindow(wx.Frame):
             self.bg_player.window.time_slider.SetValue(pos)
             self.bg_player.window.time_label.SetLabel(time_remaining)
             if seeking_time:
-                self.bg_player.window.time_label.SetBackgroundColour(Colors.ROW_PLAYING_NOW)
+                self.bg_player.window.time_label.SetBackgroundColour(self.grid_colors.ROW_PLAYING_NOW)
             else:
                 self.bg_player.window.time_label.SetBackgroundColour(
                     wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
