@@ -735,14 +735,14 @@ class MainWindow(wx.Frame):
         if 'num' not in group_names:
             msg = _("No 'num' group in filename RegEx. We recommend using a unique sorting-friendly three-digit\n"
                     "number at the beginning of all filenames. The order should correspond to your event's program\n\n"
-                    "In this case the RegEx will look like this: ^(?P<num>\d{3})(?P<name>.*)\n\n"
+                    "In this case the RegEx will look like this: ^(?P<num>\\d{3})(?P<name>.*)\n\n"
                     "Your filename RegEx: %s") % filename_re
             wx.MessageBox(msg, "Filename RegEx Error", wx.OK | wx.ICON_ERROR, self)
             return
 
         if Columns.NAME not in group_names:
             msg = _("No '%s' group in filename RegEx. It is required to set the countdown description.\n\n"
-                    "The simplest RegEx looks like this: ^(?P<num>\d{3})(?P<name>.*)\n\n"
+                    "The simplest RegEx looks like this: ^(?P<num>\\d{3})(?P<name>.*)\n\n"
                     "Your filename RegEx: %s") % (Columns.NAME, filename_re)
             wx.MessageBox(msg, "Filename RegEx Error", wx.OK | wx.ICON_ERROR, self)
             return
@@ -822,7 +822,7 @@ class MainWindow(wx.Frame):
 
         if self.grid.GetColLabelValue(e.Col) == Columns.NOTES:
             note = self.grid.GetCellValue(e.Row, e.Col)
-            match = re.search('>(\d{3}(\w)?)([^\w].*)?', note)  # ">234" or ">305a" or ">152a maybe"
+            match = re.search(r'>(\d{3}(\w)?)([^\w].*)?', note)  # ">234" or ">305a" or ">152a maybe"
             if match:
                 new_num, _, note = match.groups()
 
