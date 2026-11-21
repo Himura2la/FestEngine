@@ -33,14 +33,6 @@ class Strings:
 
 
 class Colors:
-    DUP_ROW = (128, 255, 255)  # Sky
-    COUNTDOWN_ROW = (128, 255, 200)  # Green
-    FILTERED_GRID = (255, 255, 200)  # Yellow
-
-    ROW_PLAYING_NOW = (200, 200, 255)  # Blue
-    ROW_PLAYED_TO_END = (200, 200, 200)  # Gray
-    ROW_SKIPPED = (255, 200, 200)  # Red
-
     COUNTDOWN_TEXT_COLOR = (255, 255, 255)  # White
 
 

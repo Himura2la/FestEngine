@@ -10,6 +10,16 @@
             "request": "launch",
             "program": "${workspaceFolder}/src/main.pyw",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug FestEngine (NixOS)",
+            "type": "debugpy",
+            "request": "launch",
+            "preLaunchTask": "Build Nix Python",
+            "python": "${workspaceFolder}/.nix-python/bin/python3",
+            "program": "${workspaceFolder}/src/main.pyw",
+            "cwd": "${workspaceFolder}/src",
+            "console": "integratedTerminal"
         }
     ]
 }

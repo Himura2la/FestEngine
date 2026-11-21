@@ -59,6 +59,7 @@ target/
 
 # Python virtual environment
 .venv
+/.nix-python
 
 .idea/
 bin/FestEngine*

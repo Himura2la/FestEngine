@@ -15,8 +15,6 @@ class ProjectorWindow(wx.Frame):
         wx.Frame.__init__(self, parent, pos=(origin_x + 60, origin_y + 60), size=(self.w - 120, self.h - 120),
                           title='Projector Window',
                           style=wx.DEFAULT_FRAME_STYLE | (0 if run_windowed else wx.STAY_ON_TOP))
-        self.SetBackgroundColour(wx.BLACK)
-
         self.sizer = wx.BoxSizer()
 
         self.video_panel = wx.Panel(self)
@@ -31,28 +29,38 @@ class ProjectorWindow(wx.Frame):
                 wx.Image.SetDefaultLoadFlags(wx.Image.GetDefaultLoadFlags() & ~wxWidgetsConstants.wxImageLoad_Verbose)
 
                 self.SetBackgroundColour(wx.BLACK)
-                self.drawable_bitmap = wx.Bitmap(wx.Image(self.proj_window.w, self.proj_window.h))
-                self.SetBackgroundStyle(wx.BG_STYLE_ERASE)
+                self.source_image = None
+                self.fit = True
+                self.drawable_bitmap = None
+                self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
 
                 self.Bind(wx.EVT_SIZE, self.on_size)
                 self.Bind(wx.EVT_PAINT, self.on_paint)
-                self.Bind(wx.EVT_ERASE_BACKGROUND, self.on_erase_background)
 
             def on_size(self, e):
-                self.Layout()
-                self.Refresh()
+                self.update_bitmap()
+                e.Skip()
 
-            def on_erase_background(self, e):
-                pass  # https://github.com/Himura2la/FestEngine/issues/30
+            def update_bitmap(self):
+                img = self.source_image
+                if img is None:
+                    self.drawable_bitmap = None
+                else:
+                    w, h = self.GetClientSize()
+                    if self.fit and w > 0 and h > 0:
+                        ratio = min(w / img.Width, h / img.Height)
+                        img = img.Scale(max(1, round(img.Width * ratio)),
+                                        max(1, round(img.Height * ratio)), wx.IMAGE_QUALITY_HIGH)
+                    self.drawable_bitmap = wx.Bitmap(img)
+                self.Refresh(False)
 
             def on_paint(self, e):
-                dc = wx.BufferedPaintDC(self)
-                w, h = self.GetClientSize()
-                if not w or not h:
-                    return
+                dc = wx.AutoBufferedPaintDC(self)
+                dc.SetBackground(wx.BLACK_BRUSH)
                 dc.Clear()
-                drw_w = self.drawable_bitmap.GetWidth()
-                dc.DrawBitmap(self.drawable_bitmap, w//2 - drw_w//2, 0)
+                if self.drawable_bitmap is not None:
+                    x = (self.GetClientSize().width - self.drawable_bitmap.Width) // 2
+                    dc.DrawBitmap(self.drawable_bitmap, x, 0)
 
         self.images_panel = ImagesPanel(self)
 
@@ -93,15 +101,14 @@ class ProjectorWindow(wx.Frame):
 
             def _recalculate_font_size(self, e=None):
                 width, height = self.GetSize()
-                width *= 3/4  # Assuming 4:3
-                base_size = height if height < width else width
-                font_height = base_size / 3
+                base_size = min(height, width * 3 // 4)  # Assuming 4:3
+                font_height = max(1, base_size // 3)
 
                 font = self.countdown_text.GetFont()
                 font.SetPixelSize(wx.Size(0, font_height))
                 self.countdown_text.SetFont(font)
 
-                font.SetPixelSize(wx.Size(0, font_height / 3))
+                font.SetPixelSize(wx.Size(0, max(1, font_height // 3)))
                 self.info_text.SetFont(font)
                 self.time_text.SetFont(font)
                 if e:
@@ -154,14 +161,13 @@ class ProjectorWindow(wx.Frame):
 
     def load_zad(self, file_path, fit=True):
         img = wx.Image(file_path, wx.BITMAP_TYPE_ANY)
-        if fit:
-            w, h = img.GetWidth(), img.GetHeight()
-            max_w, max_h = self.images_panel.GetSize()
-            target_ratio = min(max_w / float(w), max_h / float(h))
-            new_w, new_h = [int(x * target_ratio) for x in (w, h)]
-            img = img.Scale(new_w, new_h, wx.IMAGE_QUALITY_HIGH)
-        self.images_panel.drawable_bitmap = wx.Bitmap(img)
-        self.images_panel.Refresh()
+        if not img.IsOk():
+            self.no_show()
+            return False
+        self.images_panel.source_image = img
+        self.images_panel.fit = fit
+        self.images_panel.update_bitmap()
+        return True
 
     def switch_to_video(self, e=None):
         if self.countdown_panel.IsShown():
@@ -169,6 +175,7 @@ class ProjectorWindow(wx.Frame):
             self.countdown_panel.Hide()
         self.video_panel.Show()
         self.images_panel.Hide()
+        self.Layout()
 
     def switch_to_images(self, e=None):
         if self.countdown_panel.IsShown():
@@ -176,6 +183,7 @@ class ProjectorWindow(wx.Frame):
             self.countdown_panel.Hide()
         self.video_panel.Hide()
         self.images_panel.Show()
+        self.Layout()
 
     def launch_timer(self, time, text):
         self.video_panel.Hide()
@@ -200,8 +208,7 @@ class ProjectorWindow(wx.Frame):
         return True
 
     def no_show(self):
-        self.images_panel.drawable_bitmap = \
-            wx.Bitmap(wx.Image(*self.images_panel.drawable_bitmap.GetSize()))
-        self.images_panel.Refresh()
+        self.images_panel.source_image = None
+        self.images_panel.update_bitmap()
 
 

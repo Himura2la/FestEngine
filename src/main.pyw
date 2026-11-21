@@ -14,12 +14,18 @@ import functools
 import gettext
 import copy
 
+if sys.platform.startswith('linux'):
+    # libVLC 3 embeds into an X11 window ID, not a Wayland surface pointer.
+    # Select X11 (XWayland on Wayland desktops) before wx initializes GTK.
+    os.environ['GDK_BACKEND'] = 'x11'
+
 import vlc
 import wx
 import wx.grid
 
 from background_music_player import BackgroundMusicPlayer
-from constants import Config, Colors, Columns, FileTypes, Strings
+from constants import Config, Columns, FileTypes, Strings
+from grid_colors import grid_colors_for_theme
 from projector import ProjectorWindow
 from settings import SettingsDialog
 from logger import Logger
@@ -37,8 +43,8 @@ else:
 
 if sys.platform.startswith('linux'):
     try:
-        import ctypes
-        x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11'))
+        import ctypes.util
+        x11 = ctypes.cdll.LoadLibrary(ctypes.util.find_library('X11') or 'libX11.so.6')
         x11.XInitThreads()
     except Exception as x_init_threads_ex:
         print("XInitThreads() call failed:", x_init_threads_ex)
@@ -47,6 +53,7 @@ if sys.platform.startswith('linux'):
 class MainWindow(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title, size=(800, 400))
+        self.grid_colors = grid_colors_for_theme()
         self.Bind(wx.EVT_CLOSE, self.on_close, self)
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
 
@@ -571,12 +578,15 @@ class MainWindow(wx.Frame):
             self.vid_btn.Bind(wx.EVT_TOGGLEBUTTON, self.switch_to_vid)
             self.zad_btn.Bind(wx.EVT_TOGGLEBUTTON, self.show_zad)
             self.blk_btn.Bind(wx.EVT_TOGGLEBUTTON, lambda e: self.clear_zad(e, True))
-            self.switch_to_zad()
-            self.image_status("Projector Window Created")
         self.vid_btn.Enable(True)
         self.zad_btn.Enable(True)
         self.blk_btn.Enable(True)
         self.proj_win.Show()
+        if no_window:
+            # Mutter (XWayland) drops the fullscreen window on the current monitor if we block
+            # right after mapping (image load, VLC setup); let it process the map first.
+            wx.GetApp().Yield(True)
+            self.clear_zad(status="Projector Window Created")
         self.destroy_proj_win_item.Enable(True)
         wx.CallAfter(self.Raise)
         return no_window
@@ -626,6 +636,14 @@ class MainWindow(wx.Frame):
             self.player.set_nsobject(handle)
         return True
 
+    def projector_media(self, file_path):
+        media = self.vlc_instance.media_new(file_path)
+        # Set this on the input: an instance default can still select VA-API
+        # and render green frames on hybrid GPUs. Respect explicit session overrides.
+        if sys.platform.startswith('linux') and '--avcodec-hw' not in self.config[Config.VLC_ARGUMENTS]:
+            media.add_option(':avcodec-hw=none')
+        return media
+
     def switch_to_zad(self, e=None):
         if not self.proj_win:
             return
@@ -646,7 +664,7 @@ class MainWindow(wx.Frame):
                 file_path = [f[1] for f in self.data[num]['files'].items() if f[0] in FileTypes.img_extensions][0]
                 if any([file_path.endswith(e) for e in FileTypes.video_extensions]):
                     self.switch_to_vid()
-                    self.player.set_media(self.vlc_instance.media_new(file_path))
+                    self.player.set_media(self.projector_media(file_path))
                     while not self.set_vlc_video_panel():
                         pass
                     self.player.audio_set_mute(False)
@@ -656,7 +674,9 @@ class MainWindow(wx.Frame):
                         return
                 else:
                     self.switch_to_zad()
-                    self.proj_win.load_zad(file_path, True)
+                    if not self.proj_win.load_zad(file_path, True):
+                        self.image_status("Cannot load image: %s" % file_path)
+                        return
                 self.image_status(u"Showing №%s" % num)
                 self.status("ZAD Fired!")
                 wx.CallAfter(lambda: self.proj_win.Layout())
@@ -673,9 +693,11 @@ class MainWindow(wx.Frame):
             return
         if self.config[Config.BG_ZAD_PATH] and not no_show:
             self.switch_to_zad()
-            self.proj_win.load_zad(path.make_abs(self.config[Config.BG_ZAD_PATH],
-                                                 path.fest_file), True)
-            self.image_status("Background")
+            file_path = path.make_abs(self.config[Config.BG_ZAD_PATH], path.fest_file)
+            if self.proj_win.load_zad(file_path, True):
+                self.image_status("Background")
+            else:
+                self.image_status("Cannot load background: %s" % file_path)
         else:
             self.switch_to_blackout()
             self.image_status("No show")
@@ -716,14 +738,14 @@ class MainWindow(wx.Frame):
         if 'num' not in group_names:
             msg = _("No 'num' group in filename RegEx. We recommend using a unique sorting-friendly three-digit\n"
                     "number at the beginning of all filenames. The order should correspond to your event's program\n\n"
-                    "In this case the RegEx will look like this: ^(?P<num>\d{3})(?P<name>.*)\n\n"
+                    "In this case the RegEx will look like this: ^(?P<num>\\d{3})(?P<name>.*)\n\n"
                     "Your filename RegEx: %s") % filename_re
             wx.MessageBox(msg, "Filename RegEx Error", wx.OK | wx.ICON_ERROR, self)
             return
 
         if Columns.NAME not in group_names:
             msg = _("No '%s' group in filename RegEx. It is required to set the countdown description.\n\n"
-                    "The simplest RegEx looks like this: ^(?P<num>\d{3})(?P<name>.*)\n\n"
+                    "The simplest RegEx looks like this: ^(?P<num>\\d{3})(?P<name>.*)\n\n"
                     "Your filename RegEx: %s") % (Columns.NAME, filename_re)
             wx.MessageBox(msg, "Filename RegEx Error", wx.OK | wx.ICON_ERROR, self)
             return
@@ -803,7 +825,7 @@ class MainWindow(wx.Frame):
 
         if self.grid.GetColLabelValue(e.Col) == Columns.NOTES:
             note = self.grid.GetCellValue(e.Row, e.Col)
-            match = re.search('>(\d{3}(\w)?)([^\w].*)?', note)  # ">234" or ">305a" or ">152a maybe"
+            match = re.search(r'>(\d{3}(\w)?)([^\w].*)?', note)  # ">234" or ">305a" or ">152a maybe"
             if match:
                 new_num, _, note = match.groups()
 
@@ -828,7 +850,7 @@ class MainWindow(wx.Frame):
 
                 for cell in row.values():
                     self.grid.SetCellValue(new_row, cell['col'], cell['val'])
-                    self.grid.SetCellBackgroundColour(new_row, cell['col'], Colors.DUP_ROW)
+                    self.grid.SetCellBackgroundColour(new_row, cell['col'], self.grid_colors.DUP_ROW)
                     self.set_cell_readonly(new_row, cell['col'], True)
 
         self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.on_grid_cell_changed)
@@ -877,7 +899,7 @@ class MainWindow(wx.Frame):
         self.grid.SetCellValue(row_pos, self.grid_cols.index(Columns.NOTES), "30m")  # Can be 15:35
 
         for col in range(self.grid.GetNumberCols()):
-            self.grid.SetCellBackgroundColour(row_pos, col, Colors.COUNTDOWN_ROW)
+            self.grid.SetCellBackgroundColour(row_pos, col, self.grid_colors.COUNTDOWN_ROW)
             self.set_cell_readonly(row_pos, col)
 
         self.grid.SelectRow(row_pos)
@@ -901,7 +923,7 @@ class MainWindow(wx.Frame):
             self.search_box.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
             self.in_search = True
             self.grid_push()
-            self.grid.SetDefaultCellBackgroundColour(Colors.FILTERED_GRID)
+            self.grid.SetDefaultCellBackgroundColour(self.grid_colors.FILTERED_GRID)
             self.grid.ForceRefresh()  # Updates colors
         if e:
             e.Skip()
@@ -948,7 +970,7 @@ class MainWindow(wx.Frame):
 
     def paint_search_box(self, val):
         if val:
-            self.search_box.SetBackgroundColour((255, 200, 200))
+            self.search_box.SetBackgroundColour(self.grid_colors.ROW_SKIPPED)
         else:
             self.search_box.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
         self.search_box.Refresh()
@@ -1010,7 +1032,7 @@ class MainWindow(wx.Frame):
             self.player_status = _(u'Nothing to play for %s%s') % ('№', num)
             return
         self.play_pause_bg(play=False)
-        self.player.set_media(self.vlc_instance.media_new(file_path))
+        self.player.set_media(self.vlc_instance.media_new(file_path) if sound_only else self.projector_media(file_path))
 
         if not sound_only:
             self.ensure_proj_win()
@@ -1020,7 +1042,7 @@ class MainWindow(wx.Frame):
 
         self.num_in_player = num
         self.current_playing_row = self.grid.GetGridCursorRow()
-        [self.grid.SetCellBackgroundColour(self.current_playing_row, col, Colors.ROW_PLAYING_NOW)
+        [self.grid.SetCellBackgroundColour(self.current_playing_row, col, self.grid_colors.ROW_PLAYING_NOW)
          for col in range(self.grid.GetNumberCols())]
         wx.CallAfter(self.grid.ForceRefresh)
 
@@ -1081,7 +1103,7 @@ class MainWindow(wx.Frame):
         self.fade_out_btn.Enable(False)
 
         if self.current_playing_row is not None:
-            [self.grid.SetCellBackgroundColour(self.current_playing_row, col, Colors.ROW_SKIPPED)
+            [self.grid.SetCellBackgroundColour(self.current_playing_row, col, self.grid_colors.ROW_SKIPPED)
              for col in range(self.grid.GetNumberCols())]
             wx.CallAfter(self.grid.ForceRefresh)
 
@@ -1172,8 +1194,8 @@ class MainWindow(wx.Frame):
             self.player_status = self.player_state_parse(self.player.get_state())
             self.switch_to_zad()
 
-            if self.grid.GetCellBackgroundColour(self.current_playing_row, 0) != Colors.ROW_SKIPPED:
-                [self.grid.SetCellBackgroundColour(self.current_playing_row, col, Colors.ROW_PLAYED_TO_END)
+            if self.grid.GetCellBackgroundColour(self.current_playing_row, 0) != self.grid_colors.ROW_SKIPPED:
+                [self.grid.SetCellBackgroundColour(self.current_playing_row, col, self.grid_colors.ROW_PLAYED_TO_END)
                  for col in range(self.grid.GetNumberCols())]
                 wx.CallAfter(self.grid.ForceRefresh)
 
@@ -1255,7 +1277,7 @@ class MainWindow(wx.Frame):
             self.bg_player.window.time_slider.SetValue(pos)
             self.bg_player.window.time_label.SetLabel(time_remaining)
             if seeking_time:
-                self.bg_player.window.time_label.SetBackgroundColour(Colors.ROW_PLAYING_NOW)
+                self.bg_player.window.time_label.SetBackgroundColour(self.grid_colors.ROW_PLAYING_NOW)
             else:
                 self.bg_player.window.time_label.SetBackgroundColour(
                     wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK))
